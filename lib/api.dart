@@ -1,0 +1,207 @@
+/// The OpenPak mobile API, as published in the website's openapi.yaml.
+///
+/// Hand-written rather than generated: the surface is thirteen endpoints of
+/// JSON in and JSON out, and a generated dart-dio client would bring dio,
+/// built_value and a build_runner step to model it. The contract stays the
+/// source of truth — every method below names the path it implements, and the
+/// server has a test that fails when a served route is missing from the spec.
+library;
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+/// Thrown for any non-success reply. [unauthorized] is separated because it is
+/// the one the UI must act on: the token died, so the person is signed out.
+class ApiException implements Exception {
+  ApiException(this.statusCode, this.message);
+  final int statusCode;
+  final String message;
+  bool get unauthorized => statusCode == 401;
+  @override
+  String toString() => message;
+}
+
+class Account {
+  Account({required this.id, required this.displayName, this.friendCode});
+  final String id;
+  final String displayName;
+  final String? friendCode;
+
+  factory Account.fromJson(Map<String, dynamic> j) => Account(
+    id: j['account_id'] as String? ?? '',
+    displayName: j['display_name'] as String? ?? '',
+    friendCode: j['friend_code'] as String?,
+  );
+}
+
+class Friend {
+  Friend({
+    required this.accountId,
+    required this.displayName,
+    required this.online,
+    this.titleId,
+    this.since,
+  });
+  final String accountId;
+  final String displayName;
+
+  /// Whether they hold a live session right now. The fields below are only
+  /// present when this is true.
+  final bool online;
+  final String? titleId;
+  final DateTime? since;
+
+  factory Friend.fromJson(Map<String, dynamic> j) => Friend(
+    accountId: j['account_id'] as String? ?? '',
+    displayName: j['display_name'] as String? ?? '',
+    online: j['online'] as bool? ?? false,
+    titleId: j['title_id'] as String?,
+    since: j['since'] == null ? null : DateTime.tryParse(j['since'] as String),
+  );
+}
+
+class Invitation {
+  Invitation({
+    required this.id,
+    required this.from,
+    required this.titleId,
+    required this.expiresAt,
+  });
+  final String id;
+  final String from;
+  final String titleId;
+  final DateTime expiresAt;
+
+  bool get expired => DateTime.now().isAfter(expiresAt);
+
+  factory Invitation.fromJson(Map<String, dynamic> j) => Invitation(
+    id: j['invitation_id'] as String? ?? '',
+    from: j['from'] as String? ?? '',
+    titleId: j['title_id'] as String? ?? '',
+    expiresAt:
+        DateTime.tryParse(j['expires_at'] as String? ?? '') ?? DateTime.now(),
+  );
+}
+
+class OpenPakApi {
+  OpenPakApi({required this.baseUrl, http.Client? client, this.token})
+    : _http = client ?? http.Client();
+
+  final String baseUrl;
+  final http.Client _http;
+
+  /// The bearer. Held in memory only; persistence is the caller's job, so that
+  /// this class never decides where a credential is written.
+  String? token;
+
+  Uri _uri(String path) => Uri.parse('$baseUrl/api/v1$path');
+
+  Map<String, String> _headers({bool json = false}) => {
+    if (token != null) 'Authorization': 'Bearer $token',
+    if (json) 'Content-Type': 'application/json',
+  };
+
+  Future<Map<String, dynamic>> _decode(http.Response r) async {
+    if (r.statusCode >= 200 && r.statusCode < 300) {
+      if (r.body.isEmpty) return {};
+      return jsonDecode(r.body) as Map<String, dynamic>;
+    }
+    var message = 'Request failed (${r.statusCode})';
+    try {
+      final body = jsonDecode(r.body);
+      if (body is Map && body['error'] is String) message = body['error'];
+    } catch (_) {
+      // A non-JSON error body is a proxy or an outage, not something to show.
+    }
+    throw ApiException(r.statusCode, message);
+  }
+
+  /// POST /token — mints the bearer and keeps it on this instance.
+  Future<String> signIn(String email, String password) async {
+    final r = await _http.post(
+      _uri('/token'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+    final body = await _decode(r);
+    final t = body['token'] as String?;
+    if (t == null || t.isEmpty) {
+      throw ApiException(r.statusCode, 'The server returned no token');
+    }
+    token = t;
+    return t;
+  }
+
+  /// DELETE /token — revokes it server-side; the core session goes with it.
+  Future<void> signOut() async {
+    try {
+      await _http.delete(_uri('/token'), headers: _headers());
+    } on ApiException {
+      // Already invalid server-side: signing out locally is still correct.
+    } finally {
+      token = null;
+    }
+  }
+
+  /// GET /me
+  Future<Account> me() async =>
+      Account.fromJson(await _decode(await _http.get(_uri('/me'), headers: _headers())));
+
+  /// GET /me/friends — carries presence.
+  Future<List<Friend>> friends() async {
+    final body = await _decode(
+      await _http.get(_uri('/me/friends'), headers: _headers()),
+    );
+    final list = (body['friends'] as List?) ?? const [];
+    return list
+        .map((e) => Friend.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  /// GET /me/invitations — reading this consumes nothing.
+  Future<List<Invitation>> invitations() async {
+    final body = await _decode(
+      await _http.get(_uri('/me/invitations'), headers: _headers()),
+    );
+    final list = (body['invitations'] as List?) ?? const [];
+    return list
+        .map((e) => Invitation.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  /// POST /me/invitations/decline. False means it was already gone, which is
+  /// not a failure worth showing anyone.
+  Future<bool> decline(String invitationId) async {
+    final body = await _decode(
+      await _http.post(
+        _uri('/me/invitations/decline'),
+        headers: _headers(json: true),
+        body: jsonEncode({'invitation_id': invitationId}),
+      ),
+    );
+    return body['declined'] as bool? ?? false;
+  }
+
+  /// POST /me/push — registers this install for notifications.
+  Future<void> registerPush(String deviceToken, {String platform = 'fcm'}) async {
+    await _decode(
+      await _http.post(
+        _uri('/me/push'),
+        headers: _headers(json: true),
+        body: jsonEncode({'token': deviceToken, 'platform': platform}),
+      ),
+    );
+  }
+
+  /// DELETE /me/push
+  Future<void> forgetPush(String deviceToken) async {
+    await _decode(
+      await _http.delete(
+        _uri('/me/push?token=${Uri.encodeQueryComponent(deviceToken)}'),
+        headers: _headers(),
+      ),
+    );
+  }
+
+  void close() => _http.close();
+}
