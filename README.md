@@ -13,6 +13,28 @@ for nothing a person would notice).
 - Invitations waiting for you, and decline. Reading the inbox consumes nothing,
   so opening the app never takes an invitation away from your console.
 
+## Toolchain
+
+Nothing here is system-installed; all of it lives under `~/development` and
+`~/Android` and can be deleted without touching the machine.
+
+| | |
+|---|---|
+| Flutter | `~/development/flutter` (3.47.2 stable) |
+| Android SDK | `~/Android/Sdk` (platform 36, build-tools 36.0.0) |
+| JDK | `~/development/jdk-21.0.12.1+1` — **required** |
+
+The JDK line is not a preference. The system JDK here is 26, and the Android
+Gradle plugin's `jlink` step fails on it (`Failed to transform
+core-for-system-modules.jar`). Flutter is configured to use the 21 above via
+`flutter config --jdk-dir`, so a plain `flutter build` works; a bare Gradle
+invocation needs `JAVA_HOME` set to it.
+
+```sh
+export ANDROID_HOME=~/Android/Sdk
+export PATH="$HOME/development/flutter/bin:$PATH"
+```
+
 ## Running it
 
 ```sh
@@ -23,6 +45,16 @@ flutter run --dart-define=OPENPAK_BASE_URL=http://10.0.2.2:20010   # local stack
 ```
 
 `10.0.2.2` is how the Android emulator reaches the host machine.
+
+To put it on a phone:
+
+```sh
+flutter build apk --release --split-per-abi   # ~17 MB for arm64
+adb install build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+```
+
+Release builds are signed with the debug key for now — installable by hand,
+not distributable. A real signing config is needed before any store.
 
 ## The API client is hand-written
 
