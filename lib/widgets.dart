@@ -4,6 +4,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'api.dart';
+
 import 'theme.dart';
 
 /// A bordered surface: the site's card, which sits on the page rather than
@@ -203,4 +205,49 @@ Future<String?> promptForText(
 Future<void> copyToClipboard(BuildContext context, String value, String what) async {
   await Clipboard.setData(ClipboardData(text: value));
   if (context.mounted) showToast(context, '$what copied.');
+}
+
+/// An account's avatar: the stored image when there is one, the initial when
+/// there is not. avatar_url is null rather than a URL that 404s precisely so
+/// this decision can be made without a failed request first.
+class AccountAvatar extends StatelessWidget {
+  const AccountAvatar({
+    super.key,
+    required this.api,
+    required this.account,
+    this.size = 48,
+  });
+  final OpenPakApi api;
+  final Account account;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    if (account.avatarUrl == null) {
+      return SizedBox(
+        width: size,
+        height: size,
+        child: FittedBox(child: Avatar(name: account.displayName)),
+      );
+    }
+    return ClipOval(
+      child: Image.network(
+        api.absolute(account.avatarUrl!),
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        // A failed image is not worth an error state: fall back to the same
+        // initial the account would have shown with no avatar at all.
+        errorBuilder: (_, _, _) => SizedBox(
+          width: size,
+          height: size,
+          child: FittedBox(child: Avatar(name: account.displayName)),
+        ),
+        loadingBuilder: (context, child, progress) => progress == null
+            ? child
+            : Container(width: size, height: size, color: t.paper2),
+      ),
+    );
+  }
 }

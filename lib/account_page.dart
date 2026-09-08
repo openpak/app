@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'account_details_page.dart';
 import 'api.dart';
-import 'logo.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -52,11 +52,13 @@ class _AccountPageState extends State<AccountPage> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               children: [
                 Panel(
-                  child: Padding(
+                  child: InkWell(
+                    onTap: () => _openDetails(me),
+                    child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        const OpenPakLogo(size: 52),
+                        AccountAvatar(api: widget.api, account: me, size: 56),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
@@ -100,8 +102,10 @@ class _AccountPageState extends State<AccountPage> {
                             ],
                           ),
                         ),
+                        Icon(Icons.chevron_right, color: t.muted),
                       ],
                     ),
+                  ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -170,6 +174,17 @@ class _AccountPageState extends State<AccountPage> {
         ),
       ),
     );
+  }
+
+  /// The details page reports whether anything changed, so the card behind it
+  /// refreshes only when there is something new to show.
+  Future<void> _openDetails(Account me) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => AccountDetailsPage(api: widget.api, account: me),
+      ),
+    );
+    if (changed ?? false) _reload();
   }
 
   Future<void> _revoke(WebSession s) async {

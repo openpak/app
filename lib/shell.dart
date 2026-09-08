@@ -4,6 +4,7 @@ import 'account_page.dart';
 import 'api.dart';
 import 'friends_page.dart';
 import 'invitations_page.dart';
+import 'saves_page.dart';
 
 /// The signed-in app: three destinations, each owning its own loading and
 /// refresh. Pages are kept alive so switching tabs does not refetch.
@@ -21,6 +22,7 @@ class _ShellState extends State<Shell> {
   late final List<Widget> _pages = [
     FriendsPage(api: widget.api),
     InvitationsPage(api: widget.api),
+    const SavesPage(),
     AccountPage(api: widget.api, onSignedOut: widget.onSignedOut),
   ];
 
@@ -41,6 +43,11 @@ class _ShellState extends State<Shell> {
             icon: Icon(Icons.mail_outline),
             selectedIcon: Icon(Icons.mail),
             label: 'Invitations',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.save_outlined),
+            selectedIcon: Icon(Icons.save),
+            label: 'Saves',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),

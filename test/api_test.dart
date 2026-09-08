@@ -96,6 +96,43 @@ void main() {
     expect(inv.expired, isTrue);
   });
 
+  test('an edit sends only the fields it changed', () async {
+    Map<String, dynamic>? sent;
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((req) async {
+        sent = jsonDecode(req.body) as Map<String, dynamic>;
+        return json({'saved': true});
+      }),
+    );
+    await api.updateProfile(country: 'IE');
+    // Omitted fields must be absent, not empty strings: the server treats an
+    // empty value as "leave it alone", but sending one anyway would mean a
+    // country edit quietly rewrote the name.
+    expect(sent, {'country': 'IE'});
+  });
+
+  test('an account with no avatar reports null rather than a broken URL',
+      () async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((_) async => json({
+            'account_id': 'a',
+            'display_name': 'Leia',
+            'avatar_url': null,
+            'country': 'IE',
+            'birthday': '1990-01-01',
+          })),
+    );
+    final me = await api.me();
+    expect(me.avatarUrl, isNull);
+    expect(me.country, 'IE');
+    expect(api.absolute('/media/avatars/a/256'),
+        'https://openpak.test/media/avatars/a/256');
+  });
+
   test('declining something already gone is false, not an error', () async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',

@@ -26,6 +26,9 @@ class Account {
     required this.id,
     required this.displayName,
     this.friendCode,
+    this.country = '',
+    this.birthday = '',
+    this.avatarUrl,
     this.linkedPlatforms = const [],
   });
   final String id;
@@ -33,17 +36,33 @@ class Account {
 
   /// Present only once a console is linked.
   final String? friendCode;
+  final String country;
+  final String birthday;
+
+  /// Null when the account has never chosen one — the caller shows its own
+  /// fallback rather than a broken image.
+  final String? avatarUrl;
   final List<String> linkedPlatforms;
 
   factory Account.fromJson(Map<String, dynamic> j) => Account(
     id: j['account_id'] as String? ?? '',
     displayName: j['display_name'] as String? ?? '',
     friendCode: j['friend_code'] as String?,
+    country: j['country'] as String? ?? '',
+    birthday: j['birthday'] as String? ?? '',
+    avatarUrl: j['avatar_url'] as String?,
     linkedPlatforms: ((j['linked_platforms'] as List?) ?? const [])
         .map((e) => (e as Map<String, dynamic>)['namespace'] as String? ?? '')
         .where((e) => e.isNotEmpty)
         .toList(growable: false),
   );
+}
+
+/// One of the built-in avatars.
+class AvatarChoice {
+  AvatarChoice({required this.id, required this.url});
+  final String id;
+  final String url;
 }
 
 /// A signed-in device, as the core sees it. Revoking one signs that device out.
@@ -215,6 +234,39 @@ class OpenPakApi {
     );
     return body['declined'] as bool? ?? false;
   }
+
+  /// POST /me/profile — every field optional; an empty one is left alone.
+  Future<void> updateProfile({
+    String? displayName,
+    String? country,
+    String? birthday,
+  }) => _post('/me/profile', {
+    if (displayName != null) 'display_name': displayName,
+    if (country != null) 'country': country,
+    if (birthday != null) 'birthday': birthday,
+  });
+
+  /// GET /avatars — the built-ins the website offers.
+  Future<List<AvatarChoice>> avatarChoices() async {
+    final body = await _decode(
+      await _http.get(_uri('/avatars'), headers: _headers()),
+    );
+    return ((body['avatars'] as List?) ?? const [])
+        .map(
+          (e) => AvatarChoice(
+            id: (e as Map<String, dynamic>)['id'] as String? ?? '',
+            url: e['url'] as String? ?? '',
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  /// POST /me/avatar
+  Future<void> chooseAvatar(String preset) =>
+      _post('/me/avatar', {'preset': preset});
+
+  /// Absolute URL for a path the API returned relative to the site.
+  String absolute(String path) => '$baseUrl$path';
 
   /// GET /me/friends/requests
   Future<FriendRequests> friendRequests() async {
