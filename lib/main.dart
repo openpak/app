@@ -29,6 +29,13 @@ class _OpenPakAppState extends State<OpenPakApp> {
   @override
   void initState() {
     super.initState();
+    // The claim below is only true because of this line: the client raises it
+    // once, from wherever the 401 came from, and the whole app returns to the
+    // sign-in form instead of every tab failing to load forever.
+    _api.onUnauthorized = () {
+      _session.clear();
+      if (mounted) setState(() {});
+    };
     _restore();
   }
 

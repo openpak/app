@@ -130,6 +130,56 @@ class ScrollableMessage extends StatelessWidget {
   );
 }
 
+/// The failure state every tab shows, with the reason underneath it.
+///
+/// The reason is not decoration: "could not load" alone cannot tell a dead
+/// token from a phone with no route to the server, and both look identical
+/// from the sofa.
+class LoadFailure extends StatelessWidget {
+  const LoadFailure(this.error, {super.key});
+  final Object? error;
+
+  static String reasonOf(Object? e) {
+    if (e is ApiException) {
+      return e.unauthorized
+          ? 'Signed out — sign in again.'
+          : '${e.message} (${e.statusCode})';
+    }
+    final s = e?.toString() ?? '';
+    if (s.contains('Failed host lookup') || s.contains('SocketException')) {
+      return 'No route to the server from this phone.';
+    }
+    return s.isEmpty ? '' : s.split('\n').first;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    return ListView(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 72, 24, 24),
+          child: Column(
+            children: [
+              Text(
+                'Could not load. Pull down to try again.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: t.muted),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                reasonOf(error),
+                textAlign: TextAlign.center,
+                style: TextStyle(color: t.muted, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 void showToast(BuildContext context, String message) => ScaffoldMessenger.of(
   context,
 ).showSnackBar(SnackBar(content: Text(message)));

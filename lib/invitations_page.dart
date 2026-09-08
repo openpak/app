@@ -49,9 +49,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snap.hasError) {
-              return const ScrollableMessage(
-                'Could not load. Pull down to try again.',
-              );
+              return LoadFailure(snap.error);
             }
             final items = snap.data ?? const <Invitation>[];
             if (items.isEmpty) {

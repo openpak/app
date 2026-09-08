@@ -147,6 +147,12 @@ class OpenPakApi {
   /// this class never decides where a credential is written.
   String? token;
 
+  /// Called once when the server rejects the bearer. A dead token is dead for
+  /// every screen at once, so this is handled here rather than in each of
+  /// them: without it a stale token leaves every tab saying "could not load"
+  /// with no way back to the sign-in form.
+  void Function()? onUnauthorized;
+
   Uri _uri(String path) => Uri.parse('$baseUrl/api/v1$path');
 
   Map<String, String> _headers({bool json = false}) => {
@@ -165,6 +171,10 @@ class OpenPakApi {
       if (body is Map && body['error'] is String) message = body['error'];
     } catch (_) {
       // A non-JSON error body is a proxy or an outage, not something to show.
+    }
+    if (r.statusCode == 401 && token != null) {
+      token = null;
+      onUnauthorized?.call();
     }
     throw ApiException(r.statusCode, message);
   }

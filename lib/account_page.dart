@@ -43,9 +43,7 @@ class _AccountPageState extends State<AccountPage> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snap.hasError) {
-              return const ScrollableMessage(
-                'Could not load. Pull down to try again.',
-              );
+              return LoadFailure(snap.error);
             }
             final (me, sessions) = snap.data!;
             return ListView(

@@ -71,9 +71,7 @@ class FriendsPageState extends State<FriendsPage> {
               return const Center(child: CircularProgressIndicator());
             }
             if (snap.hasError) {
-              return const ScrollableMessage(
-                'Could not load. Pull down to try again.',
-              );
+              return LoadFailure(snap.error);
             }
             final (friends, requests) = snap.data!;
             if (friends.isEmpty &&
