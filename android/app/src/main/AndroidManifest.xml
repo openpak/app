@@ -1,6 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The Flutter template declares this only in the debug and profile
+         manifests, where it exists for hot reload. An app that talks to a
+         server has to declare it here, or release builds cannot open a socket
+         and every request fails as if the network were down. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
-        android:label="openpak"
+        android:label="OpenPak"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
