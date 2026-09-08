@@ -12,13 +12,21 @@ class Tokens extends ThemeExtension<Tokens> {
     required this.ink2,
     required this.muted,
     required this.line,
+    required this.line2,
     required this.accentWeak,
     required this.ok,
     required this.okWeak,
+    required this.okLine,
+    required this.warn,
+    required this.warnWeak,
+    required this.warnLine,
     required this.bad,
+    required this.badWeak,
+    required this.badLine,
   });
 
-  final Color paper2, raised, ink2, muted, line, accentWeak, ok, okWeak, bad;
+  final Color paper2, raised, ink2, muted, line, line2, accentWeak;
+  final Color ok, okWeak, okLine, warn, warnWeak, warnLine, bad, badWeak, badLine;
 
   static const light = Tokens(
     paper2: Color(0xFFF7F7F8),
@@ -26,10 +34,17 @@ class Tokens extends ThemeExtension<Tokens> {
     ink2: Color(0xFF3D3F47),
     muted: Color(0xFF6B6E79),
     line: Color(0xFFE4E4E8),
+    line2: Color(0xFFC9CAD1),
     accentWeak: Color(0xFFEEF0FF),
     ok: Color(0xFF1A7F4B),
     okWeak: Color(0xFFE8F5EE),
+    okLine: Color(0xFFBFE0CD),
+    warn: Color(0xFF8A5A00),
+    warnWeak: Color(0xFFFDF4E3),
+    warnLine: Color(0xFFEDDCB4),
     bad: Color(0xFFB3261E),
+    badWeak: Color(0xFFFBECEB),
+    badLine: Color(0xFFEEC4C1),
   );
 
   static const dark = Tokens(
@@ -38,10 +53,17 @@ class Tokens extends ThemeExtension<Tokens> {
     ink2: Color(0xFFB7BAC2),
     muted: Color(0xFF8A8E99),
     line: Color(0xFF26282E),
+    line2: Color(0xFF3B3E47),
     accentWeak: Color(0xFF1C2040),
     ok: Color(0xFF4EC98A),
     okWeak: Color(0xFF12251B),
+    okLine: Color(0xFF2C4D3A),
+    warn: Color(0xFFE5B169),
+    warnWeak: Color(0xFF241C10),
+    warnLine: Color(0xFF4D3D24),
     bad: Color(0xFFFF8079),
+    badWeak: Color(0xFF2A1615),
+    badLine: Color(0xFF57302C),
   );
 
   @override

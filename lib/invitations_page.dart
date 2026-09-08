@@ -61,30 +61,18 @@ class _InvitationsPageState extends State<InvitationsPage> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               children: [
                 SectionLabel('Waiting', trailing: '${items.length}'),
-                Panel(
-                  child: Column(
-                    children: [
-                      for (var i = 0; i < items.length; i++) ...[
-                        if (i > 0) const Divider(height: 1),
-                        ListTile(
-                          leading: Avatar(
-                            name: items[i].from,
-                            dim: items[i].expired,
-                          ),
-                          title: Text('${items[i].from} invited you'),
-                          subtitle: Text(
-                            items[i].expired ? 'Expired' : items[i].titleId,
-                            style: TextStyle(
-                              color: items[i].expired ? t.muted : t.ink2,
-                            ),
-                          ),
-                          trailing: TextButton(
-                            onPressed: () => _decline(items[i]),
-                            child: const Text('Decline'),
-                          ),
-                        ),
-                      ],
-                    ],
+                // Green while it can still be accepted, grey once it cannot:
+                // an expired invitation is not a problem, it is just over.
+                ...items.map(
+                  (inv) => StateRow(
+                    name: '${inv.from} invited you',
+                    pill: inv.expired ? 'Expired' : inv.titleId,
+                    state: inv.expired ? RowState.idle : RowState.ok,
+                    leading: Avatar(name: inv.from, dim: inv.expired),
+                    trailing: TextButton(
+                      onPressed: () => _decline(inv),
+                      child: const Text('Decline'),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),

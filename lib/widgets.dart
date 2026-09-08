@@ -251,3 +251,107 @@ class AccountAvatar extends StatelessWidget {
     );
   }
 }
+
+/// How a row reads at a glance. The tint carries the state so the pill beside
+/// it is free to carry the fact — a player count, a title, a time — instead of
+/// repeating what the colour already said. Grey is not a fifth colour for
+/// "slightly wrong": it means nothing is being claimed.
+enum RowState { ok, warn, bad, idle }
+
+/// One tinted row: name on the left, pill on the right. The same shape as the
+/// website's status page and the console link pages, so the three read as one
+/// product rather than three things that share a logo.
+class StateRow extends StatelessWidget {
+  const StateRow({
+    super.key,
+    required this.name,
+    required this.pill,
+    this.state = RowState.idle,
+    this.leading,
+    this.trailing,
+    this.onTap,
+  });
+
+  final String name;
+  final String pill;
+  final RowState state;
+  final Widget? leading;
+
+  /// An action that belongs to this row, after the pill.
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    final (bg, border, ink) = switch (state) {
+      RowState.ok => (t.okWeak, t.okLine, t.ok),
+      RowState.warn => (t.warnWeak, t.warnLine, t.warn),
+      RowState.bad => (t.badWeak, t.badLine, t.bad),
+      RowState.idle => (t.raised, t.line, t.muted),
+    };
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              if (leading != null) ...[leading!, const SizedBox(width: 12)],
+              Expanded(
+                child: Text(
+                  name,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 10),
+              _Pill(text: pill, color: ink, border: state == RowState.idle ? t.line2 : border),
+              if (trailing != null) ...[const SizedBox(width: 4), trailing!],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill({required this.text, required this.color, required this.border});
+  final String text;
+  final Color color;
+  final Color border;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(color: border),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // The dot repeats the state in shape as well as colour, for anyone who
+        // cannot rely on the tint alone.
+        Container(
+          width: 7,
+          height: 7,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: TextStyle(color: color, fontSize: 12.5, fontWeight: FontWeight.w600),
+        ),
+      ],
+    ),
+  );
+}

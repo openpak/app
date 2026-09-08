@@ -89,17 +89,17 @@ class FriendsPageState extends State<FriendsPage> {
                 if (requests.incoming.isNotEmpty) ...[
                   const SectionLabel('Wants to be your friend'),
                   ...requests.incoming.map(
-                    (f) => Panel(
-                      child: ListTile(
-                        leading: Avatar(name: f.displayName),
-                        title: Text(f.displayName),
-                        trailing: FilledButton(
-                          onPressed: () => _act(
-                            () => widget.api.acceptFriend(f.accountId),
-                            'Added ${f.displayName}.',
-                          ),
-                          child: const Text('Accept'),
+                    (f) => StateRow(
+                      name: f.displayName,
+                      pill: 'Wants to add you',
+                      state: RowState.warn,
+                      leading: Avatar(name: f.displayName),
+                      trailing: TextButton(
+                        onPressed: () => _act(
+                          () => widget.api.acceptFriend(f.accountId),
+                          'Added ${f.displayName}.',
                         ),
+                        child: const Text('Accept'),
                       ),
                     ),
                   ),
@@ -117,34 +117,15 @@ class FriendsPageState extends State<FriendsPage> {
                     ),
                   )
                 else
-                  Panel(
-                    child: Column(
-                      children: [
-                        for (var i = 0; i < friends.length; i++) ...[
-                          if (i > 0) const Divider(height: 1),
-                          _friendTile(friends[i]),
-                        ],
-                      ],
-                    ),
-                  ),
+                  ...friends.map(_friendRow),
                 if (requests.outgoing.isNotEmpty) ...[
                   const SizedBox(height: 20),
                   const SectionLabel('Waiting for them'),
-                  Panel(
-                    child: Column(
-                      children: [
-                        for (var i = 0; i < requests.outgoing.length; i++) ...[
-                          if (i > 0) const Divider(height: 1),
-                          ListTile(
-                            leading: Avatar(
-                              name: requests.outgoing[i].displayName,
-                              dim: true,
-                            ),
-                            title: Text(requests.outgoing[i].displayName),
-                            subtitle: const Text('Request sent'),
-                          ),
-                        ],
-                      ],
+                  ...requests.outgoing.map(
+                    (f) => StateRow(
+                      name: f.displayName,
+                      pill: 'Request sent',
+                      leading: Avatar(name: f.displayName, dim: true),
                     ),
                   ),
                 ],
@@ -156,29 +137,21 @@ class FriendsPageState extends State<FriendsPage> {
     );
   }
 
-  Widget _friendTile(Friend f) {
-    final t = tokensOf(context);
-    return ListTile(
+  /// Online is the whole point of a friends list, so it is the tint. The pill
+  /// says what they are playing when the adapter told us, and "Online" when it
+  /// did not — a title id would mean nothing to a person.
+  Widget _friendRow(Friend f) {
+    final playing = f.titleId?.isNotEmpty ?? false;
+    return StateRow(
+      name: f.displayName,
+      pill: f.online ? (playing ? f.titleId! : 'Online') : 'Offline',
+      state: f.online ? RowState.ok : RowState.idle,
       leading: Avatar(name: f.displayName, online: f.online),
-      title: Text(f.displayName),
-      // Offline friends stay in the list; the server reports online:false
-      // rather than omitting them, so that a friends list is a friends list.
-      subtitle: Text(
-        f.online
-            ? (f.titleId?.isNotEmpty ?? false)
-                  ? 'Playing ${f.titleId}'
-                  : 'Online'
-            : 'Offline',
-        style: TextStyle(color: f.online ? t.ok : t.muted),
-      ),
       trailing: PopupMenuButton<String>(
         onSelected: (v) async {
           if (v == 'remove') {
             if (await confirm(context, 'Remove ${f.displayName}?')) {
-              await _act(
-                () => widget.api.removeFriend(f.accountId),
-                'Removed.',
-              );
+              await _act(() => widget.api.removeFriend(f.accountId), 'Removed.');
             }
           } else if (v == 'block') {
             if (await confirm(
@@ -197,4 +170,5 @@ class FriendsPageState extends State<FriendsPage> {
       ),
     );
   }
+
 }
