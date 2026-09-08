@@ -56,6 +56,24 @@ adb install build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
 Release builds are signed with the debug key for now — installable by hand,
 not distributable. A real signing config is needed before any store.
 
+## The logo comes from the website
+
+`assets/icon.svg` is a byte-for-byte copy of `website/web/static/icon.svg`, and
+the Android launcher icons are rasterised from that same file. Nothing is
+redrawn — a hand-made copy of a logo diverges the moment the real one changes,
+and nothing notices. A test compares the two whenever the website repo is
+checked out next door, and fails when they differ.
+
+After the logo changes upstream:
+
+```sh
+cp ../website/web/static/icon.svg assets/icon.svg
+for d in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+  rsvg-convert -w ${d##*:} -h ${d##*:} assets/icon.svg \
+    -o android/app/src/main/res/mipmap-${d%%:*}/ic_launcher.png
+done
+```
+
 ## The API client is hand-written
 
 The PRD asks for a generated client. Thirteen endpoints of JSON in and JSON out

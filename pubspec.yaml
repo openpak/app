@@ -1,7 +1,7 @@
 name: openpak
 description: OpenPak companion app — your account, friends and invitations.
 publish_to: none
-version: 0.2.0
+version: 0.2.1
 
 environment:
   sdk: ^3.9.0
@@ -15,6 +15,9 @@ dependencies:
   # build_runner.
   http: ^1.2.0
   flutter_secure_storage: ^9.2.2
+  # Renders the website's icon.svg as-is. The alternative was redrawing the
+  # logo in Dart, which is a copy that drifts the moment the real one changes.
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -23,3 +26,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    # A byte-for-byte copy of website/web/static/icon.svg. Refresh with
+    # `cp ../website/web/static/icon.svg assets/icon.svg`, then regenerate the
+    # launcher icons (see README); a test fails if the two ever differ.
+    - assets/icon.svg
