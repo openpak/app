@@ -22,16 +22,50 @@ class ApiException implements Exception {
 }
 
 class Account {
-  Account({required this.id, required this.displayName, this.friendCode});
+  Account({
+    required this.id,
+    required this.displayName,
+    this.friendCode,
+    this.linkedPlatforms = const [],
+  });
   final String id;
   final String displayName;
+
+  /// Present only once a console is linked.
   final String? friendCode;
+  final List<String> linkedPlatforms;
 
   factory Account.fromJson(Map<String, dynamic> j) => Account(
     id: j['account_id'] as String? ?? '',
     displayName: j['display_name'] as String? ?? '',
     friendCode: j['friend_code'] as String?,
+    linkedPlatforms: ((j['linked_platforms'] as List?) ?? const [])
+        .map((e) => (e as Map<String, dynamic>)['namespace'] as String? ?? '')
+        .where((e) => e.isNotEmpty)
+        .toList(growable: false),
   );
+}
+
+/// A signed-in device, as the core sees it. Revoking one signs that device out.
+class WebSession {
+  WebSession({required this.id, this.createdAt, this.expiresAt});
+  final String id;
+  final DateTime? createdAt;
+  final DateTime? expiresAt;
+
+  factory WebSession.fromJson(Map<String, dynamic> j) => WebSession(
+    id: j['id'] as String? ?? '',
+    createdAt: DateTime.tryParse(j['created_at'] as String? ?? ''),
+    expiresAt: DateTime.tryParse(j['expires_at'] as String? ?? ''),
+  );
+}
+
+/// Friend requests in both directions. Outgoing ones cannot be acted on here —
+/// they are waiting on the other person.
+class FriendRequests {
+  FriendRequests({required this.incoming, required this.outgoing});
+  final List<Friend> incoming;
+  final List<Friend> outgoing;
 }
 
 class Friend {
@@ -180,6 +214,65 @@ class OpenPakApi {
       ),
     );
     return body['declined'] as bool? ?? false;
+  }
+
+  /// GET /me/friends/requests
+  Future<FriendRequests> friendRequests() async {
+    final body = await _decode(
+      await _http.get(_uri('/me/friends/requests'), headers: _headers()),
+    );
+    List<Friend> read(String key) => ((body[key] as List?) ?? const [])
+        .map((e) => Friend.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+    return FriendRequests(incoming: read('incoming'), outgoing: read('outgoing'));
+  }
+
+  /// POST /me/friends/requests — add by friend code, in either the display
+  /// form (SW-xxxx-xxxx-xxxx) or bare.
+  Future<void> addFriend(String friendCode) => _post('/me/friends/requests', {
+    'friend_code': friendCode,
+  });
+
+  /// POST /me/friends/requests/accept
+  Future<void> acceptFriend(String accountId) =>
+      _post('/me/friends/requests/accept', {'account_id': accountId});
+
+  /// POST /me/friends/remove
+  Future<void> removeFriend(String accountId) =>
+      _post('/me/friends/remove', {'account_id': accountId});
+
+  /// POST /me/friends/block — also removes the friendship.
+  Future<void> blockAccount(String accountId) =>
+      _post('/me/friends/block', {'account_id': accountId});
+
+  /// GET /me/sessions
+  Future<List<WebSession>> sessions() async {
+    final body = await _decode(
+      await _http.get(_uri('/me/sessions'), headers: _headers()),
+    );
+    return ((body['sessions'] as List?) ?? const [])
+        .map((e) => WebSession.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  /// DELETE /me/sessions/{id} — signs that device out.
+  Future<void> revokeSession(String id) async {
+    await _decode(
+      await _http.delete(
+        _uri('/me/sessions/${Uri.encodeComponent(id)}'),
+        headers: _headers(),
+      ),
+    );
+  }
+
+  Future<void> _post(String path, Map<String, dynamic> body) async {
+    await _decode(
+      await _http.post(
+        _uri(path),
+        headers: _headers(json: true),
+        body: jsonEncode(body),
+      ),
+    );
   }
 
   /// POST /me/push — registers this install for notifications.

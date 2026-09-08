@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'api.dart';
-import 'home_page.dart';
+import 'shell.dart';
+import 'theme.dart';
 import 'session.dart';
 import 'sign_in_page.dart';
 
@@ -54,21 +55,14 @@ class _OpenPakAppState extends State<OpenPakApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'OpenPak',
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xFFE60012),
-        brightness: Brightness.light,
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: const Color(0xFFE60012),
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
+      // The website's tokens, so the two are visibly one product.
+      theme: openPakLight(),
+      darkTheme: openPakDark(),
       home: _restoring
           ? const Scaffold(body: Center(child: CircularProgressIndicator()))
           : _api.token == null
           ? SignInPage(api: _api, onSignedIn: _onSignedIn)
-          : HomePage(api: _api, onSignedOut: _onSignedOut),
+          : Shell(api: _api, onSignedOut: _onSignedOut),
     );
   }
 }

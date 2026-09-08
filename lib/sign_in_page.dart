@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'api.dart';
+import 'logo.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key, required this.api, required this.onSignedIn});
@@ -63,6 +64,8 @@ class _SignInPageState extends State<SignInPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const Center(child: OpenPakLogo(size: 88)),
+                  const SizedBox(height: 20),
                   Text(
                     'OpenPak',
                     style: Theme.of(context).textTheme.headlineMedium,
