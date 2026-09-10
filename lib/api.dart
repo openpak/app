@@ -411,20 +411,21 @@ class OpenPakApi {
         .toList(growable: false);
   }
 
-  /// POST /requests/vote `{"id": number}` — toggles this account's vote. Auth
-  /// required; a second call removes it. The server returns only the new
-  /// `voted` flag, not a count, so the caller derives the count from the
-  /// toggle and reconciles it on the next reload.
-  Future<bool> vote(String id) async {
+  /// POST /requests/{id}/vote — toggles this account's vote and returns the
+  /// fresh count. Auth required; a second call removes it (idempotent, no
+  /// separate DELETE). The response carries the new count, so a row updates
+  /// without a re-fetch.
+  Future<({int votes, bool voted})> vote(String id) async {
     final body = await _decode(
       await _http.post(
-        _uri('/requests/vote'),
+        _uri('/requests/${Uri.encodeComponent(id)}/vote'),
         headers: _headers(json: true),
-        // id is a JSON number server-side; send it as one when it parses.
-        body: jsonEncode({'id': int.tryParse(id) ?? id}),
       ),
     );
-    return body['voted'] as bool? ?? false;
+    return (
+      votes: (body['votes'] as num?)?.toInt() ?? 0,
+      voted: body['voted'] as bool? ?? false,
+    );
   }
 
   /// POST /me/push — registers this install for notifications.

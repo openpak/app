@@ -53,11 +53,10 @@ class TitlesPageState extends State<TitlesPage> {
       voted: !item.voted,
     ));
     try {
-      // The server returns only the new voted flag; the count is ours to
-      // derive from the change, and reconciles on the next reload.
-      final voted = await widget.api.vote(item.id);
-      final delta = voted == item.voted ? 0 : (voted ? 1 : -1);
-      set(item.withVote(votes: item.votes + delta, voted: voted));
+      // The response carries the authoritative fresh count, so correct the
+      // optimistic guess from it rather than a local delta.
+      final r = await widget.api.vote(item.id);
+      set(item.withVote(votes: r.votes, voted: r.voted));
     } on ApiException catch (e) {
       if (mounted) showToast(context, e.message);
       reload();
