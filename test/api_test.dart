@@ -142,6 +142,54 @@ void main() {
     expect(await api.decline('inv-1'), isFalse);
   });
 
+  test('requests parse, and voted is false when signed out', () async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      client: MockClient((_) async => json({
+            'items': [
+              {
+                'id': 7,
+                'kind': 'title',
+                'name': 'Outbound',
+                'console': 'Switch',
+                'category': 'Third-party network (Photon)',
+                'backend': 'Epic/Photon (Fusion)',
+                'status': 'live',
+                'notes': 'End-to-end works.',
+                'votes': 12,
+                'voted': false,
+              }
+            ]
+          })),
+    );
+    final items = await api.requests();
+    expect(items, hasLength(1));
+    // A numeric id from the server is kept as a String — it is only echoed back
+    // in the vote path, never used as a number.
+    expect(items.single.id, '7');
+    expect(items.single.name, 'Outbound');
+    expect(items.single.votes, 12);
+    expect(items.single.voted, isFalse);
+    expect(items.single.isTitle, isTrue);
+  });
+
+  test('voting posts to the id path and returns the new count', () async {
+    String? seenPath;
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((req) async {
+        seenPath = req.url.path;
+        // A string id from the server round-trips just as a numeric one does.
+        return json({'id': '7', 'votes': 13, 'voted': true});
+      }),
+    );
+    final r = await api.vote('7');
+    expect(seenPath, '/api/v1/requests/7/vote');
+    expect(r.votes, 13);
+    expect(r.voted, isTrue);
+  });
+
   test('a non-JSON error body still yields a usable message', () async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',

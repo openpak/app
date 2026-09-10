@@ -136,6 +136,68 @@ class Invitation {
   );
 }
 
+/// A votable catalog entry: a game (kind "title") or a network feature
+/// (kind "feature"). The same row the website's /titles and /features pages
+/// show, reached over the API. Votes/voted are per-viewer projections, not
+/// stored fields — voted is false when signed out.
+class CatalogItem {
+  CatalogItem({
+    required this.id,
+    required this.kind,
+    required this.name,
+    this.console = '',
+    this.category = '',
+    this.backend = '',
+    this.status = '',
+    this.notes = '',
+    this.votes = 0,
+    this.voted = false,
+  });
+
+  /// Kept as a String regardless of whether the server emits a JSON number or
+  /// string — it is only ever echoed back in the vote path, never math.
+  final String id;
+  final String kind; // "title" | "feature"
+  final String name;
+  final String console;
+  final String category;
+  final String backend;
+  final String status;
+  final String notes;
+  final int votes;
+  final bool voted;
+
+  bool get isTitle => kind == 'title';
+
+  /// A row after a vote toggle: the count and voted flag change, the rest
+  /// stays. Lets the list update one item without a full reload.
+  CatalogItem withVote({required int votes, required bool voted}) => CatalogItem(
+    id: id,
+    kind: kind,
+    name: name,
+    console: console,
+    category: category,
+    backend: backend,
+    status: status,
+    notes: notes,
+    votes: votes,
+    voted: voted,
+  );
+
+  factory CatalogItem.fromJson(Map<String, dynamic> j) => CatalogItem(
+    id: j['id']?.toString() ?? '',
+    kind: j['kind'] as String? ?? 'title',
+    name: j['name'] as String? ?? '',
+    console: j['console'] as String? ?? '',
+    category: j['category'] as String? ?? '',
+    backend: j['backend'] as String? ?? '',
+    status: j['status'] as String? ?? '',
+    notes: j['notes'] as String? ?? '',
+    votes: (j['votes'] as num?)?.toInt() ?? 0,
+    voted: j['voted'] as bool? ?? false,
+  );
+}
+
 class OpenPakApi {
   OpenPakApi({required this.baseUrl, http.Client? client, this.token})
     : _http = client ?? http.Client();
@@ -334,6 +396,36 @@ class OpenPakApi {
         headers: _headers(json: true),
         body: jsonEncode(body),
       ),
+    );
+  }
+
+  /// GET /requests — the votable catalog (titles and features). Auth optional;
+  /// without a bearer every row's `voted` is false. `whether signed in` is the
+  /// only thing the bearer changes here, so the same list backs both states.
+  Future<List<CatalogItem>> requests() async {
+    final body = await _decode(
+      await _http.get(_uri('/requests'), headers: _headers()),
+    );
+    return ((body['items'] as List?) ?? const [])
+        .map((e) => CatalogItem.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  /// POST /requests/{id}/vote — toggles this account's vote. Auth required; a
+  /// second call removes the vote. Returns the row's new count and voted flag.
+  Future<CatalogItem> vote(String id) async {
+    final body = await _decode(
+      await _http.post(
+        _uri('/requests/${Uri.encodeComponent(id)}/vote'),
+        headers: _headers(json: true),
+      ),
+    );
+    return CatalogItem(
+      id: body['id']?.toString() ?? id,
+      kind: '',
+      name: '',
+      votes: (body['votes'] as num?)?.toInt() ?? 0,
+      voted: body['voted'] as bool? ?? false,
     );
   }
 
