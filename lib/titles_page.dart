@@ -60,7 +60,10 @@ class TitlesPageState extends State<TitlesPage> {
       final r = await widget.api.vote(item.id);
       set(item.withVote(votes: r.votes, voted: r.voted));
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message);
+      // 409 = the id is not votable (a live/beta game or a feature). The button
+      // is gated so this should be unreachable; if it happens, just restore the
+      // true count without an error toast. reload() reverts the optimistic bump.
+      if (e.statusCode != 409 && mounted) showToast(context, e.message);
       reload();
     }
   }
