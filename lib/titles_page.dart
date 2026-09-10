@@ -245,11 +245,15 @@ class _CatalogRow extends StatelessWidget {
         child: Row(
           children: [
             if (item.console.isNotEmpty) ...[
+              // No colorFilter: each mark carries its console's own colour, the
+              // same file the website serves. The slot is 3:2 because the Wii,
+              // Wii U and PlayStation marks are wordmarks -- a square box would
+              // shrink them to an illegible smear; square device marks letterbox
+              // inside it.
               SvgPicture.asset(
                 'assets/consoles/${consoleAsset(item.console)}.svg',
-                width: 22,
+                width: 33,
                 height: 22,
-                colorFilter: ColorFilter.mode(t.ink2, BlendMode.srcIn),
                 semanticsLabel: item.console,
               ),
               const SizedBox(width: 10),
@@ -338,7 +342,8 @@ bool notStarted(String status) => status == 'requestable' || status == 'planned'
 
 /// The asset basename of a console's logo under assets/consoles. Unknown
 /// consoles fall back to a generic gamepad glyph. Keep in step with the
-/// website's consoleSlug and with the assets actually bundled.
+/// website's consoleSlug and with the assets actually bundled; the assets are
+/// byte-for-byte copies of website/web/static/consoles.
 String consoleAsset(String console) => switch (console) {
   'Switch' => 'switch',
   'Wii' => 'wii',
