@@ -190,6 +190,39 @@ void main() {
     expect(r.voted, isTrue);
   });
 
+  test('saves parse with their versions, conflicts and usage', () async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 'opk_t',
+      client: MockClient((req) async {
+        expect(req.url.path, '/api/v1/me/saves');
+        return json({
+          'saves': [
+            {
+              'platform': 'citron',
+              'title_id': '0100abcd00001000',
+              'versions': [
+                {'id': 3, 'number': 3, 'size': 12, 'conflict': true, 'pinned': false,
+                  'backend': 'local', 'parts': 1, 'created_at': '2026-09-10T12:21:23Z'},
+                {'id': 1, 'number': 1, 'size': 12, 'conflict': false, 'pinned': true,
+                  'backend': 's3', 'parts': 1, 'created_at': '2026-09-10T12:21:20Z',
+                  'saved_at': '2026-09-10T12:00:00Z', 'device': 'smoke'},
+              ],
+            },
+          ],
+          'usage': {'allowance_used': 36, 'allowance': 268435456, 'total': 36},
+        });
+      }),
+    );
+    final data = await api.saves();
+    expect(data.usage.allowanceUsed, 36);
+    expect(data.saves.single.titleId, '0100abcd00001000');
+    expect(data.saves.single.versions.first.conflict, true);
+    expect(data.saves.single.versions.last.pinned, true);
+    expect(data.saves.single.versions.last.backend, 's3');
+    expect(data.saves.single.versions.last.savedAt, isNotNull);
+  });
+
   test('a non-JSON error body still yields a usable message', () async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',

@@ -198,6 +198,80 @@ class CatalogItem {
   );
 }
 
+/// One stored version of a save. Conflict means it was pushed from a base the
+/// server had already moved past; it is kept, never dropped.
+class SaveVersion {
+  SaveVersion({
+    required this.id,
+    required this.number,
+    required this.size,
+    required this.conflict,
+    required this.pinned,
+    required this.backend,
+    required this.createdAt,
+    this.savedAt,
+    this.device,
+  });
+  final int id;
+  final int number;
+  final int size;
+  final bool conflict;
+  final bool pinned;
+
+  /// "local" is the OpenPak allowance; anything else is the player's own storage.
+  final String backend;
+  final DateTime createdAt;
+  final DateTime? savedAt;
+  final String? device;
+
+  factory SaveVersion.fromJson(Map<String, dynamic> j) => SaveVersion(
+    id: (j['id'] as num).toInt(),
+    number: (j['number'] as num).toInt(),
+    size: (j['size'] as num?)?.toInt() ?? 0,
+    conflict: j['conflict'] == true,
+    pinned: j['pinned'] == true,
+    backend: (j['backend'] as String?) ?? 'local',
+    createdAt: DateTime.parse(j['created_at'] as String),
+    savedAt: j['saved_at'] is String ? DateTime.tryParse(j['saved_at'] as String) : null,
+    device: j['device'] as String?,
+  );
+}
+
+/// One title's saves on one platform, newest version first.
+class CloudSave {
+  CloudSave({required this.platform, required this.titleId, required this.versions});
+  final String platform;
+  final String titleId;
+  final List<SaveVersion> versions;
+
+  factory CloudSave.fromJson(Map<String, dynamic> j) => CloudSave(
+    platform: j['platform'] as String,
+    titleId: j['title_id'] as String,
+    versions: ((j['versions'] as List?) ?? const [])
+        .map((e) => SaveVersion.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false),
+  );
+}
+
+class SavesUsage {
+  SavesUsage({required this.allowanceUsed, required this.allowance, required this.total});
+  final int allowanceUsed;
+  final int allowance;
+  final int total;
+
+  factory SavesUsage.fromJson(Map<String, dynamic> j) => SavesUsage(
+    allowanceUsed: (j['allowance_used'] as num?)?.toInt() ?? 0,
+    allowance: (j['allowance'] as num?)?.toInt() ?? 0,
+    total: (j['total'] as num?)?.toInt() ?? 0,
+  );
+}
+
+class CloudSaves {
+  CloudSaves({required this.saves, required this.usage});
+  final List<CloudSave> saves;
+  final SavesUsage usage;
+}
+
 class OpenPakApi {
   OpenPakApi({required this.baseUrl, http.Client? client, this.token})
     : _http = client ?? http.Client();
@@ -281,6 +355,21 @@ class OpenPakApi {
     return list
         .map((e) => Friend.fromJson(e as Map<String, dynamic>))
         .toList(growable: false);
+  }
+
+
+  /// GET /me/saves — every platform's saves under the account, with usage.
+  Future<CloudSaves> saves() async {
+    final body = await _decode(
+      await _http.get(_uri('/me/saves'), headers: _headers()),
+    );
+    final list = (body['saves'] as List?) ?? const [];
+    return CloudSaves(
+      saves: list
+          .map((e) => CloudSave.fromJson(e as Map<String, dynamic>))
+          .toList(growable: false),
+      usage: SavesUsage.fromJson((body['usage'] as Map<String, dynamic>?) ?? const {}),
+    );
   }
 
   /// GET /me/invitations — reading this consumes nothing.

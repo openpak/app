@@ -24,7 +24,7 @@ class _ShellState extends State<Shell> {
     FriendsPage(api: widget.api),
     InvitationsPage(api: widget.api),
     TitlesPage(api: widget.api),
-    const SavesPage(),
+    SavesPage(api: widget.api),
     AccountPage(api: widget.api, onSignedOut: widget.onSignedOut),
   ];
 
