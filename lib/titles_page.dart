@@ -337,10 +337,20 @@ class _StatusPill extends StatelessWidget {
 bool notStarted(String status) => status == 'requestable' || status == 'planned';
 
 /// The asset basename of a console's logo under assets/consoles. Unknown
-/// consoles fall back to a generic gamepad glyph. Only Switch lists games
-/// today; add a case + asset when another console goes live.
+/// consoles fall back to a generic gamepad glyph. Keep in step with the
+/// website's consoleSlug and with the assets actually bundled.
 String consoleAsset(String console) => switch (console) {
   'Switch' => 'switch',
+  'Wii' => 'wii',
+  'Wii U' => 'wii-u',
+  'DS' => 'ds',
+  '3DS' => '3ds',
+  'Xbox' => 'xbox',
+  'Xbox 360' => 'xbox-360',
+  'PS2' => 'ps2',
+  'PS3' => 'ps3',
+  'PSP' => 'psp',
+  'Vita' => 'vita',
   _ => 'generic',
 };
 
