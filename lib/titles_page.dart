@@ -251,7 +251,7 @@ class _CatalogRow extends StatelessWidget {
               // shrink them to an illegible smear; square device marks letterbox
               // inside it.
               SvgPicture.asset(
-                'assets/consoles/${consoleAsset(item.console)}.svg',
+                'assets/consoles/${consoleAsset(item.console, Theme.of(context).brightness)}.svg',
                 width: 33,
                 height: 22,
                 semanticsLabel: item.console,
@@ -340,11 +340,19 @@ class _StatusPill extends StatelessWidget {
 /// they show a status pill. Callers gate this behind kind == title.
 bool notStarted(String status) => status == 'requestable' || status == 'planned';
 
-/// The asset basename of a console's logo under assets/consoles. Unknown
+/// The asset basename of a console's mark under assets/consoles. Unknown
 /// consoles fall back to a generic gamepad glyph. Keep in step with the
 /// website's consoleSlug and with the assets actually bundled; the assets are
 /// byte-for-byte copies of website/web/static/consoles.
-String consoleAsset(String console) => switch (console) {
+///
+/// Every mark ships twice. Most keep their real brand colours, and a few of
+/// those -- the PlayStation family's navy, the DS logo's black -- are unreadable
+/// on a dark row, so `-dark` carries a lightened copy. Marks with no colour
+/// version anywhere are tinted and their two files are identical.
+String consoleAsset(String console, [Brightness brightness = Brightness.light]) =>
+    _consoleBase(console) + (brightness == Brightness.dark ? '-dark' : '');
+
+String _consoleBase(String console) => switch (console) {
   'Switch' => 'switch',
   'Wii' => 'wii',
   'Wii U' => 'wii-u',
