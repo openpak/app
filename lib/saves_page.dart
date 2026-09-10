@@ -154,24 +154,16 @@ class SavesPageState extends State<SavesPage> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.storage_outlined),
-                      label: Text(storage.connected && storage.kind == 's3' ? 'Edit bucket' : 'S3 bucket'),
-                      onPressed: () => _connect(storage, 's3'),
-                    ),
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.dns_outlined),
-                      label: Text(storage.connected && storage.kind == 'webdav' ? 'Edit WebDAV' : 'WebDAV'),
-                      onPressed: () => _connect(storage, 'webdav'),
-                    ),
+                    // One tap, nothing to type: the clouds come first when the deployment
+                    // offers them. Running your own storage is the advanced case below.
                     if (kinds['gdrive'] == true)
-                      OutlinedButton.icon(
+                      FilledButton.tonalIcon(
                         icon: const Icon(Icons.add_to_drive),
                         label: const Text('Google Drive'),
                         onPressed: () => _connectCloud('gdrive'),
                       ),
                     if (kinds['onedrive'] == true)
-                      OutlinedButton.icon(
+                      FilledButton.tonalIcon(
                         icon: const Icon(Icons.cloud_outlined),
                         label: const Text('OneDrive'),
                         onPressed: () => _connectCloud('onedrive'),
@@ -196,6 +188,36 @@ class SavesPageState extends State<SavesPage> {
                           }
                         },
                       ),
+                  ],
+                ),
+                ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  title: Text('Advanced: your own bucket or server',
+                      style: TextStyle(color: t.ink2, fontSize: 14)),
+                  subtitle: Text(
+                    'For people who run their own storage. Everyone else needs none of this.',
+                    style: TextStyle(color: t.muted, fontSize: 12),
+                  ),
+                  initiallyExpanded: storage.connected &&
+                      (storage.kind == 's3' || storage.kind == 'webdav'),
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.storage_outlined),
+                          label: Text(storage.connected && storage.kind == 's3' ? 'Edit bucket' : 'S3 bucket'),
+                          onPressed: () => _connect(storage, 's3'),
+                        ),
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.dns_outlined),
+                          label: Text(storage.connected && storage.kind == 'webdav' ? 'Edit WebDAV' : 'WebDAV'),
+                          onPressed: () => _connect(storage, 'webdav'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
                   ],
                 ),
                 const SizedBox(height: 20),
