@@ -44,6 +44,15 @@ void main() {
     expect(asIs.first.name, 'Outbound');
   });
 
+  test('votable is games-not-yet-playable only', () {
+    expect(votable('requestable'), isTrue);
+    expect(votable('alpha'), isTrue);
+    expect(votable('planned'), isTrue);
+    expect(votable('live'), isFalse);
+    expect(votable('beta'), isFalse);
+    expect(votable('not-feasible'), isFalse);
+  });
+
   test('statusState maps the vocab to distinct row tints', () {
     expect(statusState('live'), RowState.ok);
     expect(statusState('beta'), RowState.warn);
@@ -55,20 +64,43 @@ void main() {
   Widget wrap(OpenPakApi api) =>
       MaterialApp(theme: openPakLight(), home: TitlesPage(api: api));
 
-  testWidgets('signed out shows counts and the sign-in hint, no vote toggle', (tester) async {
+  testWidgets('vote control shows only on not-yet-playable games', (tester) async {
     final api = OpenPakApi(
-      baseUrl: 'https://openpak.test', // no token
+      baseUrl: 'https://openpak.test',
       client: MockClient((_) async => _json({
             'items': [
               {'id': 1, 'kind': 'title', 'name': 'Outbound', 'console': 'Switch', 'status': 'live', 'votes': 3},
+              {'id': 2, 'kind': 'title', 'name': 'Splatoon 3', 'console': 'Switch', 'status': 'beta', 'votes': 9},
+              {'id': 3, 'kind': 'title', 'name': 'Xenoblade', 'console': 'Wii', 'status': 'requestable', 'votes': 1},
             ]
           })),
     );
     await tester.pumpWidget(wrap(api));
     await tester.pumpAndSettle();
-    expect(find.text('Outbound'), findsOneWidget);
-    expect(find.text('3'), findsOneWidget);
+    // Exactly one vote chip — on the requestable title — and only its count.
+    expect(find.byIcon(Icons.arrow_upward_outlined), findsOneWidget);
+    expect(find.text('1'), findsOneWidget); // Xenoblade
+    expect(find.text('3'), findsNothing); // live: no count
+    expect(find.text('9'), findsNothing); // beta: no count
+  });
+
+  testWidgets('signed out shows the count and sign-in hint on a votable game, no toggle', (tester) async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test', // no token
+      client: MockClient((_) async => _json({
+            'items': [
+              {'id': 3, 'kind': 'title', 'name': 'Xenoblade', 'console': 'Wii', 'status': 'requestable', 'votes': 1},
+            ]
+          })),
+    );
+    await tester.pumpWidget(wrap(api));
+    await tester.pumpAndSettle();
+    expect(find.text('1'), findsOneWidget);
     expect(find.textContaining('Sign in to vote'), findsOneWidget);
+    // Tapping does nothing (disabled): no crash, count unchanged.
+    await tester.tap(find.text('1'));
+    await tester.pumpAndSettle();
+    expect(find.text('1'), findsOneWidget);
   });
 
   testWidgets('signed in, tapping vote optimistically bumps the count', (tester) async {
@@ -77,20 +109,42 @@ void main() {
       token: 't',
       client: MockClient((req) async {
         if (req.url.path.endsWith('/vote')) {
-          return _json({'id': 1, 'votes': 4, 'voted': true}); // fresh count
+          return _json({'id': 3, 'votes': 2, 'voted': true}); // fresh count
         }
         return _json({
           'items': [
-            {'id': 1, 'kind': 'title', 'name': 'Outbound', 'console': 'Switch', 'status': 'live', 'votes': 3, 'voted': false},
+            {'id': 3, 'kind': 'title', 'name': 'Xenoblade', 'console': 'Wii', 'status': 'requestable', 'votes': 1, 'voted': false},
           ]
         });
       }),
     );
     await tester.pumpWidget(wrap(api));
     await tester.pumpAndSettle();
-    expect(find.text('3'), findsOneWidget);
-    await tester.tap(find.text('3'));
+    expect(find.text('1'), findsOneWidget);
+    await tester.tap(find.text('1'));
     await tester.pumpAndSettle();
-    expect(find.text('4'), findsOneWidget);
+    expect(find.text('2'), findsOneWidget);
+  });
+
+  testWidgets('the Network view is read-only — status matrix, no vote', (tester) async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((_) async => _json({
+            'items': [
+              {'id': 3, 'kind': 'title', 'name': 'Xenoblade', 'status': 'requestable', 'votes': 1},
+              {'id': 4, 'kind': 'feature', 'name': 'Voice chat', 'status': 'planned', 'notes': 'Not started.', 'votes': 5},
+            ]
+          })),
+    );
+    await tester.pumpWidget(wrap(api));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Network'));
+    await tester.pumpAndSettle();
+    expect(find.text('Voice chat'), findsOneWidget);
+    expect(find.text('Not started.'), findsOneWidget); // the matrix note is shown
+    expect(find.byIcon(Icons.arrow_upward_outlined), findsNothing); // no vote control
+    expect(find.byIcon(Icons.arrow_upward), findsNothing);
+    expect(find.text('5'), findsNothing); // no count on the Network view
   });
 }

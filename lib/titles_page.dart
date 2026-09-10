@@ -5,9 +5,11 @@ import 'theme.dart';
 import 'widgets.dart';
 
 /// What works, what is asked for, and what to build next. Titles and network
-/// features come from the same votable catalog as the website's /titles and
-/// /features pages; voting is the prioritisation signal. Reachable signed out
-/// (the counts are public); the vote button only acts when there is a bearer.
+/// features come from the same catalog as the website's /titles and /features
+/// pages. Voting is the prioritisation signal — and only for games that are not
+/// playable yet: a live or beta title just shows its status. The Network view
+/// is a read-only status matrix. Reachable signed out (counts are public); the
+/// vote control only acts when there is a bearer.
 class TitlesPage extends StatefulWidget {
   const TitlesPage({super.key, required this.api});
   final OpenPakApi api;
@@ -38,7 +40,7 @@ class TitlesPageState extends State<TitlesPage> {
   });
 
   /// Vote is optimistic: flip the row and adjust the count before the request,
-  /// then correct from the server's authoritative numbers. A failure reloads,
+  /// then correct from the server's authoritative count. A failure reloads,
   /// which puts the true state back.
   Future<void> _vote(CatalogItem item) async {
     if (widget.api.token == null) return; // signed out — no toggle
@@ -66,15 +68,18 @@ class TitlesPageState extends State<TitlesPage> {
   @override
   Widget build(BuildContext context) {
     final signedIn = widget.api.token != null;
+    final isTitle = _kind == 'title';
     return Scaffold(
       appBar: AppBar(
         title: const Text('Titles'),
         actions: [
-          IconButton(
-            tooltip: _byVotes ? 'Catalog order' : 'Most requested',
-            icon: Icon(_byVotes ? Icons.sort : Icons.trending_up),
-            onPressed: () => setState(() => _byVotes = !_byVotes),
-          ),
+          // Sorting by votes only makes sense on the votable list.
+          if (isTitle)
+            IconButton(
+              tooltip: _byVotes ? 'Catalog order' : 'Most requested',
+              icon: Icon(_byVotes ? Icons.sort : Icons.trending_up),
+              onPressed: () => setState(() => _byVotes = !_byVotes),
+            ),
         ],
       ),
       body: RefreshIndicator(
@@ -95,8 +100,9 @@ class TitlesPageState extends State<TitlesPage> {
               search: _search,
               console: _console,
               status: _status,
-              byVotes: _byVotes,
+              byVotes: isTitle && _byVotes,
             );
+            final anyVotable = isTitle && shown.any((i) => votable(i.status));
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
@@ -104,7 +110,7 @@ class TitlesPageState extends State<TitlesPage> {
                 const SizedBox(height: 12),
                 _controls(all),
                 const SizedBox(height: 8),
-                if (!signedIn) _signInHint(),
+                if (!signedIn && anyVotable) _signInHint(),
                 if (shown.isEmpty)
                   const Padding(
                     padding: EdgeInsets.only(top: 48),
@@ -113,6 +119,11 @@ class TitlesPageState extends State<TitlesPage> {
                 else
                   ...shown.map((i) => _CatalogRow(
                         item: i,
+                        // Votes are games-only, and only for the not-yet-playable.
+                        showVote: isTitle && votable(i.status),
+                        // The Network view is the honest status matrix, so it
+                        // keeps its notes; the title list stays one line.
+                        showNotes: !isTitle,
                         signedIn: signedIn,
                         onVote: () => _vote(i),
                       )),
@@ -218,11 +229,20 @@ class TitlesPageState extends State<TitlesPage> {
   }
 }
 
-/// One title or feature: name, its status pill, the console/backend beneath,
-/// and a vote button that reads as pressed once you have voted.
+/// One catalog entry. Titles are a single line — name, console, status pill,
+/// and (only when votable) a compact vote chip. Features add their notes
+/// beneath as the read-only status matrix.
 class _CatalogRow extends StatelessWidget {
-  const _CatalogRow({required this.item, required this.signedIn, required this.onVote});
+  const _CatalogRow({
+    required this.item,
+    required this.showVote,
+    required this.showNotes,
+    required this.signedIn,
+    required this.onVote,
+  });
   final CatalogItem item;
+  final bool showVote;
+  final bool showNotes;
   final bool signedIn;
   final VoidCallback onVote;
 
@@ -236,7 +256,27 @@ class _CatalogRow extends StatelessWidget {
       RowState.bad => (t.badWeak, t.badLine, t.bad),
       RowState.idle => (t.raised, t.line, t.muted),
     };
-    final sub = [item.console, item.backend].where((s) => s.isNotEmpty).join(' · ');
+    final head = Row(
+      children: [
+        Flexible(
+          child: Text(
+            item.name,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (item.console.isNotEmpty) ...[
+          const SizedBox(width: 8),
+          Text(item.console, style: TextStyle(color: t.muted, fontSize: 12.5)),
+        ],
+        const Spacer(),
+        _StatusPill(label: statusLabel(item.status), color: ink, border: border),
+        if (showVote) ...[
+          const SizedBox(width: 8),
+          _VoteChip(votes: item.votes, voted: item.voted, enabled: signedIn, onTap: onVote),
+        ],
+      ],
+    );
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -245,52 +285,27 @@ class _CatalogRow extends StatelessWidget {
         border: Border.all(color: border),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: (showNotes && item.notes.isNotEmpty)
+            ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          item.name,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _StatusPill(label: statusLabel(item.status), color: ink, border: border),
-                    ],
-                  ),
-                  if (sub.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Text(sub, style: TextStyle(color: t.muted, fontSize: 12.5)),
-                  ],
-                  if (item.notes.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(item.notes, style: TextStyle(color: t.ink2, fontSize: 12.5)),
-                  ],
+                  head,
+                  const SizedBox(height: 4),
+                  Text(item.notes, style: TextStyle(color: t.ink2, fontSize: 12.5)),
                 ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            _VoteButton(votes: item.votes, voted: item.voted, enabled: signedIn, onTap: onVote),
-          ],
-        ),
+              )
+            : head,
       ),
     );
   }
 }
 
-/// The vote control: an upvote arrow over the count. Filled when you have
-/// voted, an outline when you have not, and muted-static when signed out — a
-/// count you can read but not change.
-class _VoteButton extends StatelessWidget {
-  const _VoteButton({required this.votes, required this.voted, required this.enabled, required this.onTap});
+/// A compact upvote chip: an arrow and the count on one line, so the title row
+/// stays single-line. Filled when voted, an outline when not, muted-static when
+/// signed out — a count you can read but not change.
+class _VoteChip extends StatelessWidget {
+  const _VoteChip({required this.votes, required this.voted, required this.enabled, required this.onTap});
   final int votes;
   final bool voted;
   final bool enabled;
@@ -304,19 +319,19 @@ class _VoteButton extends StatelessWidget {
     final color = !enabled ? t.muted : (voted ? scheme.primary : t.ink2);
     return InkWell(
       onTap: enabled ? onTap : null,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(999),
       child: Container(
-        width: 48,
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: active ? t.accentWeak : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(999),
           border: Border.all(color: active ? scheme.primary : t.line2),
         ),
-        child: Column(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(voted ? Icons.arrow_drop_up : Icons.arrow_drop_up_outlined, color: color, size: 22),
+            Icon(voted ? Icons.arrow_upward : Icons.arrow_upward_outlined, color: color, size: 15),
+            const SizedBox(width: 5),
             Text('$votes', style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13)),
           ],
         ),
@@ -346,6 +361,12 @@ class _StatusPill extends StatelessWidget {
 }
 
 // ── Pure helpers, unit-tested ────────────────────────────────────────────────
+
+/// Whether a title can be voted for: games-only, and only ones that are not
+/// playable yet. A live or beta title just shows its status. Features are never
+/// votable, so callers gate this behind kind == title.
+bool votable(String status) =>
+    status == 'requestable' || status == 'alpha' || status == 'planned';
 
 /// Filter to one kind, by console/status/name, then optionally re-sort by
 /// votes (the scoreboard). The server already returns catalog order, so the
