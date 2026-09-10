@@ -276,6 +276,10 @@ class CloudSaves {
 class SavesStorage {
   SavesStorage({
     required this.connected,
+    this.kind,
+    this.url,
+    this.username,
+    this.account,
     this.endpoint,
     this.region,
     this.bucket,
@@ -289,6 +293,12 @@ class SavesStorage {
     required this.usage,
   });
   final bool connected;
+
+  /// s3 | webdav | gdrive | onedrive.
+  final String? kind;
+  final String? url; // webdav
+  final String? username; // webdav
+  final String? account; // gdrive / onedrive: the e-mail the provider reported
   final String? endpoint;
   final String? region;
   final String? bucket;
@@ -301,8 +311,20 @@ class SavesStorage {
   final String? moveState;
   final SavesUsage usage;
 
+  /// One line naming the storage, whatever its kind.
+  String get name => switch (kind) {
+    'webdav' => url ?? 'WebDAV',
+    'gdrive' => account == null ? 'Google Drive' : 'Google Drive · $account',
+    'onedrive' => account == null ? 'OneDrive' : 'OneDrive · $account',
+    _ => '$bucket · $endpoint',
+  };
+
   factory SavesStorage.fromJson(Map<String, dynamic> j) => SavesStorage(
     connected: j['connected'] == true,
+    kind: j['kind'] as String?,
+    url: j['url'] as String?,
+    username: j['username'] as String?,
+    account: (j['account'] as String?)?.isEmpty == true ? null : j['account'] as String?,
     endpoint: j['endpoint'] as String?,
     region: j['region'] as String?,
     bucket: j['bucket'] as String?,
@@ -317,9 +339,10 @@ class SavesStorage {
   );
 }
 
-/// What the connect form submits. An empty secret keeps the stored one on an edit.
+/// What the connect form submits: one kind and its fields. An empty secret keeps the stored
+/// one on an edit.
 class StorageConfig {
-  StorageConfig({
+  StorageConfig.s3({
     required this.endpoint,
     required this.bucket,
     required this.accessKey,
@@ -328,19 +351,32 @@ class StorageConfig {
     this.prefix = '',
     this.pathStyle = true,
     this.insecure = false,
-  });
+  }) : kind = 's3', url = '', username = '', password = '';
+
+  StorageConfig.webdav({required this.url, required this.username, required this.password})
+      : kind = 'webdav', endpoint = '', bucket = '', accessKey = '', secretKey = '',
+        region = '', prefix = '', pathStyle = true, insecure = false;
+
+  final String kind;
   final String endpoint, bucket, accessKey, secretKey, region, prefix;
   final bool pathStyle, insecure;
+  final String url, username, password;
 
   Map<String, dynamic> toJson() => {
-    'endpoint': endpoint,
-    'region': region,
-    'bucket': bucket,
-    'prefix': prefix,
-    'access_key': accessKey,
-    'secret_key': secretKey,
-    'path_style': pathStyle,
-    'insecure': insecure,
+    'kind': kind,
+    if (kind == 's3')
+      's3': {
+        'endpoint': endpoint,
+        'region': region,
+        'bucket': bucket,
+        'prefix': prefix,
+        'access_key': accessKey,
+        'secret_key': secretKey,
+        'path_style': pathStyle,
+        'insecure': insecure,
+      },
+    if (kind == 'webdav')
+      'webdav': {'url': url, 'username': username, 'password': password},
   };
 }
 
@@ -469,6 +505,24 @@ class OpenPakApi {
 
   /// POST /me/saves/storage/move — runs in the background; poll savesStorage().
   Future<void> moveSaves() => _post('/me/saves/storage/move', const {});
+
+  /// GET /me/saves/storage/kinds — which kinds this deployment offers.
+  Future<Map<String, bool>> storageKinds() async {
+    final body = await _decode(
+      await _http.get(_uri('/me/saves/storage/kinds'), headers: _headers()),
+    );
+    return body.map((k, v) => MapEntry(k, v == true));
+  }
+
+  /// GET /me/saves/storage/oauth/{provider}/url — the consent page to open in a browser; the
+  /// website's callback finishes the connection for this account.
+  Future<Uri> storageOAuthUrl(String provider) async {
+    final body = await _decode(await _http.get(
+      _uri('/me/saves/storage/oauth/${Uri.encodeComponent(provider)}/url'),
+      headers: _headers(),
+    ));
+    return Uri.parse(body['url'] as String);
+  }
 
   /// GET /me/invitations — reading this consumes nothing.
   Future<List<Invitation>> invitations() async {

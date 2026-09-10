@@ -7,6 +7,7 @@ environment:
   sdk: ^3.9.0
 
 dependencies:
+  url_launcher: ^6.3.1
   flutter:
     sdk: flutter
   # The whole dependency list, deliberately. State is three screens of

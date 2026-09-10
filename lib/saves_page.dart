@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'api.dart';
 import 'theme.dart';
@@ -18,7 +19,7 @@ class SavesPage extends StatefulWidget {
 }
 
 class SavesPageState extends State<SavesPage> {
-  late Future<(CloudSaves, SavesStorage)> _data;
+  late Future<(CloudSaves, SavesStorage, Map<String, bool>)> _data;
 
   @override
   void initState() {
@@ -27,8 +28,11 @@ class SavesPageState extends State<SavesPage> {
   }
 
   void reload() => setState(() {
-    _data = Future.wait([widget.api.saves(), widget.api.savesStorage()])
-        .then((r) => (r[0] as CloudSaves, r[1] as SavesStorage));
+    _data = Future.wait([
+      widget.api.saves(),
+      widget.api.savesStorage(),
+      widget.api.storageKinds().catchError((_) => <String, bool>{'s3': true, 'webdav': true}),
+    ]).then((r) => (r[0] as CloudSaves, r[1] as SavesStorage, r[2] as Map<String, bool>));
   });
 
   Future<void> _act(Future<void> Function() action, String done) async {
@@ -41,10 +45,10 @@ class SavesPageState extends State<SavesPage> {
     reload();
   }
 
-  Future<void> _connect(SavesStorage current) async {
+  Future<void> _connect(SavesStorage current, String kind) async {
     final cfg = await showDialog<StorageConfig>(
       context: context,
-      builder: (_) => _StorageDialog(current: current),
+      builder: (_) => _StorageDialog(current: current, kind: kind),
     );
     if (cfg == null) return;
     await _act(() async {
@@ -67,6 +71,23 @@ class SavesPageState extends State<SavesPage> {
       ) ??
       false;
 
+  /// The consent page opens in the browser; the website's callback finishes the connection
+  /// for this account, so coming back here and pulling to refresh is all that is left.
+  Future<void> _connectCloud(String provider) async {
+    try {
+      final url = await widget.api.storageOAuthUrl(provider);
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        if (mounted) showToast(context, 'Could not open the browser.');
+        return;
+      }
+      if (mounted) {
+        showToast(context, 'Finish in the browser, then pull to refresh here.');
+      }
+    } on ApiException catch (e) {
+      if (mounted) showToast(context, e.message);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
@@ -74,7 +95,7 @@ class SavesPageState extends State<SavesPage> {
       appBar: AppBar(title: const Text('Saves')),
       body: RefreshIndicator(
         onRefresh: () async => reload(),
-        child: FutureBuilder<(CloudSaves, SavesStorage)>(
+        child: FutureBuilder<(CloudSaves, SavesStorage, Map<String, bool>)>(
           future: _data,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
@@ -83,7 +104,7 @@ class SavesPageState extends State<SavesPage> {
             if (snap.hasError) {
               return LoadFailure(snap.error);
             }
-            final (data, storage) = snap.data!;
+            final (data, storage, kinds) = snap.data!;
             final usage = data.usage;
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -91,7 +112,7 @@ class SavesPageState extends State<SavesPage> {
                 SectionLabel('Storage'),
                 if (storage.connected)
                   StateRow(
-                    name: '${storage.bucket} · ${storage.endpoint}',
+                    name: storage.name,
                     pill: storage.lastTestOk == false ? 'not answering' : 'connected',
                     state: storage.lastTestOk == false ? RowState.bad : RowState.ok,
                   )
@@ -122,9 +143,9 @@ class SavesPageState extends State<SavesPage> {
                   padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
                   child: Text(
                     storage.connected
-                        ? 'Your saves go to your own bucket. It is the only limit.'
-                        : 'Your OpenPak allowance. Connect an S3-compatible bucket you own '
-                            'for everything beyond it.',
+                        ? 'Your saves go to your own storage. It is the only limit.'
+                        : 'Your OpenPak allowance. Connect storage you own for everything '
+                            'beyond it: a bucket, a WebDAV share, Google Drive or OneDrive.',
                     style: TextStyle(color: t.muted, fontSize: 13, height: 1.4),
                   ),
                 ),
@@ -134,10 +155,27 @@ class SavesPageState extends State<SavesPage> {
                   runSpacing: 8,
                   children: [
                     OutlinedButton.icon(
-                      icon: const Icon(Icons.cloud_outlined),
-                      label: Text(storage.connected ? 'Edit storage' : 'Connect storage'),
-                      onPressed: () => _connect(storage),
+                      icon: const Icon(Icons.storage_outlined),
+                      label: Text(storage.connected && storage.kind == 's3' ? 'Edit bucket' : 'S3 bucket'),
+                      onPressed: () => _connect(storage, 's3'),
                     ),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.dns_outlined),
+                      label: Text(storage.connected && storage.kind == 'webdav' ? 'Edit WebDAV' : 'WebDAV'),
+                      onPressed: () => _connect(storage, 'webdav'),
+                    ),
+                    if (kinds['gdrive'] == true)
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.add_to_drive),
+                        label: const Text('Google Drive'),
+                        onPressed: () => _connectCloud('gdrive'),
+                      ),
+                    if (kinds['onedrive'] == true)
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.cloud_outlined),
+                        label: const Text('OneDrive'),
+                        onPressed: () => _connectCloud('onedrive'),
+                      ),
                     if (storage.connected && usage.allowanceUsed > 0)
                       OutlinedButton.icon(
                         icon: const Icon(Icons.drive_file_move_outline),
@@ -218,8 +256,9 @@ class SavesPageState extends State<SavesPage> {
 /// The connect form. The secret is never shown back; empty keeps the stored one
 /// when the access key is unchanged.
 class _StorageDialog extends StatefulWidget {
-  const _StorageDialog({required this.current});
+  const _StorageDialog({required this.current, required this.kind});
   final SavesStorage current;
+  final String kind; // s3 | webdav
 
   @override
   State<_StorageDialog> createState() => _StorageDialogState();
@@ -232,12 +271,16 @@ class _StorageDialogState extends State<_StorageDialog> {
   late final _prefix = TextEditingController(text: widget.current.prefix ?? '');
   late final _access = TextEditingController(text: widget.current.accessKey ?? '');
   final _secret = TextEditingController();
-  late bool _pathStyle = widget.current.connected ? widget.current.pathStyle : true;
+  late final _url = TextEditingController(text: widget.current.url ?? '');
+  late final _user = TextEditingController(text: widget.current.username ?? '');
+  final _pass = TextEditingController();
+  bool get _editing => widget.current.connected && widget.current.kind == widget.kind;
+  late bool _pathStyle = _editing ? widget.current.pathStyle : true;
   late bool _insecure = widget.current.insecure;
 
   @override
   void dispose() {
-    for (final c in [_endpoint, _region, _bucket, _prefix, _access, _secret]) {
+    for (final c in [_endpoint, _region, _bucket, _prefix, _access, _secret, _url, _user, _pass]) {
       c.dispose();
     }
     super.dispose();
@@ -258,12 +301,52 @@ class _StorageDialogState extends State<_StorageDialog> {
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
+    if (widget.kind == 'webdav') {
+      final ready = _url.text.trim().isNotEmpty &&
+          _user.text.trim().isNotEmpty &&
+          (_pass.text.isNotEmpty || _editing);
+      return AlertDialog(
+        title: Text(_editing ? 'Edit WebDAV' : 'Connect WebDAV'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _field(_url, 'WebDAV URL', hint: 'https://cloud.example.org/remote.php/dav/files/me/OpenPak'),
+              _field(_user, 'Username'),
+              _field(_pass, 'Password', secret: true),
+              Text(
+                'Nextcloud shows the URL under Settings › Files; add a folder for OpenPak at '
+                'the end. Use an app password. The share is tested before it is saved.',
+                style: TextStyle(color: t.muted, fontSize: 12, height: 1.4),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          FilledButton(
+            onPressed: ready
+                ? () => Navigator.pop(
+                      context,
+                      StorageConfig.webdav(
+                        url: _url.text.trim(),
+                        username: _user.text.trim(),
+                        password: _pass.text,
+                      ),
+                    )
+                : null,
+            child: const Text('Test and save'),
+          ),
+        ],
+      );
+    }
     final ready = _endpoint.text.trim().isNotEmpty &&
         _bucket.text.trim().isNotEmpty &&
         _access.text.trim().isNotEmpty &&
-        (_secret.text.isNotEmpty || widget.current.connected);
+        (_secret.text.isNotEmpty || _editing);
     return AlertDialog(
-      title: Text(widget.current.connected ? 'Edit storage' : 'Connect storage'),
+      title: Text(_editing ? 'Edit bucket' : 'Connect a bucket'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -303,7 +386,7 @@ class _StorageDialogState extends State<_StorageDialog> {
           onPressed: ready
               ? () => Navigator.pop(
                     context,
-                    StorageConfig(
+                    StorageConfig.s3(
                       endpoint: _endpoint.text.trim().replaceFirst(RegExp(r'^https?://'), ''),
                       region: _region.text.trim(),
                       bucket: _bucket.text.trim(),

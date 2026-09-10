@@ -231,7 +231,8 @@ void main() {
       client: MockClient((req) async {
         if (req.method == 'PUT') {
           puts++;
-          expect(jsonDecode(req.body)['bucket'], 'mysaves');
+          expect(jsonDecode(req.body)['kind'], 's3');
+          expect(jsonDecode(req.body)['s3']['bucket'], 'mysaves');
           return json({'error': 'storage_test_failed', 'detail': 'write: access denied'}, status: 422);
         }
         return json({
@@ -248,7 +249,7 @@ void main() {
     expect(st.lastError, isNull);
     expect(st.moveState, 'done: 2 versions');
     await expectLater(
-      api.connectStorage(StorageConfig(endpoint: 'x', bucket: 'mysaves', accessKey: 'ak', secretKey: 'sk')),
+      api.connectStorage(StorageConfig.s3(endpoint: 'x', bucket: 'mysaves', accessKey: 'ak', secretKey: 'sk')),
       throwsA(isA<ApiException>().having((e) => e.message, 'message', 'write: access denied')),
     );
     expect(puts, 1);
