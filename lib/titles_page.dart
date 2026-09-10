@@ -230,7 +230,9 @@ class _CatalogRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = tokensOf(context);
     final state = statusState(item.status);
-    final (bg, border, ink) = switch (state) {
+    // Only the status pill carries the status colour — the row itself is neutral,
+    // matching the website's neutral card + coloured badge.
+    final (pillBg, pillLine, pillInk) = switch (state) {
       RowState.ok => (t.okWeak, t.okLine, t.ok),
       RowState.warn => (t.warnWeak, t.warnLine, t.warn),
       RowState.bad => (t.badWeak, t.badLine, t.bad),
@@ -259,15 +261,15 @@ class _CatalogRow extends StatelessWidget {
         if (showRequest)
           _RequestButton(requested: item.voted, enabled: signedIn, onTap: onRequest)
         else
-          _StatusPill(label: statusLabel(item.status), color: ink, border: border),
+          _StatusPill(label: statusLabel(item.status), color: pillInk, border: pillLine, bg: pillBg),
       ],
     );
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: bg,
+        color: t.raised,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: border),
+        border: Border.all(color: t.line),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -321,15 +323,17 @@ class _RequestButton extends StatelessWidget {
 }
 
 class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.label, required this.color, required this.border});
+  const _StatusPill({required this.label, required this.color, required this.border, required this.bg});
   final String label;
   final Color color;
   final Color border;
+  final Color bg;
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
     decoration: BoxDecoration(
+      color: bg,
       borderRadius: BorderRadius.circular(999),
       border: Border.all(color: border),
     ),
