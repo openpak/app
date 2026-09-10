@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'api.dart';
 import 'theme.dart';
@@ -6,10 +7,11 @@ import 'widgets.dart';
 
 /// What works, what is asked for, and what to build next. Titles and network
 /// features come from the same catalog as the website's /titles and /features
-/// pages. Voting is the prioritisation signal — and only for games that are not
-/// playable yet: a live or beta title just shows its status. The Network view
-/// is a read-only status matrix. Reachable signed out (counts are public); the
-/// vote control only acts when there is a bearer.
+/// pages. A title that is not started yet (requestable/planned) carries a
+/// Request button — the prioritisation signal — while a started title (live,
+/// beta, alpha) just shows its status pill. The ranking those requests produce
+/// is internal; it is not shown here. The Network view is a read-only status
+/// matrix. Reachable signed out; the Request control only acts with a bearer.
 class TitlesPage extends StatefulWidget {
   const TitlesPage({super.key, required this.api});
   final OpenPakApi api;
@@ -27,7 +29,6 @@ class TitlesPageState extends State<TitlesPage> {
   String _search = '';
   String? _console; // null = all
   String? _status; // null = all
-  bool _byVotes = false;
 
   @override
   void initState() {
@@ -39,10 +40,10 @@ class TitlesPageState extends State<TitlesPage> {
     _data = widget.api.requests();
   });
 
-  /// Vote is optimistic: flip the row and adjust the count before the request,
-  /// then correct from the server's authoritative count. A failure reloads,
-  /// which puts the true state back.
-  Future<void> _vote(CatalogItem item) async {
+  /// A request is optimistic: flip the row before the call, then let the
+  /// server's authoritative state settle it. The count is internal, so it is
+  /// not shown — only the requested/not-requested state is.
+  Future<void> _request(CatalogItem item) async {
     if (widget.api.token == null) return; // signed out — no toggle
     final items = await _data;
     void set(CatalogItem next) => setState(() {
@@ -50,19 +51,13 @@ class TitlesPageState extends State<TitlesPage> {
         for (final i in items) i.id == next.id ? next : i,
       ]);
     });
-    set(item.withVote(
-      votes: item.votes + (item.voted ? -1 : 1),
-      voted: !item.voted,
-    ));
+    set(item.withVote(votes: item.votes + (item.voted ? -1 : 1), voted: !item.voted));
     try {
-      // The response carries the authoritative fresh count, so correct the
-      // optimistic guess from it rather than a local delta.
       final r = await widget.api.vote(item.id);
       set(item.withVote(votes: r.votes, voted: r.voted));
     } on ApiException catch (e) {
-      // 409 = the id is not votable (a live/beta game or a feature). The button
-      // is gated so this should be unreachable; if it happens, just restore the
-      // true count without an error toast. reload() reverts the optimistic bump.
+      // 409 = the id is not requestable (a started game or a feature). The
+      // button is gated so this should be unreachable; restore the true state.
       if (e.statusCode != 409 && mounted) showToast(context, e.message);
       reload();
     }
@@ -73,18 +68,7 @@ class TitlesPageState extends State<TitlesPage> {
     final signedIn = widget.api.token != null;
     final isTitle = _kind == 'title';
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Titles'),
-        actions: [
-          // Sorting by votes only makes sense on the votable list.
-          if (isTitle)
-            IconButton(
-              tooltip: _byVotes ? 'Catalog order' : 'Most requested',
-              icon: Icon(_byVotes ? Icons.sort : Icons.trending_up),
-              onPressed: () => setState(() => _byVotes = !_byVotes),
-            ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Titles')),
       body: RefreshIndicator(
         onRefresh: () async => reload(),
         child: FutureBuilder<List<CatalogItem>>(
@@ -97,15 +81,8 @@ class TitlesPageState extends State<TitlesPage> {
               return LoadFailure(snap.error);
             }
             final all = snap.data ?? const <CatalogItem>[];
-            final shown = filterCatalog(
-              all,
-              kind: _kind,
-              search: _search,
-              console: _console,
-              status: _status,
-              byVotes: isTitle && _byVotes,
-            );
-            final anyVotable = isTitle && shown.any((i) => votable(i.status));
+            final shown = filterCatalog(all, kind: _kind, search: _search, console: _console, status: _status);
+            final anyRequestable = isTitle && shown.any((i) => notStarted(i.status));
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
@@ -113,7 +90,7 @@ class TitlesPageState extends State<TitlesPage> {
                 const SizedBox(height: 12),
                 _controls(all),
                 const SizedBox(height: 8),
-                if (!signedIn && anyVotable) _signInHint(),
+                if (!signedIn && anyRequestable) _signInHint(),
                 if (shown.isEmpty)
                   const Padding(
                     padding: EdgeInsets.only(top: 48),
@@ -122,13 +99,13 @@ class TitlesPageState extends State<TitlesPage> {
                 else
                   ...shown.map((i) => _CatalogRow(
                         item: i,
-                        // Votes are games-only, and only for the not-yet-playable.
-                        showVote: isTitle && votable(i.status),
+                        // A Request button on titles that are not started yet.
+                        showRequest: isTitle && notStarted(i.status),
                         // The Network view is the honest status matrix, so it
                         // keeps its notes; the title list stays one line.
                         showNotes: !isTitle,
                         signedIn: signedIn,
-                        onVote: () => _vote(i),
+                        onRequest: () => _request(i),
                       )),
               ],
             );
@@ -221,7 +198,7 @@ class TitlesPageState extends State<TitlesPage> {
   Widget _signInHint() => Padding(
     padding: const EdgeInsets.only(bottom: 4),
     child: Text(
-      'Sign in to vote. Counts are shown to everyone.',
+      'Sign in to request the titles you want.',
       style: TextStyle(color: tokensOf(context).muted, fontSize: 13),
     ),
   );
@@ -232,22 +209,22 @@ class TitlesPageState extends State<TitlesPage> {
   }
 }
 
-/// One catalog entry. Titles are a single line — name, console, status pill,
-/// and (only when votable) a compact vote chip. Features add their notes
-/// beneath as the read-only status matrix.
+/// One catalog entry. A title is a single line: the console logo, the name, and
+/// on the right either a Request button (not started) or a status pill. Features
+/// add their notes beneath as the read-only status matrix.
 class _CatalogRow extends StatelessWidget {
   const _CatalogRow({
     required this.item,
-    required this.showVote,
+    required this.showRequest,
     required this.showNotes,
     required this.signedIn,
-    required this.onVote,
+    required this.onRequest,
   });
   final CatalogItem item;
-  final bool showVote;
+  final bool showRequest;
   final bool showNotes;
   final bool signedIn;
-  final VoidCallback onVote;
+  final VoidCallback onRequest;
 
   @override
   Widget build(BuildContext context) {
@@ -261,6 +238,16 @@ class _CatalogRow extends StatelessWidget {
     };
     final head = Row(
       children: [
+        if (item.console.isNotEmpty) ...[
+          SvgPicture.asset(
+            'assets/consoles/${consoleAsset(item.console)}.svg',
+            width: 22,
+            height: 22,
+            colorFilter: ColorFilter.mode(t.ink2, BlendMode.srcIn),
+            semanticsLabel: item.console,
+          ),
+          const SizedBox(width: 10),
+        ],
         Flexible(
           child: Text(
             item.name,
@@ -268,16 +255,11 @@ class _CatalogRow extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (item.console.isNotEmpty) ...[
-          const SizedBox(width: 8),
-          Text(item.console, style: TextStyle(color: t.muted, fontSize: 12.5)),
-        ],
         const Spacer(),
-        _StatusPill(label: statusLabel(item.status), color: ink, border: border),
-        if (showVote) ...[
-          const SizedBox(width: 8),
-          _VoteChip(votes: item.votes, voted: item.voted, enabled: signedIn, onTap: onVote),
-        ],
+        if (showRequest)
+          _RequestButton(requested: item.voted, enabled: signedIn, onTap: onRequest)
+        else
+          _StatusPill(label: statusLabel(item.status), color: ink, border: border),
       ],
     );
     return Container(
@@ -304,13 +286,12 @@ class _CatalogRow extends StatelessWidget {
   }
 }
 
-/// A compact upvote chip: an arrow and the count on one line, so the title row
-/// stays single-line. Filled when voted, an outline when not, muted-static when
-/// signed out — a count you can read but not change.
-class _VoteChip extends StatelessWidget {
-  const _VoteChip({required this.votes, required this.voted, required this.enabled, required this.onTap});
-  final int votes;
-  final bool voted;
+/// The Request control: a small pill button. Filled when already requested, an
+/// outline when not, muted-static when signed out. No count — the ranking is
+/// internal.
+class _RequestButton extends StatelessWidget {
+  const _RequestButton({required this.requested, required this.enabled, required this.onTap});
+  final bool requested;
   final bool enabled;
   final VoidCallback onTap;
 
@@ -318,25 +299,21 @@ class _VoteChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = tokensOf(context);
     final scheme = Theme.of(context).colorScheme;
-    final active = enabled && voted;
-    final color = !enabled ? t.muted : (voted ? scheme.primary : t.ink2);
+    final active = enabled && requested;
+    final color = !enabled ? t.muted : (requested ? scheme.primary : t.ink2);
     return InkWell(
       onTap: enabled ? onTap : null,
       borderRadius: BorderRadius.circular(999),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: active ? t.accentWeak : Colors.transparent,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(color: active ? scheme.primary : t.line2),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(voted ? Icons.arrow_upward : Icons.arrow_upward_outlined, color: color, size: 15),
-            const SizedBox(width: 5),
-            Text('$votes', style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13)),
-          ],
+        child: Text(
+          requested ? 'Requested' : 'Request',
+          style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12.5),
         ),
       ),
     );
@@ -365,15 +342,22 @@ class _StatusPill extends StatelessWidget {
 
 // ── Pure helpers, unit-tested ────────────────────────────────────────────────
 
-/// Whether a title can be voted for: games-only, and only ones that are not
-/// playable yet. A live or beta title just shows its status. Features are never
-/// votable, so callers gate this behind kind == title.
-bool votable(String status) =>
-    status == 'requestable' || status == 'alpha' || status == 'planned';
+/// Whether a title has not been started yet: requestable or planned. These are
+/// the only ones that carry a Request button; alpha/beta/live are started, so
+/// they show a status pill. Callers gate this behind kind == title.
+bool notStarted(String status) => status == 'requestable' || status == 'planned';
 
-/// Filter to one kind, by console/status/name, then optionally re-sort by
-/// votes (the scoreboard). The server already returns catalog order, so the
-/// default keeps it; byVotes ties break by name for a stable order.
+/// The asset basename of a console's logo under assets/consoles. Unknown
+/// consoles fall back to a generic gamepad glyph. Only Switch lists games
+/// today; add a case + asset when another console goes live.
+String consoleAsset(String console) => switch (console) {
+  'Switch' => 'switch',
+  _ => 'generic',
+};
+
+/// Filter to one kind, by console/status/name. Optionally re-sort by votes for
+/// the internal scoreboard (not surfaced in the UI); the server already returns
+/// catalog order, so the default keeps it.
 List<CatalogItem> filterCatalog(
   List<CatalogItem> items, {
   required String kind,

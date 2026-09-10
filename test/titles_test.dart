@@ -44,13 +44,13 @@ void main() {
     expect(asIs.first.name, 'Outbound');
   });
 
-  test('votable is games-not-yet-playable only', () {
-    expect(votable('requestable'), isTrue);
-    expect(votable('alpha'), isTrue);
-    expect(votable('planned'), isTrue);
-    expect(votable('live'), isFalse);
-    expect(votable('beta'), isFalse);
-    expect(votable('not-feasible'), isFalse);
+  test('notStarted is requestable/planned only (alpha is started)', () {
+    expect(notStarted('requestable'), isTrue);
+    expect(notStarted('planned'), isTrue);
+    expect(notStarted('alpha'), isFalse); // started: shows a pill, not a button
+    expect(notStarted('live'), isFalse);
+    expect(notStarted('beta'), isFalse);
+    expect(notStarted('not-feasible'), isFalse);
   });
 
   test('statusState maps the vocab to distinct row tints', () {
@@ -64,27 +64,32 @@ void main() {
   Widget wrap(OpenPakApi api) =>
       MaterialApp(theme: openPakLight(), home: TitlesPage(api: api));
 
-  testWidgets('vote control shows only on not-yet-playable games', (tester) async {
+  testWidgets('Request button shows only on not-started games; counts never', (tester) async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',
       client: MockClient((_) async => _json({
             'items': [
               {'id': 1, 'kind': 'title', 'name': 'Outbound', 'console': 'Switch', 'status': 'live', 'votes': 3},
               {'id': 2, 'kind': 'title', 'name': 'Splatoon 3', 'console': 'Switch', 'status': 'beta', 'votes': 9},
+              {'id': 5, 'kind': 'title', 'name': 'Fall Guys', 'console': 'Switch', 'status': 'alpha', 'votes': 7},
               {'id': 3, 'kind': 'title', 'name': 'Xenoblade', 'console': 'Wii', 'status': 'requestable', 'votes': 1},
             ]
           })),
     );
     await tester.pumpWidget(wrap(api));
     await tester.pumpAndSettle();
-    // Exactly one vote chip — on the requestable title — and only its count.
-    expect(find.byIcon(Icons.arrow_upward_outlined), findsOneWidget);
-    expect(find.text('1'), findsOneWidget); // Xenoblade
-    expect(find.text('3'), findsNothing); // live: no count
-    expect(find.text('9'), findsNothing); // beta: no count
+    // Exactly one Request button — on the requestable title. Alpha/beta/live
+    // show a pill, not a button.
+    expect(find.text('Request'), findsOneWidget);
+    expect(find.text('Alpha'), findsOneWidget); // alpha shows its pill
+    // The internal vote counts are never rendered.
+    expect(find.text('1'), findsNothing);
+    expect(find.text('3'), findsNothing);
+    expect(find.text('7'), findsNothing);
+    expect(find.text('9'), findsNothing);
   });
 
-  testWidgets('signed out shows the count and sign-in hint on a votable game, no toggle', (tester) async {
+  testWidgets('signed out shows a Request button and the sign-in hint, no count', (tester) async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test', // no token
       client: MockClient((_) async => _json({
@@ -95,21 +100,22 @@ void main() {
     );
     await tester.pumpWidget(wrap(api));
     await tester.pumpAndSettle();
-    expect(find.text('1'), findsOneWidget);
-    expect(find.textContaining('Sign in to vote'), findsOneWidget);
-    // Tapping does nothing (disabled): no crash, count unchanged.
-    await tester.tap(find.text('1'));
+    expect(find.text('Request'), findsOneWidget);
+    expect(find.text('1'), findsNothing); // count is internal
+    expect(find.textContaining('Sign in to request'), findsOneWidget);
+    // Tapping does nothing (disabled): no crash, state unchanged.
+    await tester.tap(find.text('Request'));
     await tester.pumpAndSettle();
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('Request'), findsOneWidget);
   });
 
-  testWidgets('signed in, tapping vote optimistically bumps the count', (tester) async {
+  testWidgets('signed in, tapping Request flips it to Requested', (tester) async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',
       token: 't',
       client: MockClient((req) async {
         if (req.url.path.endsWith('/vote')) {
-          return _json({'id': 3, 'votes': 2, 'voted': true}); // fresh count
+          return _json({'id': 3, 'votes': 2, 'voted': true}); // fresh state
         }
         return _json({
           'items': [
@@ -120,10 +126,11 @@ void main() {
     );
     await tester.pumpWidget(wrap(api));
     await tester.pumpAndSettle();
-    expect(find.text('1'), findsOneWidget);
-    await tester.tap(find.text('1'));
+    expect(find.text('Request'), findsOneWidget);
+    await tester.tap(find.text('Request'));
     await tester.pumpAndSettle();
-    expect(find.text('2'), findsOneWidget);
+    expect(find.text('Requested'), findsOneWidget);
+    expect(find.text('2'), findsNothing); // count stays internal
   });
 
   testWidgets('the Network view is read-only — status matrix, no vote', (tester) async {
@@ -143,8 +150,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Voice chat'), findsOneWidget);
     expect(find.text('Not started.'), findsOneWidget); // the matrix note is shown
-    expect(find.byIcon(Icons.arrow_upward_outlined), findsNothing); // no vote control
-    expect(find.byIcon(Icons.arrow_upward), findsNothing);
+    expect(find.text('Request'), findsNothing); // features are never requestable
     expect(find.text('5'), findsNothing); // no count on the Network view
   });
 }
