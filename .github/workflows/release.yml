@@ -1,7 +1,7 @@
 # Tag a release (vX.Y.Z) → build the split-ABI release APKs and attach them to a
-# GitHub Release. Sideload builds, debug-signed (README: not a store build yet;
-# a real signing config is needed before Play/TestFlight). This is the app's
-# "ship on GitHub": installable-by-hand APKs, versioned, off a tag.
+# GitHub Release. Signed with the stable OpenPak release key (from repo secrets),
+# so each version installs over the last. Sideload builds; a Play/TestFlight
+# upload can reuse the same key. This is the app's "ship on GitHub".
 name: release
 on:
   push:
@@ -34,6 +34,25 @@ jobs:
 
       - run: flutter pub get
       - run: flutter test
+      - name: Set up release signing
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 is not set — release would be debug-signed and would not update over installed builds."
+            exit 1
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > android/app/openpak-release.jks
+          cat > android/key.properties <<EOF
+          storeFile=openpak-release.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
       - run: flutter build apk --release --split-per-abi
 
       - name: GitHub Release
@@ -44,6 +63,7 @@ jobs:
           body: |
             OpenPak companion app ${{ github.ref_name }}.
 
-            Sideload APKs (debug-signed — installable by hand, not a store build).
+            Sideload APKs, signed with the OpenPak release key (updates install
+            cleanly over previous OpenPak-signed versions).
             Install the one for your device, e.g.:
               adb install app-arm64-v8a-release.apk
