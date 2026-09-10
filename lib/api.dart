@@ -272,6 +272,78 @@ class CloudSaves {
   final SavesUsage usage;
 }
 
+/// The account's own storage, as the service reports it. The secret is never returned.
+class SavesStorage {
+  SavesStorage({
+    required this.connected,
+    this.endpoint,
+    this.region,
+    this.bucket,
+    this.prefix,
+    this.accessKey,
+    this.pathStyle = true,
+    this.insecure = false,
+    this.lastTestOk,
+    this.lastError,
+    this.moveState,
+    required this.usage,
+  });
+  final bool connected;
+  final String? endpoint;
+  final String? region;
+  final String? bucket;
+  final String? prefix;
+  final String? accessKey;
+  final bool pathStyle;
+  final bool insecure;
+  final bool? lastTestOk;
+  final String? lastError;
+  final String? moveState;
+  final SavesUsage usage;
+
+  factory SavesStorage.fromJson(Map<String, dynamic> j) => SavesStorage(
+    connected: j['connected'] == true,
+    endpoint: j['endpoint'] as String?,
+    region: j['region'] as String?,
+    bucket: j['bucket'] as String?,
+    prefix: j['prefix'] as String?,
+    accessKey: j['access_key'] as String?,
+    pathStyle: j['path_style'] != false,
+    insecure: j['insecure'] == true,
+    lastTestOk: j['last_test_ok'] as bool?,
+    lastError: (j['last_error'] as String?)?.isEmpty == true ? null : j['last_error'] as String?,
+    moveState: (j['move_state'] as String?)?.isEmpty == true ? null : j['move_state'] as String?,
+    usage: SavesUsage.fromJson((j['usage'] as Map<String, dynamic>?) ?? const {}),
+  );
+}
+
+/// What the connect form submits. An empty secret keeps the stored one on an edit.
+class StorageConfig {
+  StorageConfig({
+    required this.endpoint,
+    required this.bucket,
+    required this.accessKey,
+    required this.secretKey,
+    this.region = '',
+    this.prefix = '',
+    this.pathStyle = true,
+    this.insecure = false,
+  });
+  final String endpoint, bucket, accessKey, secretKey, region, prefix;
+  final bool pathStyle, insecure;
+
+  Map<String, dynamic> toJson() => {
+    'endpoint': endpoint,
+    'region': region,
+    'bucket': bucket,
+    'prefix': prefix,
+    'access_key': accessKey,
+    'secret_key': secretKey,
+    'path_style': pathStyle,
+    'insecure': insecure,
+  };
+}
+
 class OpenPakApi {
   OpenPakApi({required this.baseUrl, http.Client? client, this.token})
     : _http = client ?? http.Client();
@@ -305,6 +377,7 @@ class OpenPakApi {
     try {
       final body = jsonDecode(r.body);
       if (body is Map && body['error'] is String) message = body['error'];
+      if (body is Map && body['detail'] is String) message = body['detail'];
     } catch (_) {
       // A non-JSON error body is a proxy or an outage, not something to show.
     }
@@ -371,6 +444,31 @@ class OpenPakApi {
       usage: SavesUsage.fromJson((body['usage'] as Map<String, dynamic>?) ?? const {}),
     );
   }
+
+
+  /// GET /me/saves/storage
+  Future<SavesStorage> savesStorage() async => SavesStorage.fromJson(
+    await _decode(await _http.get(_uri('/me/saves/storage'), headers: _headers())),
+  );
+
+  /// PUT /me/saves/storage — the service tests the bucket before storing it.
+  /// Returns the warning, if any (a bucket readable without credentials).
+  Future<String?> connectStorage(StorageConfig cfg) async {
+    final body = await _decode(await _http.put(
+      _uri('/me/saves/storage'),
+      headers: _headers(json: true),
+      body: jsonEncode(cfg.toJson()),
+    ));
+    final w = body['warning'] as String?;
+    return (w == null || w.isEmpty) ? null : w;
+  }
+
+  /// DELETE /me/saves/storage
+  Future<void> disconnectStorage() async =>
+      _decode(await _http.delete(_uri('/me/saves/storage'), headers: _headers()));
+
+  /// POST /me/saves/storage/move — runs in the background; poll savesStorage().
+  Future<void> moveSaves() => _post('/me/saves/storage/move', const {});
 
   /// GET /me/invitations — reading this consumes nothing.
   Future<List<Invitation>> invitations() async {

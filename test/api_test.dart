@@ -223,6 +223,37 @@ void main() {
     expect(data.saves.single.versions.last.savedAt, isNotNull);
   });
 
+  test('storage parses, a failed bucket test reads as its detail', () async {
+    var puts = 0;
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 'opk_t',
+      client: MockClient((req) async {
+        if (req.method == 'PUT') {
+          puts++;
+          expect(jsonDecode(req.body)['bucket'], 'mysaves');
+          return json({'error': 'storage_test_failed', 'detail': 'write: access denied'}, status: 422);
+        }
+        return json({
+          'connected': true, 'kind': 's3', 'endpoint': 'x.r2.cloudflarestorage.com',
+          'bucket': 'mysaves', 'access_key': 'ak', 'path_style': true, 'last_test_ok': true,
+          'last_error': '', 'move_state': 'done: 2 versions',
+          'usage': {'allowance_used': 0, 'allowance': 268435456, 'total': 40},
+        });
+      }),
+    );
+    final st = await api.savesStorage();
+    expect(st.connected, true);
+    expect(st.bucket, 'mysaves');
+    expect(st.lastError, isNull);
+    expect(st.moveState, 'done: 2 versions');
+    await expectLater(
+      api.connectStorage(StorageConfig(endpoint: 'x', bucket: 'mysaves', accessKey: 'ak', secretKey: 'sk')),
+      throwsA(isA<ApiException>().having((e) => e.message, 'message', 'write: access denied')),
+    );
+    expect(puts, 1);
+  });
+
   test('a non-JSON error body still yields a usable message', () async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',
