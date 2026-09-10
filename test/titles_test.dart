@@ -77,7 +77,7 @@ void main() {
       token: 't',
       client: MockClient((req) async {
         if (req.url.path.endsWith('/vote')) {
-          return _json({'id': 1, 'votes': 4, 'voted': true});
+          return _json({'voted': true}); // server returns only the flag
         }
         return _json({
           'items': [

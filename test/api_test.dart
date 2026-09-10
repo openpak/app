@@ -173,21 +173,23 @@ void main() {
     expect(items.single.isTitle, isTrue);
   });
 
-  test('voting posts to the id path and returns the new count', () async {
+  test('voting posts the id in the body and returns only the voted flag', () async {
     String? seenPath;
+    Map<String, dynamic>? sent;
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',
       token: 't',
       client: MockClient((req) async {
         seenPath = req.url.path;
-        // A string id from the server round-trips just as a numeric one does.
-        return json({'id': '7', 'votes': 13, 'voted': true});
+        sent = jsonDecode(req.body) as Map<String, dynamic>;
+        return json({'voted': true});
       }),
     );
-    final r = await api.vote('7');
-    expect(seenPath, '/api/v1/requests/7/vote');
-    expect(r.votes, 13);
-    expect(r.voted, isTrue);
+    final voted = await api.vote('7');
+    expect(seenPath, '/api/v1/requests/vote');
+    // id goes in the body as a JSON number, not in the path.
+    expect(sent, {'id': 7});
+    expect(voted, isTrue);
   });
 
   test('a non-JSON error body still yields a usable message', () async {
