@@ -149,7 +149,7 @@ void main() {
     await tester.tap(find.text('Network'));
     await tester.pumpAndSettle();
     expect(find.text('Voice chat'), findsOneWidget);
-    expect(find.text('Not started.'), findsOneWidget); // the matrix note is shown
+    expect(find.text('Not started.'), findsNothing); // single-line now: no verbose note
     expect(find.text('Request'), findsNothing); // features are never requestable
     expect(find.text('5'), findsNothing); // no count on the Network view
   });

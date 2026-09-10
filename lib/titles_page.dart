@@ -101,9 +101,6 @@ class TitlesPageState extends State<TitlesPage> {
                         item: i,
                         // A Request button on titles that are not started yet.
                         showRequest: isTitle && notStarted(i.status),
-                        // The Network view is the honest status matrix, so it
-                        // keeps its notes; the title list stays one line.
-                        showNotes: !isTitle,
                         signedIn: signedIn,
                         onRequest: () => _request(i),
                       )),
@@ -209,20 +206,20 @@ class TitlesPageState extends State<TitlesPage> {
   }
 }
 
-/// One catalog entry. A title is a single line: the console logo, the name, and
-/// on the right either a Request button (not started) or a status pill. Features
-/// add their notes beneath as the read-only status matrix.
+/// One catalog entry — titles and network features alike — as a single line:
+/// the console logo, the name (which fills the row so the trailing control is
+/// always right-aligned), and on the right either a Request button (a
+/// not-started title) or a status pill. Only the pill carries colour; the row
+/// is neutral, matching the website.
 class _CatalogRow extends StatelessWidget {
   const _CatalogRow({
     required this.item,
     required this.showRequest,
-    required this.showNotes,
     required this.signedIn,
     required this.onRequest,
   });
   final CatalogItem item;
   final bool showRequest;
-  final bool showNotes;
   final bool signedIn;
   final VoidCallback onRequest;
 
@@ -230,40 +227,12 @@ class _CatalogRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = tokensOf(context);
     final state = statusState(item.status);
-    // Only the status pill carries the status colour — the row itself is neutral,
-    // matching the website's neutral card + coloured badge.
     final (pillBg, pillLine, pillInk) = switch (state) {
       RowState.ok => (t.okWeak, t.okLine, t.ok),
       RowState.warn => (t.warnWeak, t.warnLine, t.warn),
       RowState.bad => (t.badWeak, t.badLine, t.bad),
       RowState.idle => (t.raised, t.line, t.muted),
     };
-    final head = Row(
-      children: [
-        if (item.console.isNotEmpty) ...[
-          SvgPicture.asset(
-            'assets/consoles/${consoleAsset(item.console)}.svg',
-            width: 22,
-            height: 22,
-            colorFilter: ColorFilter.mode(t.ink2, BlendMode.srcIn),
-            semanticsLabel: item.console,
-          ),
-          const SizedBox(width: 10),
-        ],
-        Flexible(
-          child: Text(
-            item.name,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        const Spacer(),
-        if (showRequest)
-          _RequestButton(requested: item.voted, enabled: signedIn, onTap: onRequest)
-        else
-          _StatusPill(label: statusLabel(item.status), color: pillInk, border: pillLine, bg: pillBg),
-      ],
-    );
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -273,16 +242,32 @@ class _CatalogRow extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: (showNotes && item.notes.isNotEmpty)
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  head,
-                  const SizedBox(height: 4),
-                  Text(item.notes, style: TextStyle(color: t.ink2, fontSize: 12.5)),
-                ],
-              )
-            : head,
+        child: Row(
+          children: [
+            if (item.console.isNotEmpty) ...[
+              SvgPicture.asset(
+                'assets/consoles/${consoleAsset(item.console)}.svg',
+                width: 22,
+                height: 22,
+                colorFilter: ColorFilter.mode(t.ink2, BlendMode.srcIn),
+                semanticsLabel: item.console,
+              ),
+              const SizedBox(width: 10),
+            ],
+            Expanded(
+              child: Text(
+                item.name,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (showRequest)
+              _RequestButton(requested: item.voted, enabled: signedIn, onTap: onRequest)
+            else
+              _StatusPill(label: statusLabel(item.status), color: pillInk, border: pillLine, bg: pillBg),
+          ],
+        ),
       ),
     );
   }
