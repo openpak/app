@@ -367,9 +367,8 @@ String _consoleBase(String console) => switch (console) {
   _ => 'generic',
 };
 
-/// Filter to one kind, by console/status/name. Optionally re-sort by votes for
-/// the internal scoreboard (not surfaced in the UI); the server already returns
-/// catalog order, so the default keeps it.
+/// Filter to one kind, by console/status/name, in catalogOrder. Optionally re-sort by
+/// votes for the internal scoreboard (not surfaced in the UI).
 List<CatalogItem> filterCatalog(
   List<CatalogItem> items, {
   required String kind,
@@ -388,8 +387,32 @@ List<CatalogItem> filterCatalog(
   }).toList();
   if (byVotes) {
     out.sort((a, b) => b.votes != a.votes ? b.votes.compareTo(a.votes) : a.name.compareTo(b.name));
+  } else {
+    out.sort(catalogOrder);
   }
   return out;
+}
+
+/// What can be played first, by console, alphabetically; then the long tail the same way.
+/// The keys are chosen so a console filter leaves status-then-name order and a status filter
+/// leaves console-then-name order, the same rule the website applies.
+int statusRank(String status) => switch (status) {
+  'live' || 'working' => 0,
+  'beta' => 1,
+  'alpha' || 'partial' => 2,
+  'scaffold' => 3,
+  'requestable' || 'planned' => 4,
+  _ => 5,
+};
+
+int catalogOrder(CatalogItem a, CatalogItem b) {
+  final pa = statusRank(a.status) <= 3, pb = statusRank(b.status) <= 3;
+  if (pa != pb) return pa ? -1 : 1;
+  final c = a.console.compareTo(b.console);
+  if (c != 0) return c;
+  final s = statusRank(a.status).compareTo(statusRank(b.status));
+  if (s != 0) return s;
+  return a.name.toLowerCase().compareTo(b.name.toLowerCase());
 }
 
 /// How a status reads as a row tint. Working/live is the only "done"; the
