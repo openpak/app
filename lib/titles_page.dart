@@ -94,8 +94,8 @@ class TitlesPageState extends State<TitlesPage> {
                 const SizedBox(height: 8),
                 if (shown.isEmpty)
                   const Padding(
-                    padding: EdgeInsets.only(top: 48),
-                    child: ScrollableMessage('Nothing matches.'),
+                    padding: EdgeInsets.symmetric(vertical: 48),
+                    child: Text('Nothing matches.', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
                   )
                 else
                   ...shown.map((i) => _CatalogRow(

@@ -64,7 +64,7 @@ void main() {
   Widget wrap(OpenPakApi api) =>
       MaterialApp(theme: openPakLight(), home: TitlesPage(api: api));
 
-  testWidgets('Request button shows only on not-started games; counts never', (tester) async {
+  testWidgets('the list is what has a server; requestable titles sit behind Request a game', (tester) async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',
       client: MockClient((_) async => _json({
@@ -78,10 +78,11 @@ void main() {
     );
     await tester.pumpWidget(wrap(api));
     await tester.pumpAndSettle();
-    // Exactly one Request button — on the requestable title. Alpha/beta/live
-    // show a pill, not a button.
-    expect(find.text('Request'), findsOneWidget);
+    expect(find.text('Outbound'), findsOneWidget);
     expect(find.text('Alpha'), findsOneWidget); // alpha shows its pill
+    expect(find.text('Xenoblade'), findsNothing); // requestable: not in the list
+    expect(find.text('Request a game'), findsOneWidget);
+    expect(find.text('Request'), findsNothing); // no per-row button any more
     // The internal vote counts are never rendered.
     expect(find.text('1'), findsNothing);
     expect(find.text('3'), findsNothing);
@@ -89,7 +90,7 @@ void main() {
     expect(find.text('9'), findsNothing);
   });
 
-  testWidgets('signed out shows a Request button and the sign-in hint, no count', (tester) async {
+  testWidgets('signed out, the request sheet asks to sign in', (tester) async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test', // no token
       client: MockClient((_) async => _json({
@@ -100,16 +101,16 @@ void main() {
     );
     await tester.pumpWidget(wrap(api));
     await tester.pumpAndSettle();
-    expect(find.text('Request'), findsOneWidget);
-    expect(find.text('1'), findsNothing); // count is internal
-    expect(find.textContaining('Sign in to request'), findsOneWidget);
-    // Tapping does nothing (disabled): no crash, state unchanged.
-    await tester.tap(find.text('Request'));
+    expect(find.text('Nothing matches.'), findsOneWidget); // nothing served yet
+    await tester.tap(find.text('Request a game'));
     await tester.pumpAndSettle();
-    expect(find.text('Request'), findsOneWidget);
+    expect(find.textContaining('Wii · Xenoblade'), findsOneWidget);
+    expect(find.text('Sign in to request a game.'), findsOneWidget);
+    expect(find.text('Request'), findsNothing);
+    expect(find.text('1'), findsNothing); // count is internal
   });
 
-  testWidgets('signed in, tapping Request flips it to Requested', (tester) async {
+  testWidgets('signed in, Request in the sheet flips the title to requested', (tester) async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',
       token: 't',
@@ -126,10 +127,15 @@ void main() {
     );
     await tester.pumpWidget(wrap(api));
     await tester.pumpAndSettle();
-    expect(find.text('Request'), findsOneWidget);
+    await tester.tap(find.text('Request a game'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Request'));
     await tester.pumpAndSettle();
-    expect(find.text('Requested'), findsOneWidget);
+    // The sheet closed and the request went through; reopening shows it as requested.
+    await tester.tap(find.text('Request a game'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('(requested)'), findsOneWidget);
+    expect(find.text('Withdraw request'), findsOneWidget);
     expect(find.text('2'), findsNothing); // count stays internal
   });
 
