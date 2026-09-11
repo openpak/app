@@ -81,16 +81,17 @@ class TitlesPageState extends State<TitlesPage> {
               return LoadFailure(snap.error);
             }
             final all = snap.data ?? const <CatalogItem>[];
-            final shown = filterCatalog(all, kind: _kind, search: _search, console: _console, status: _status);
-            final anyRequestable = isTitle && shown.any((i) => notStarted(i.status));
+            // The list is what has a server; the long tail sits behind "Request a game".
+            final served = all.where((i) => !(i.kind == 'title' && notStarted(i.status))).toList();
+            final requestable = all.where((i) => i.kind == 'title' && notStarted(i.status)).toList()..sort(catalogOrder);
+            final shown = filterCatalog(served, kind: _kind, search: _search, console: _console, status: _status);
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
                 _segmented(),
                 const SizedBox(height: 12),
-                _controls(all),
+                _controls(served),
                 const SizedBox(height: 8),
-                if (!signedIn && anyRequestable) _signInHint(),
                 if (shown.isEmpty)
                   const Padding(
                     padding: EdgeInsets.only(top: 48),
@@ -99,14 +100,71 @@ class TitlesPageState extends State<TitlesPage> {
                 else
                   ...shown.map((i) => _CatalogRow(
                         item: i,
-                        // A Request button on titles that are not started yet.
-                        showRequest: isTitle && notStarted(i.status),
+                        showRequest: false,
                         signedIn: signedIn,
-                        onRequest: () => _request(i),
+                        onRequest: () {},
                       )),
+                if (isTitle && requestable.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  FilledButton.icon(
+                    onPressed: () => _openRequestSheet(requestable, signedIn),
+                    icon: const Icon(Icons.add_circle_outline),
+                    label: const Text('Request a game'),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text('Everything above has a server. Anything else, ask for it here; requests decide what gets built next.',
+                      style: TextStyle(fontSize: 12, color: Colors.grey)),
+                ],
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+
+  /// "Request a game": a sheet with one dropdown of the titles that have no server yet,
+  /// grouped by console in the label, and a button that toggles this account's request.
+  Future<void> _openRequestSheet(List<CatalogItem> requestable, bool signedIn) async {
+    CatalogItem? picked = requestable.first;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) => Padding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(ctx).viewInsets.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Which game should OpenPak build next?', style: Theme.of(ctx).textTheme.titleMedium),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<CatalogItem>(
+                initialValue: picked,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Pick a title'),
+                items: [
+                  for (final i in requestable)
+                    DropdownMenuItem(value: i, child: Text('${i.console} · ${i.name}${i.voted ? '  (requested)' : ''}', overflow: TextOverflow.ellipsis)),
+                ],
+                onChanged: (v) => setSheet(() => picked = v),
+              ),
+              const SizedBox(height: 16),
+              if (!signedIn)
+                const Text('Sign in to request a game.', style: TextStyle(color: Colors.grey))
+              else
+                FilledButton(
+                  onPressed: picked == null
+                      ? null
+                      : () async {
+                          final item = picked!;
+                          Navigator.of(ctx).pop();
+                          await _request(item);
+                        },
+                  child: Text(picked?.voted == true ? 'Withdraw request' : 'Request'),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -192,13 +250,6 @@ class TitlesPageState extends State<TitlesPage> {
     onChanged: onChanged,
   );
 
-  Widget _signInHint() => Padding(
-    padding: const EdgeInsets.only(bottom: 4),
-    child: Text(
-      'Sign in to request the titles you want.',
-      style: TextStyle(color: tokensOf(context).muted, fontSize: 13),
-    ),
-  );
 
   static List<String> _distinct(Iterable<String> xs) {
     final seen = xs.where((x) => x.isNotEmpty).toSet().toList()..sort();
