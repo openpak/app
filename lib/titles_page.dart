@@ -397,7 +397,7 @@ List<CatalogItem> filterCatalog(
 /// not-yet-started (planned/requestable) makes no claim, so grey.
 RowState statusState(String status) => switch (status) {
   'live' || 'working' => RowState.ok,
-  'beta' || 'alpha' || 'partial' => RowState.warn,
+  'beta' || 'alpha' || 'partial' || 'scaffold' => RowState.warn,
   'not-feasible' || 'broken' => RowState.bad,
   _ => RowState.idle, // planned, requestable, anything new
 };
@@ -408,6 +408,7 @@ String statusLabel(String status) => switch (status) {
   'live' => 'Live',
   'working' => 'Working',
   'beta' => 'Beta',
+  'scaffold' => 'Scaffold',
   'alpha' => 'Alpha',
   'partial' => 'Partial',
   'planned' => 'Planned',
