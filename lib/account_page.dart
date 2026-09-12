@@ -15,6 +15,16 @@ class AccountPage extends StatefulWidget {
   State<AccountPage> createState() => _AccountPageState();
 }
 
+/// Core link namespace → what a person calls the console. A Wii or DS links
+/// from the website by friend code; WFC minted no name for itself, so the
+/// family's own is used here.
+const _platformNames = {
+  'switch': 'Switch',
+  'wiiu': 'Wii U',
+  '3ds': '3DS',
+  'wfc': 'Wii / DS',
+};
+
 class _AccountPageState extends State<AccountPage> {
   late Future<(Account, List<WebSession>)> _data;
 
@@ -124,7 +134,9 @@ class _AccountPageState extends State<AccountPage> {
                               if (i > 0) const Divider(height: 1),
                               ListTile(
                                 leading: const Icon(Icons.videogame_asset_outlined),
-                                title: Text(me.linkedPlatforms[i]),
+                                title: Text(
+                                    _platformNames[me.linkedPlatforms[i]] ??
+                                        me.linkedPlatforms[i]),
                               ),
                             ],
                           ],

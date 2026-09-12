@@ -133,6 +133,24 @@ void main() {
         'https://openpak.test/media/avatars/a/256');
   });
 
+  test('a Wii/DS link rides linked_platforms beside a Switch link', () async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((_) async => json({
+            'account_id': 'a',
+            'display_name': 'Leia',
+            // WD-0: a console linked by friend code is part of the person.
+            'linked_platforms': [
+              {'namespace': 'switch', 'link_id': 'l1'},
+              {'namespace': 'wfc', 'link_id': 'l2'},
+            ],
+          })),
+    );
+    final me = await api.me();
+    expect(me.linkedPlatforms, ['switch', 'wfc']);
+  });
+
   test('declining something already gone is false, not an error', () async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',
