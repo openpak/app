@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'api.dart';
 import 'theme.dart';
+import 'titles_page.dart' show consoleAsset;
 import 'widgets.dart';
 
 /// Cloud saves: every platform's saves under the account, newest version
@@ -19,6 +21,8 @@ class SavesPage extends StatefulWidget {
 }
 
 class SavesPageState extends State<SavesPage> {
+  String _search = '';
+  String? _console;
   late Future<(CloudSaves, SavesStorage, Map<String, bool>)> _data;
 
   @override
@@ -105,155 +109,24 @@ class SavesPageState extends State<SavesPage> {
               return LoadFailure(snap.error);
             }
             final (data, storage, kinds) = snap.data!;
-            final usage = data.usage;
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               children: [
-                SectionLabel('Storage'),
-                if (storage.connected)
-                  StateRow(
-                    name: storage.name,
-                    pill: storage.lastTestOk == false ? 'not answering' : 'connected',
-                    state: storage.lastTestOk == false ? RowState.bad : RowState.ok,
-                  )
-                else
-                  StateRow(
-                    name: '${fmtBytes(usage.allowanceUsed)} of ${fmtBytes(usage.allowance)}',
-                    pill: usage.allowance > 0
-                        ? '${(usage.allowanceUsed * 100 ~/ usage.allowance)}%'
-                        : '—',
-                    state: usage.allowance > 0 &&
-                            usage.allowanceUsed * 10 >= usage.allowance * 9
-                        ? RowState.warn
-                        : RowState.ok,
-                  ),
-                if (storage.lastError != null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
-                    child: Text(storage.lastError!,
-                        style: TextStyle(color: t.muted, fontSize: 13, height: 1.4)),
-                  ),
-                if (storage.moveState != null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
-                    child: Text('Move: ${storage.moveState}',
-                        style: TextStyle(color: t.muted, fontSize: 13, height: 1.4)),
-                  ),
+                // The website's order: what is used, the saves themselves, then where they go.
+                _head('Storage', storage.connected
+                    ? 'Your saves go to your own storage. Your bucket is the only limit.'
+                    : 'Your OpenPak allowance. When it is full, uploads are refused until you '
+                        'connect your own storage below.'),
+                _usage(data.usage, storage),
+                const SizedBox(height: 28),
+                _head('Saves', 'Every save under this account, whichever machine made it.'),
+                _list(data.saves),
+                const SizedBox(height: 28),
+                _head('Your own storage', 'Saves go straight there; OpenPak keeps only the index. '
+                    'The secret is tested once and never shown again.'),
+                ..._storage(storage, data.usage, kinds),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
-                  child: Text(
-                    storage.connected
-                        ? 'Your saves go to your own storage. It is the only limit.'
-                        : 'Your OpenPak allowance. Connect storage you own for everything '
-                            'beyond it: a bucket, a WebDAV share, Google Drive or OneDrive.',
-                    style: TextStyle(color: t.muted, fontSize: 13, height: 1.4),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    // One tap, nothing to type: the clouds come first when the deployment
-                    // offers them. Running your own storage is the advanced case below.
-                    if (kinds['gdrive'] == true)
-                      FilledButton.tonalIcon(
-                        icon: const Icon(Icons.add_to_drive),
-                        label: const Text('Google Drive'),
-                        onPressed: () => _connectCloud('gdrive'),
-                      ),
-                    if (kinds['onedrive'] == true)
-                      FilledButton.tonalIcon(
-                        icon: const Icon(Icons.cloud_outlined),
-                        label: const Text('OneDrive'),
-                        onPressed: () => _connectCloud('onedrive'),
-                      ),
-                    if (storage.connected && usage.allowanceUsed > 0)
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.drive_file_move_outline),
-                        label: Text('Move ${fmtBytes(usage.allowanceUsed)} here'),
-                        onPressed: () => _act(widget.api.moveSaves,
-                            'Moving your saves. Pull to refresh in a moment.'),
-                      ),
-                    if (storage.connected)
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.link_off),
-                        label: const Text('Disconnect'),
-                        onPressed: () async {
-                          if (await _confirm(
-                            'Disconnect storage?',
-                            'Versions stored there stay listed but cannot be read until it is connected again.',
-                          )) {
-                            await _act(widget.api.disconnectStorage, 'Storage disconnected.');
-                          }
-                        },
-                      ),
-                  ],
-                ),
-                ExpansionTile(
-                  tilePadding: EdgeInsets.zero,
-                  title: Text('Advanced: your own bucket or server',
-                      style: TextStyle(color: t.ink2, fontSize: 14)),
-                  subtitle: Text(
-                    'For people who run their own storage. Everyone else needs none of this.',
-                    style: TextStyle(color: t.muted, fontSize: 12),
-                  ),
-                  initiallyExpanded: storage.connected &&
-                      (storage.kind == 's3' || storage.kind == 'webdav'),
-                  children: [
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        OutlinedButton.icon(
-                          icon: const Icon(Icons.storage_outlined),
-                          label: Text(storage.connected && storage.kind == 's3' ? 'Edit bucket' : 'S3 bucket'),
-                          onPressed: () => _connect(storage, 's3'),
-                        ),
-                        OutlinedButton.icon(
-                          icon: const Icon(Icons.dns_outlined),
-                          label: Text(storage.connected && storage.kind == 'webdav' ? 'Edit WebDAV' : 'WebDAV'),
-                          onPressed: () => _connect(storage, 'webdav'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                if (data.saves.isEmpty)
-                  Panel(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Text(
-                        'No saves yet. An emulator pushes one when you quit a '
-                        'game; a console backs up from its Save Data Cloud screen.',
-                        style: TextStyle(color: t.ink2, height: 1.5),
-                      ),
-                    ),
-                  ),
-                for (final save in data.saves) ...[
-                  SectionLabel(
-                    '${save.platform} · ${save.titleId}',
-                    trailing: save.versions.length == 1
-                        ? '1 version'
-                        : '${save.versions.length} versions',
-                  ),
-                  for (final v in save.versions)
-                    StateRow(
-                      name: 'Version ${v.number}${v.pinned ? ' · pinned' : ''}'
-                          '${v.backend != 'local' ? ' · your storage' : ''}',
-                      pill: v.conflict ? 'conflict' : fmtBytes(v.size),
-                      state: v.conflict ? RowState.warn : RowState.ok,
-                      trailing: Text(
-                        _when(v.savedAt ?? v.createdAt),
-                        style: TextStyle(color: t.muted, fontSize: 12),
-                      ),
-                    ),
-                  const SizedBox(height: 12),
-                ],
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+                  padding: const EdgeInsets.fromLTRB(4, 16, 4, 0),
                   child: Text(
                     'Restore, download and delete versions at openpak.org/account/saves.',
                     style: TextStyle(color: t.muted, fontSize: 13, height: 1.4),
@@ -267,12 +140,330 @@ class SavesPageState extends State<SavesPage> {
     );
   }
 
-  static String _when(DateTime at) {
-    final local = at.toLocal();
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${local.year}-${two(local.month)}-${two(local.day)} '
-        '${two(local.hour)}:${two(local.minute)}';
+  /// The website's section head: a heading and one muted line under it.
+  Widget _head(String title, String sub) {
+    final t = tokensOf(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text(sub, style: TextStyle(color: t.muted, fontSize: 13, height: 1.4)),
+        ],
+      ),
+    );
   }
+
+  Widget _usage(SavesUsage usage, SavesStorage storage) {
+    if (storage.connected) {
+      return StateRow(name: storage.name, pill: 'connected', state: RowState.ok);
+    }
+    final pct = usage.allowance > 0 ? usage.allowanceUsed * 100 ~/ usage.allowance : 0;
+    final warn = pct >= 90;
+    final t = tokensOf(context);
+    return Column(
+      children: [
+        StateRow(
+          name: '${fmtBytes(usage.allowanceUsed)} / ${fmtBytes(usage.allowance)}',
+          pill: '$pct%',
+          state: warn ? RowState.warn : RowState.ok,
+        ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: LinearProgressIndicator(
+            value: pct / 100,
+            minHeight: 6,
+            color: warn ? t.warn : t.ok,
+            backgroundColor: t.paper2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Search and console filter, then one card holding a row per game, as on the website.
+  Widget _list(List<CloudSave> saves) {
+    final t = tokensOf(context);
+    final withVersions = saves.where((s) => s.versions.isNotEmpty).toList();
+    if (withVersions.isEmpty) {
+      return Panel(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            'No saves yet. An emulator pushes one when you quit a game; a console backs up '
+            'from its Save Data Cloud screen.',
+            style: TextStyle(color: t.ink2, height: 1.5),
+          ),
+        ),
+      );
+    }
+    final consoles = withVersions.map((s) => platformConsole(s.platform)).toSet().toList()..sort();
+    final q = _search.trim().toLowerCase();
+    final shown = withVersions
+        .where((s) => (q.isEmpty || s.titleId.toLowerCase().contains(q)) &&
+            (_console == null || platformConsole(s.platform) == _console))
+        .toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          decoration: const InputDecoration(
+            hintText: 'Search by name',
+            prefixIcon: Icon(Icons.search),
+            isDense: true,
+          ),
+          onChanged: (v) => setState(() => _search = v),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String?>(
+          initialValue: _console,
+          isExpanded: true,
+          decoration: const InputDecoration(hintText: 'Console', isDense: true),
+          items: [
+            const DropdownMenuItem(value: null, child: Text('All consoles')),
+            ...consoles.map((c) => DropdownMenuItem(value: c, child: Text(c))),
+          ],
+          onChanged: (v) => setState(() => _console = v),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+          child: Text('Showing ${shown.length} / ${withVersions.length}',
+              style: TextStyle(color: t.muted, fontSize: 13)),
+        ),
+        if (shown.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: Text('No saves match.', style: TextStyle(color: t.muted))),
+          )
+        else
+          Panel(
+            child: Column(
+              children: [
+                for (final (i, s) in shown.indexed) ...[
+                  if (i > 0) Divider(height: 1, color: t.line),
+                  _SaveRow(save: s, api: widget.api),
+                ],
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  List<Widget> _storage(SavesStorage storage, SavesUsage usage, Map<String, bool> kinds) {
+    final t = tokensOf(context);
+    Widget hint(String s) => Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+          child: Text(s, style: TextStyle(color: t.muted, fontSize: 13, height: 1.4)),
+        );
+    return [
+      if (storage.connected)
+        StateRow(
+          name: storage.name,
+          pill: switch (storage.lastTestOk) {
+            true => 'tested',
+            false => 'not answering',
+            null => 'not tested',
+          },
+          state: switch (storage.lastTestOk) {
+            true => RowState.ok,
+            false => RowState.bad,
+            null => RowState.idle,
+          },
+        ),
+      if (storage.lastError != null) hint(storage.lastError!),
+      if (storage.moveState != null) hint('Move: ${storage.moveState}'),
+      if (storage.connected) ...[
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            if (usage.allowanceUsed > 0)
+              FilledButton.icon(
+                icon: const Icon(Icons.drive_file_move_outline),
+                label: Text('Move ${fmtBytes(usage.allowanceUsed)} here'),
+                onPressed: () => _act(widget.api.moveSaves,
+                    'Moving your saves. Pull to refresh in a moment.'),
+              ),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.link_off),
+              label: const Text('Disconnect'),
+              style: OutlinedButton.styleFrom(foregroundColor: t.bad),
+              onPressed: () async {
+                if (await _confirm(
+                  'Disconnect storage?',
+                  'Versions stored there stay listed but cannot be read until it is connected again.',
+                )) {
+                  await _act(widget.api.disconnectStorage, 'Storage disconnected.');
+                }
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+      ],
+      // One tap, nothing to type: the clouds come first when the deployment
+      // offers them. Running your own storage is the advanced case below.
+      if (kinds['gdrive'] == true || kinds['onedrive'] == true) ...[
+        hint('Google Drive or OneDrive: sign in once and saves go to a folder there.'),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            if (kinds['gdrive'] == true)
+              OutlinedButton.icon(
+                icon: const Icon(Icons.add_to_drive),
+                label: const Text('Google Drive'),
+                onPressed: () => _connectCloud('gdrive'),
+              ),
+            if (kinds['onedrive'] == true)
+              OutlinedButton.icon(
+                icon: const Icon(Icons.cloud_outlined),
+                label: const Text('OneDrive'),
+                onPressed: () => _connectCloud('onedrive'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+      ],
+      ExpansionTile(
+        tilePadding: const EdgeInsets.symmetric(horizontal: 4),
+        title: Text('Advanced: your own bucket or server',
+            style: TextStyle(color: t.ink2, fontSize: 14)),
+        subtitle: Text(
+          'For people who run their own storage. Everyone else needs none of this.',
+          style: TextStyle(color: t.muted, fontSize: 12),
+        ),
+        initiallyExpanded: storage.connected && (storage.kind == 's3' || storage.kind == 'webdav'),
+        children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                icon: const Icon(Icons.storage_outlined),
+                label: Text(storage.connected && storage.kind == 's3' ? 'Edit bucket' : 'S3 bucket'),
+                onPressed: () => _connect(storage, 's3'),
+              ),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.dns_outlined),
+                label: Text(storage.connected && storage.kind == 'webdav' ? 'Edit WebDAV' : 'WebDAV'),
+                onPressed: () => _connect(storage, 'webdav'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ];
+  }
+}
+
+/// One game, the website's row: its icon (or the console's mark), the name, the console
+/// logo with a conflict badge, and the current version on the line under it.
+class _SaveRow extends StatelessWidget {
+  const _SaveRow({required this.save, required this.api});
+  final CloudSave save;
+  final OpenPakApi api;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    final brightness = Theme.of(context).brightness;
+    final console = platformConsole(save.platform);
+    final cur = save.versions.first;
+    final conflict = save.versions.any((v) => v.conflict);
+    Widget mark(double w, double h) => SvgPicture.asset(
+          'assets/consoles/${consoleAsset(console, brightness)}.svg',
+          width: w,
+          height: h,
+          semanticsLabel: console,
+        );
+    final box = Container(
+      width: 48,
+      height: 48,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: t.paper2, borderRadius: BorderRadius.circular(8)),
+      child: mark(36, 24),
+    );
+    return Padding(
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          if (console == 'Switch' && _switchId.hasMatch(save.titleId))
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                api.absolute('/titles/icon/${save.titleId}'),
+                width: 48,
+                height: 48,
+                errorBuilder: (_, _, _) => box,
+              ),
+            )
+          else
+            box,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(save.titleId,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    mark(24, 16),
+                    if (conflict) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: t.warnWeak,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(color: t.warnLine),
+                        ),
+                        child: Text('Conflict',
+                            style: TextStyle(color: t.warn, fontSize: 11.5, fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Version ${cur.number} · ${_when(cur.savedAt ?? cur.createdAt)}'
+                  ' · ${fmtBytes(cur.size)}${cur.device != null ? ' · ${cur.device}' : ''}'
+                  '${cur.backend != 'local' ? ' · your storage' : ''}'
+                  '${save.versions.length > 1 ? ' · ${save.versions.length} versions' : ''}',
+                  style: TextStyle(color: t.muted, fontSize: 12.5),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+final _switchId = RegExp(r'^[0-9A-Fa-f]{16}$');
+
+/// The console behind a saves platform, for the logo and the filter: the emulators' names
+/// and the console's own. Same mapping as the website's platformConsole.
+String platformConsole(String p) => switch (p.toLowerCase()) {
+  'citron' || 'switch' => 'Switch',
+  'wii' => 'Wii',
+  'ds' => 'DS',
+  _ => p,
+};
+
+String _when(DateTime at) {
+  final local = at.toLocal();
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${local.year}-${two(local.month)}-${two(local.day)} '
+      '${two(local.hour)}:${two(local.minute)}';
 }
 
 /// The connect form. The secret is never shown back; empty keeps the stored one

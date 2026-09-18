@@ -3,8 +3,10 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
-## Unreleased
+## v0.6.15 — 2026-09-18
 
+- Saves: the website's page — usage meter, the saves by game with icon, console and
+  conflict badge, search and console filter, then your own storage
 - WD-0: linked consoles render as platform names [fdc7f7b]
 
 
