@@ -1,7 +1,7 @@
 name: openpak
 description: OpenPak companion app — your account, friends and invitations.
 publish_to: none
-version: 0.6.15+15
+version: 0.6.16+16
 
 environment:
   sdk: ^3.9.0
@@ -19,6 +19,8 @@ dependencies:
   # Renders the website's icon.svg as-is. The alternative was redrawing the
   # logo in Dart, which is a copy that drifts the moment the real one changes.
   flutter_svg: ^2.3.0
+  # A downloaded save goes to the share sheet: Files, Drive, anywhere, on both platforms.
+  share_plus: ^12.0.2
 
 dev_dependencies:
   flutter_test:
