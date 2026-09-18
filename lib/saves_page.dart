@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'api.dart';
@@ -7,11 +8,9 @@ import 'theme.dart';
 import 'titles_page.dart' show consoleAsset;
 import 'widgets.dart';
 
-/// Cloud saves: every platform's saves under the account, newest version
-/// first, the storage they use, and the player's own storage. Versions are
-/// read-only here (restore, download and delete are deliberate work that
-/// belongs on the website); storage can be connected, moved into and
-/// disconnected, because those are settings rather than data.
+/// Cloud saves, the website's page: the allowance, every game's saves with a version
+/// dropdown (picking one makes it current), download and delete, then the player's own
+/// storage.
 class SavesPage extends StatefulWidget {
   const SavesPage({super.key, required this.api});
   final OpenPakApi api;
@@ -92,6 +91,25 @@ class SavesPageState extends State<SavesPage> {
     }
   }
 
+  Future<void> _delete(SaveVersion v) async {
+    if (await _confirm('Delete this version?', 'Its bytes are removed from storage.')) {
+      await _act(() => widget.api.deleteSave(v.id), 'Version deleted.');
+    }
+  }
+
+  /// The bytes go to the share sheet, which saves them to Files, Drive or anywhere else.
+  Future<void> _download(SaveVersion v) async {
+    try {
+      final bytes = await widget.api.downloadSave(v.id);
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile.fromData(bytes, mimeType: 'application/octet-stream')],
+        fileNameOverrides: ['save-${v.id}.bin'],
+      ));
+    } on ApiException catch (e) {
+      if (mounted) showToast(context, e.message);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
@@ -119,7 +137,7 @@ class SavesPageState extends State<SavesPage> {
                         'connect your own storage below.'),
                 _usage(data.usage, storage),
                 const SizedBox(height: 28),
-                _head('Saves', 'Every save under this account, whichever machine made it.'),
+                _head('Saves', 'Pick a version to make it the current one; the older one is kept.'),
                 _list(data.saves),
                 const SizedBox(height: 28),
                 _head('Your own storage', 'Saves go straight there; OpenPak keeps only the index. '
@@ -128,7 +146,7 @@ class SavesPageState extends State<SavesPage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 16, 4, 0),
                   child: Text(
-                    'Restore, download and delete versions at openpak.org/account/saves.',
+                    'Console backups have several parts and cannot be downloaded here yet.',
                     style: TextStyle(color: t.muted, fontSize: 13, height: 1.4),
                   ),
                 ),
@@ -202,7 +220,7 @@ class SavesPageState extends State<SavesPage> {
     final consoles = withVersions.map((s) => platformConsole(s.platform)).toSet().toList()..sort();
     final q = _search.trim().toLowerCase();
     final shown = withVersions
-        .where((s) => (q.isEmpty || s.titleId.toLowerCase().contains(q)) &&
+        .where((s) => (q.isEmpty || s.name.toLowerCase().contains(q)) &&
             (_console == null || platformConsole(s.platform) == _console))
         .toList();
     return Column(
@@ -243,7 +261,15 @@ class SavesPageState extends State<SavesPage> {
               children: [
                 for (final (i, s) in shown.indexed) ...[
                   if (i > 0) Divider(height: 1, color: t.line),
-                  _SaveRow(save: s, api: widget.api),
+                  _SaveRow(
+                    key: ObjectKey(s), // a reload resets the dropdown to the current version
+                    save: s,
+                    api: widget.api,
+                    onRestore: (id) => _act(() => widget.api.restoreSave(id),
+                        'Restored. That version is the current one now.'),
+                    onDownload: _download,
+                    onDelete: _delete,
+                  ),
                 ],
               ],
             ),
@@ -362,11 +388,22 @@ class SavesPageState extends State<SavesPage> {
 }
 
 /// One game, the website's row: its icon (or the console's mark), the name, the console
-/// logo with a conflict badge, and the current version on the line under it.
+/// logo with a conflict badge, then the version dropdown with download and delete. Picking
+/// a version restores it, so the buttons always act on the current one.
 class _SaveRow extends StatelessWidget {
-  const _SaveRow({required this.save, required this.api});
+  const _SaveRow({
+    super.key,
+    required this.save,
+    required this.api,
+    required this.onRestore,
+    required this.onDownload,
+    required this.onDelete,
+  });
   final CloudSave save;
   final OpenPakApi api;
+  final ValueChanged<int> onRestore;
+  final ValueChanged<SaveVersion> onDownload;
+  final ValueChanged<SaveVersion> onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -390,57 +427,87 @@ class _SaveRow extends StatelessWidget {
     );
     return Padding(
       padding: const EdgeInsets.all(14),
-      child: Row(
+      child: Column(
         children: [
-          if (console == 'Switch' && _switchId.hasMatch(save.titleId))
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                api.absolute('/titles/icon/${save.titleId}'),
-                width: 48,
-                height: 48,
-                errorBuilder: (_, _, _) => box,
-              ),
-            )
-          else
-            box,
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(save.titleId,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                    overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Row(
+          Row(
+            children: [
+              if (save.icon != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    api.absolute(save.icon!),
+                    width: 48,
+                    height: 48,
+                    errorBuilder: (_, _, _) => box,
+                  ),
+                )
+              else
+                box,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    mark(24, 16),
-                    if (conflict) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: t.warnWeak,
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: t.warnLine),
-                        ),
-                        child: Text('Conflict',
-                            style: TextStyle(color: t.warn, fontSize: 11.5, fontWeight: FontWeight.w700)),
-                      ),
-                    ],
+                    Text(save.name,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        mark(24, 16),
+                        if (conflict) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: t.warnWeak,
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(color: t.warnLine),
+                            ),
+                            child: Text('Conflict',
+                                style: TextStyle(color: t.warn, fontSize: 11.5, fontWeight: FontWeight.w700)),
+                          ),
+                        ],
+                      ],
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Version ${cur.number} · ${_when(cur.savedAt ?? cur.createdAt)}'
-                  ' · ${fmtBytes(cur.size)}${cur.device != null ? ' · ${cur.device}' : ''}'
-                  '${cur.backend != 'local' ? ' · your storage' : ''}'
-                  '${save.versions.length > 1 ? ' · ${save.versions.length} versions' : ''}',
-                  style: TextStyle(color: t.muted, fontSize: 12.5),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<int>(
+                  initialValue: cur.id,
+                  isExpanded: true,
+                  decoration: const InputDecoration(isDense: true),
+                  style: TextStyle(color: t.ink2, fontSize: 13),
+                  items: [
+                    for (final v in save.versions)
+                      DropdownMenuItem(
+                        value: v.id,
+                        child: Text(_versionLabel(v), overflow: TextOverflow.ellipsis),
+                      ),
+                  ],
+                  onChanged: (id) {
+                    if (id != null && id != cur.id) onRestore(id);
+                  },
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.download),
+                tooltip: 'Download',
+                onPressed: cur.parts == 1 ? () => onDownload(cur) : null,
+              ),
+              IconButton(
+                icon: Icon(Icons.delete_outline, color: t.bad),
+                tooltip: 'Delete',
+                onPressed: () => onDelete(cur),
+              ),
+            ],
           ),
         ],
       ),
@@ -448,7 +515,12 @@ class _SaveRow extends StatelessWidget {
   }
 }
 
-final _switchId = RegExp(r'^[0-9A-Fa-f]{16}$');
+/// A version as the website's dropdown words it.
+String _versionLabel(SaveVersion v) =>
+    'Version ${v.number} · ${_when(v.savedAt ?? v.createdAt)} · ${fmtBytes(v.size)}'
+    '${v.device != null ? ' · ${v.device}' : ''}'
+    '${v.backend != 'local' ? ' · your storage' : ''}'
+    '${v.conflict ? ' · Conflict' : ''}';
 
 /// The console behind a saves platform, for the logo and the filter: the emulators' names
 /// and the console's own. Same mapping as the website's platformConsole.

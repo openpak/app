@@ -3,6 +3,11 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.6.16 — 2026-09-18
+
+- Saves: each game shows its name and icon; a version dropdown restores, and download
+  (to the share sheet) and delete sit beside it, as on the website
+
 ## v0.6.15 — 2026-09-18
 
 - Saves: the website's page — usage meter, the saves by game with icon, console and

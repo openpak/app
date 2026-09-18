@@ -8,6 +8,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 /// Thrown for any non-success reply. [unauthorized] is separated because it is
@@ -204,6 +205,7 @@ class SaveVersion {
   SaveVersion({
     required this.id,
     required this.number,
+    this.parts = 1,
     required this.size,
     required this.conflict,
     required this.pinned,
@@ -214,6 +216,9 @@ class SaveVersion {
   });
   final int id;
   final int number;
+
+  /// Console backups have several parts; only a one-part version downloads.
+  final int parts;
   final int size;
   final bool conflict;
   final bool pinned;
@@ -227,6 +232,7 @@ class SaveVersion {
   factory SaveVersion.fromJson(Map<String, dynamic> j) => SaveVersion(
     id: (j['id'] as num).toInt(),
     number: (j['number'] as num).toInt(),
+    parts: (j['parts'] as num?)?.toInt() ?? 1,
     size: (j['size'] as num?)?.toInt() ?? 0,
     conflict: j['conflict'] == true,
     pinned: j['pinned'] == true,
@@ -239,14 +245,23 @@ class SaveVersion {
 
 /// One title's saves on one platform, newest version first.
 class CloudSave {
-  CloudSave({required this.platform, required this.titleId, required this.versions});
+  CloudSave({required this.platform, required this.titleId, required this.versions, String? name, this.icon})
+      : name = name ?? titleId;
   final String platform;
   final String titleId;
+
+  /// The game's name when the website knows it, else the title id.
+  final String name;
+
+  /// A path on the website that draws the game's icon, when it has one.
+  final String? icon;
   final List<SaveVersion> versions;
 
   factory CloudSave.fromJson(Map<String, dynamic> j) => CloudSave(
     platform: j['platform'] as String,
     titleId: j['title_id'] as String,
+    name: (j['name'] as String?)?.isEmpty == true ? null : j['name'] as String?,
+    icon: j['icon'] as String?,
     versions: ((j['versions'] as List?) ?? const [])
         .map((e) => SaveVersion.fromJson(e as Map<String, dynamic>))
         .toList(growable: false),
@@ -502,6 +517,20 @@ class OpenPakApi {
   /// DELETE /me/saves/storage
   Future<void> disconnectStorage() async =>
       _decode(await _http.delete(_uri('/me/saves/storage'), headers: _headers()));
+
+  /// POST /me/saves/versions/{id}/restore — make a version the current one; the old stays.
+  Future<void> restoreSave(int id) => _post('/me/saves/versions/$id/restore', const {});
+
+  /// DELETE /me/saves/versions/{id}
+  Future<void> deleteSave(int id) async =>
+      _decode(await _http.delete(_uri('/me/saves/versions/$id'), headers: _headers()));
+
+  /// GET /me/saves/versions/{id} — one version's bytes.
+  Future<Uint8List> downloadSave(int id) async {
+    final r = await _http.get(_uri('/me/saves/versions/$id'), headers: _headers());
+    await _decode(r.statusCode < 300 ? http.Response('', r.statusCode) : r); // throws on failure
+    return r.bodyBytes;
+  }
 
   /// POST /me/saves/storage/move — runs in the background; poll savesStorage().
   Future<void> moveSaves() => _post('/me/saves/storage/move', const {});
