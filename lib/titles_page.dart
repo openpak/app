@@ -23,6 +23,7 @@ class TitlesPage extends StatefulWidget {
 class TitlesPageState extends State<TitlesPage> {
   late Future<List<CatalogItem>> _data;
   late Future<NetworkStatus> _online;
+  late Future<List<NewsArticle>> _news;
 
   // View controls, all applied client-side over the one fetched list — the
   // same as the web page, and it keeps a filter change from hitting the server.
@@ -40,6 +41,7 @@ class TitlesPageState extends State<TitlesPage> {
   void reload() => setState(() {
     _data = widget.api.requests();
     _online = widget.api.status();
+    _news = widget.api.news();
   });
 
   /// A request is optimistic: flip the row before the call, then let the
@@ -90,6 +92,7 @@ class TitlesPageState extends State<TitlesPage> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
+                _latestNews(),
                 _onlineNow(),
                 _segmented(),
                 const SizedBox(height: 12),
@@ -172,6 +175,84 @@ class TitlesPageState extends State<TitlesPage> {
       ),
     );
   }
+
+  /// The website's news, newest first, as its landing page shows them. Nothing
+  /// at all when there are none or they cannot be read; the catalog still is.
+  Widget _latestNews() => FutureBuilder<List<NewsArticle>>(
+        future: _news,
+        builder: (context, snap) {
+          final articles = snap.data ?? const <NewsArticle>[];
+          if (articles.isEmpty) return const SizedBox.shrink();
+          final t = tokensOf(context);
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SectionLabel('News'),
+                for (final a in articles)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Panel(
+                      child: InkWell(
+                        onTap: () => _openArticle(a),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(a.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                              if (a.publishedAt != null) ...[
+                                const SizedBox(height: 2),
+                                Text(newsDate(a.publishedAt!), style: TextStyle(color: t.muted, fontSize: 12.5)),
+                              ],
+                              if (a.summary.isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Text(a.summary,
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(color: t.ink2, fontSize: 13.5, height: 1.4)),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      );
+
+  /// The whole article, in a sheet over the tab it was opened from.
+  Future<void> _openArticle(NewsArticle a) => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (ctx) => DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.6,
+          maxChildSize: 0.95,
+          builder: (ctx, controller) => ListView(
+            controller: controller,
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+            children: [
+              Text(a.title, style: Theme.of(ctx).textTheme.titleLarge),
+              if (a.publishedAt != null) ...[
+                const SizedBox(height: 4),
+                Text(newsDate(a.publishedAt!), style: TextStyle(color: tokensOf(ctx).muted)),
+              ],
+              const SizedBox(height: 16),
+              for (final para in (a.body.isEmpty ? a.summary : a.body).split(RegExp(r'\n\s*\n')))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(para.trim(), style: const TextStyle(height: 1.5)),
+                ),
+            ],
+          ),
+        ),
+      );
 
   /// The website's status page in brief: who is online, per console network.
   /// Nothing is shown when the counts cannot be read; the catalog still is.
@@ -521,3 +602,11 @@ String statusLabel(String status) => switch (status) {
   '' => '—',
   _ => status[0].toUpperCase() + status.substring(1),
 };
+
+/// "18 September 2026", the website's news date, in UTC as it prints it.
+String newsDate(DateTime d) {
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+      'August', 'September', 'October', 'November', 'December'];
+  final u = d.toUtc();
+  return '${u.day} ${months[u.month - 1]} ${u.year}';
+}
