@@ -15,16 +15,6 @@ class AccountPage extends StatefulWidget {
   State<AccountPage> createState() => _AccountPageState();
 }
 
-/// Core link namespace → what a person calls the console. A Wii or DS links
-/// from the website by friend code; WFC minted no name for itself, so the
-/// family's own is used here.
-const _platformNames = {
-  'switch': 'Switch',
-  'wiiu': 'Wii U',
-  '3ds': '3DS',
-  'wfc': 'Wii / DS',
-};
-
 class _AccountPageState extends State<AccountPage> {
   late Future<(Account, List<WebSession>)> _data;
 
@@ -119,28 +109,36 @@ class _AccountPageState extends State<AccountPage> {
                 const SizedBox(height: 20),
                 const SectionLabel('Linked'),
                 Panel(
-                  child: me.linkedPlatforms.isEmpty
-                      ? Padding(
+                  child: Column(
+                    children: [
+                      if (me.linkedPlatforms.isEmpty)
+                        Padding(
                           padding: const EdgeInsets.all(16),
                           child: Text(
                             'Nothing linked yet. Link a console from its own '
-                            'settings, or from the website.',
+                            'settings, or a Wii or DS below.',
                             style: TextStyle(color: t.muted),
                           ),
-                        )
-                      : Column(
-                          children: [
-                            for (var i = 0; i < me.linkedPlatforms.length; i++) ...[
-                              if (i > 0) const Divider(height: 1),
-                              ListTile(
-                                leading: const Icon(Icons.videogame_asset_outlined),
-                                title: Text(
-                                    _platformNames[me.linkedPlatforms[i]] ??
-                                        me.linkedPlatforms[i]),
-                              ),
-                            ],
-                          ],
                         ),
+                      for (final ns in me.linkedPlatforms) ...[
+                        ListTile(
+                          leading: const Icon(Icons.videogame_asset_outlined),
+                          title: Text(platformNames[ns] ?? ns),
+                          trailing: TextButton(
+                            onPressed: () => _unlink(ns),
+                            child: Text('Unlink', style: TextStyle(color: t.bad)),
+                          ),
+                        ),
+                        const Divider(height: 1),
+                      ],
+                      if (!me.linkedPlatforms.contains('wfc'))
+                        ListTile(
+                          leading: const Icon(Icons.add_link),
+                          title: const Text('Link a Wii or DS'),
+                          onTap: _linkWfc,
+                        ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 20),
                 SectionLabel('Signed in', trailing: '${sessions.length}'),
@@ -169,6 +167,16 @@ class _AccountPageState extends State<AccountPage> {
                 ),
                 const SizedBox(height: 28),
                 OutlinedButton.icon(
+                  onPressed: _changePassword,
+                  icon: const Icon(Icons.password),
+                  label: const Text('Change password'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    side: BorderSide(color: t.line),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
                   onPressed: widget.onSignedOut,
                   icon: const Icon(Icons.logout),
                   label: const Text('Sign out'),
@@ -195,6 +203,51 @@ class _AccountPageState extends State<AccountPage> {
       ),
     );
     if (changed ?? false) _reload();
+  }
+
+  Future<void> _act(Future<void> Function() call, String done) async {
+    try {
+      await call();
+      if (mounted) showToast(context, done);
+    } on ApiException catch (e) {
+      if (mounted) showToast(context, e.message);
+    }
+    _reload();
+  }
+
+  Future<void> _unlink(String ns) async {
+    final name = platformNames[ns] ?? ns;
+    if (!await confirm(context, 'Unlink your $name?',
+        detail: 'It stops signing in as you until it is linked again.')) {
+      return;
+    }
+    await _act(() => widget.api.unlink(ns), '$name unlinked.');
+  }
+
+  Future<void> _linkWfc() async {
+    final v = await promptForm(
+      context,
+      title: 'Link a Wii or DS',
+      labels: const ['Friend code'],
+      action: 'Link',
+      help: 'Type the friend code any Wii or DS game on that console shows you. '
+          'The console has no login of its own, so this is how it joins your account.',
+    );
+    if (v == null || v[0].isEmpty) return;
+    await _act(() => widget.api.linkWfc(v[0]), 'Wii / DS linked.');
+  }
+
+  /// Every other device is signed out by the change; this one stays.
+  Future<void> _changePassword() async {
+    final v = await promptForm(
+      context,
+      title: 'Change password',
+      labels: const ['*Current password', '*New password'],
+      action: 'Change',
+      help: 'At least 8 characters. Your other devices are signed out.',
+    );
+    if (v == null || v[0].isEmpty || v[1].isEmpty) return;
+    await _act(() => widget.api.changePassword(v[0], v[1]), 'Password changed.');
   }
 
   Future<void> _revoke(WebSession s) async {

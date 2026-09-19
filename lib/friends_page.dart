@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'api.dart';
+import 'chat_page.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -37,6 +38,25 @@ class FriendsPageState extends State<FriendsPage> {
     reload();
   }
 
+  /// Nothing lists blocked accounts, so the only way back is Undo, right after.
+  Future<void> _block(Friend f) async {
+    try {
+      await widget.api.blockAccount(f.accountId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('${f.displayName} blocked.'),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () => _act(() => widget.api.unblockAccount(f.accountId), 'Unblocked. Add them again by friend code.'),
+          ),
+        ));
+      }
+    } on ApiException catch (e) {
+      if (mounted) showToast(context, e.message);
+    }
+    reload();
+  }
+
   Future<void> _addByCode() async {
     final code = await promptForText(
       context,
@@ -55,6 +75,13 @@ class FriendsPageState extends State<FriendsPage> {
       appBar: AppBar(
         title: const Text('Friends'),
         actions: [
+          IconButton(
+            tooltip: 'Messages',
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => ConversationsPage(api: widget.api),
+            )),
+          ),
           IconButton(
             tooltip: 'Add by friend code',
             icon: const Icon(Icons.person_add_alt),
@@ -145,6 +172,9 @@ class FriendsPageState extends State<FriendsPage> {
       pill: f.online ? (playing ? f.titleId! : 'Online') : 'Offline',
       state: f.online ? RowState.ok : RowState.idle,
       leading: Avatar(name: f.displayName, online: f.online),
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => ChatPage(api: widget.api, peer: f.accountId, name: f.displayName),
+      )),
       trailing: PopupMenuButton<String>(
         onSelected: (v) async {
           if (v == 'remove') {
@@ -157,7 +187,7 @@ class FriendsPageState extends State<FriendsPage> {
               'Block ${f.displayName}?',
               detail: 'They are removed as a friend and cannot invite you.',
             )) {
-              await _act(() => widget.api.blockAccount(f.accountId), 'Blocked.');
+              await _block(f);
             }
           }
         },

@@ -8,6 +8,16 @@ import 'api.dart';
 
 import 'theme.dart';
 
+/// Core link namespace → what a person calls the console. A Wii or DS links
+/// from the website by friend code; WFC minted no name for itself, so the
+/// family's own is used here.
+const platformNames = {
+  'switch': 'Switch',
+  'wiiu': 'Wii U',
+  '3ds': '3DS',
+  'wfc': 'Wii / DS',
+};
+
 /// A bordered surface: the site's card, which sits on the page rather than
 /// floating above it.
 class Panel extends StatelessWidget {
@@ -203,6 +213,61 @@ Future<bool> confirm(BuildContext context, String title, {String? detail}) async
     ),
   );
   return ok ?? false;
+}
+
+/// A dialog of a few text fields; the values in order, or null when cancelled.
+/// A label starting with '*' is a secret; the star is not shown.
+Future<List<String>?> promptForm(
+  BuildContext context, {
+  required String title,
+  required List<String> labels,
+  required String action,
+  List<String> initial = const [],
+  String? help,
+}) {
+  final controllers = [
+    for (var i = 0; i < labels.length; i++)
+      TextEditingController(text: i < initial.length ? initial[i] : ''),
+  ];
+  return showDialog<List<String>>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(title),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < labels.length; i++)
+              TextField(
+                controller: controllers[i],
+                autofocus: i == 0,
+                obscureText: labels[i].startsWith('*'),
+                autocorrect: false,
+                keyboardType: labels[i].toLowerCase().contains('mail')
+                    ? TextInputType.emailAddress
+                    : null,
+                decoration: InputDecoration(labelText: labels[i].replaceFirst('*', '')),
+              ),
+            if (help != null) ...[
+              const SizedBox(height: 12),
+              Text(help, style: TextStyle(color: tokensOf(context).muted, fontSize: 13)),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, [
+            for (var i = 0; i < labels.length; i++)
+              labels[i].startsWith('*') ? controllers[i].text : controllers[i].text.trim(),
+          ]),
+          child: Text(action),
+        ),
+      ],
+    ),
+  );
 }
 
 Future<String?> promptForText(

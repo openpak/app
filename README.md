@@ -7,11 +7,19 @@ for nothing a person would notice).
 
 ## What it does
 
-- Sign in with an OpenPak account; the bearer is kept in the platform keystore.
+- Sign in with an OpenPak account, or create one; the bearer is kept in the
+  platform keystore. A forgotten password is reset by mail.
 - Friends, with presence: who is online and what they are playing. Offline
   friends stay in the list rather than disappearing.
 - Invitations waiting for you, and decline. Reading the inbox consumes nothing,
   so opening the app never takes an invitation away from your console.
+- Titles: what has a server, who is online per console network, and a request
+  for the next game.
+- Saves: usage, each game's versions to restore, download or delete, and your
+  own storage.
+- Chat with friends: tap one to open the thread.
+- Account: details, avatar (a built-in or your own photo), password, linked
+  consoles (link a Wii or DS, unlink any) and signed-in devices.
 
 ## Toolchain
 
@@ -53,8 +61,8 @@ flutter build apk --release --split-per-abi   # ~17 MB for arm64
 adb install build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
 ```
 
-Release builds are signed with the debug key for now — installable by hand,
-not distributable. A real signing config is needed before any store.
+Release builds are signed with a stable keystore, so a new APK installs over
+the previous one.
 
 ## The logo comes from the website
 
