@@ -109,17 +109,6 @@ The contract is still the source of truth: it lives in the website repo as
 `openapi/openapi.yaml`, with a test there that fails when a served route is
 missing from it. If this ever grows past a few dozen endpoints, generate it.
 
-## Languages
-
-English, German, French, Brazilian Portuguese, Italian and Spanish, following
-the phone's language. Strings live in `lib/l10n/*.arb` (`app_en.arb` is the
-template; every key has a description for translators) and Flutter's gen-l10n
-turns them into `AppLocalizations` on `flutter pub get`, so the generated Dart
-is not committed. `app_pt.arb` carries the same strings as `app_pt_BR.arb`
-(gen-l10n needs a base `pt`). Terms follow the website's `docs/glossary.md`.
-Every API call sends the app's language as `Accept-Language`, and API errors
-are shown by their `code`, translated (`apiErrorText` in `lib/l10n.dart`).
-
 ## Not here yet
 
 - **Push.** The server side is built (`POST /api/v1/me/push` and a notifier);
