@@ -16,14 +16,56 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final _email = TextEditingController();
   final _password = TextEditingController();
+  final _code = TextEditingController();
   bool _busy = false;
   String? _error;
+
+  /// Set once the password was right and the account wants a second factor.
+  /// The form then asks for the code alone; the password stays filled in, so
+  /// starting again is one tap.
+  String? _challenge;
 
   @override
   void dispose() {
     _email.dispose();
     _password.dispose();
+    _code.dispose();
     super.dispose();
+  }
+
+  void _startAgain({String? error}) => setState(() {
+    _challenge = null;
+    _code.clear();
+    _error = error;
+  });
+
+  Future<void> _submitCode() async {
+    if (_code.text.trim().isEmpty) {
+      setState(() => _error = 'Type the code from your app.');
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final token = await widget.api.signInSecondFactor(_challenge!, _code.text);
+      await widget.onSignedIn(token);
+    } on ApiException catch (e) {
+      // A 401 cannot tell a wrong code from a spent challenge, and a spent one
+      // cannot be retried, so both go back to the password.
+      if (e.unauthorized) {
+        _startAgain(error: 'That code is not right, or it took too long. Sign in again.');
+      } else {
+        setState(() => _error = e.statusCode == 429
+            ? 'Too many wrong codes. Try again in 15 minutes.'
+            : e.message);
+      }
+    } catch (_) {
+      setState(() => _error = 'Could not reach OpenPak. Check your connection.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _submit() async {
@@ -37,6 +79,8 @@ class _SignInPageState extends State<SignInPage> {
         _password.text,
       );
       await widget.onSignedIn(token);
+    } on TwoFactorRequired catch (c) {
+      setState(() => _challenge = c.challenge);
     } on ApiException catch (e) {
       // The server distinguishes wrong credentials from being rate limited,
       // and so should the message: one is worth retrying immediately.
@@ -114,55 +158,7 @@ class _SignInPageState extends State<SignInPage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  TextField(
-                    controller: _email,
-                    autofillHints: const [AutofillHints.email],
-                    keyboardType: TextInputType.emailAddress,
-                    autocorrect: false,
-                    decoration: const InputDecoration(
-                      labelText: 'E-mail',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _password,
-                    autofillHints: const [AutofillHints.password],
-                    obscureText: true,
-                    onSubmitted: (_) => _busy ? null : _submit(),
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  if (_error != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      _error!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _busy ? null : _submit,
-                    child: _busy
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Sign in'),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    children: [
-                      TextButton(onPressed: _forgot, child: const Text('Forgot password?')),
-                      TextButton(onPressed: _register, child: const Text('Create an account')),
-                    ],
-                  ),
+                  if (_challenge != null) ..._codeStep(context) else ..._passwordStep(context),
                 ],
               ),
             ),
@@ -171,4 +167,87 @@ class _SignInPageState extends State<SignInPage> {
       ),
     );
   }
+
+  /// The second step, as the website's: one field for either kind of code.
+  List<Widget> _codeStep(BuildContext context) => [
+    Text('Enter your code', style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
+    const SizedBox(height: 4),
+    const Text('This account uses two-factor authentication.', textAlign: TextAlign.center),
+    const SizedBox(height: 20),
+    TextField(
+      controller: _code,
+      autofocus: true,
+      autocorrect: false,
+      autofillHints: const [AutofillHints.oneTimeCode],
+      onSubmitted: (_) => _busy ? null : _submitCode(),
+      decoration: const InputDecoration(
+        labelText: 'Code',
+        helperText: 'The six digits from your authenticator app, or one of your recovery codes.',
+        helperMaxLines: 3,
+        border: OutlineInputBorder(),
+      ),
+    ),
+    ..._errorLine(context),
+    const SizedBox(height: 24),
+    FilledButton(
+      onPressed: _busy ? null : _submitCode,
+      child: _busy ? _spinner : const Text('Sign in'),
+    ),
+    const SizedBox(height: 8),
+    TextButton(onPressed: _busy ? null : _startAgain, child: const Text('Start again')),
+  ];
+
+  static const _spinner = SizedBox(
+    height: 20,
+    width: 20,
+    child: CircularProgressIndicator(strokeWidth: 2),
+  );
+
+  List<Widget> _errorLine(BuildContext context) => [
+    if (_error != null) ...[
+      const SizedBox(height: 16),
+      Text(
+        _error!,
+        style: TextStyle(color: Theme.of(context).colorScheme.error),
+      ),
+    ],
+  ];
+
+  List<Widget> _passwordStep(BuildContext context) => [
+    TextField(
+      controller: _email,
+      autofillHints: const [AutofillHints.email],
+      keyboardType: TextInputType.emailAddress,
+      autocorrect: false,
+      decoration: const InputDecoration(
+        labelText: 'E-mail',
+        border: OutlineInputBorder(),
+      ),
+    ),
+    const SizedBox(height: 12),
+    TextField(
+      controller: _password,
+      autofillHints: const [AutofillHints.password],
+      obscureText: true,
+      onSubmitted: (_) => _busy ? null : _submit(),
+      decoration: const InputDecoration(
+        labelText: 'Password',
+        border: OutlineInputBorder(),
+      ),
+    ),
+    ..._errorLine(context),
+    const SizedBox(height: 24),
+    FilledButton(
+      onPressed: _busy ? null : _submit,
+      child: _busy ? _spinner : const Text('Sign in'),
+    ),
+    const SizedBox(height: 8),
+    Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      children: [
+        TextButton(onPressed: _forgot, child: const Text('Forgot password?')),
+        TextButton(onPressed: _register, child: const Text('Create an account')),
+      ],
+    ),
+  ];
 }

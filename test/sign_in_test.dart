@@ -57,6 +57,76 @@ void main() {
     await submit(tester);
     expect(find.textContaining('Check your connection'), findsOneWidget);
   });
+
+  /// POST /token answers with a challenge; /token/2fa answers [second].
+  MockClient twoFactor(http.Response Function() second, {List<String>? sent}) =>
+      MockClient((req) async {
+        sent?.add('${req.url.path} ${req.body}');
+        if (req.url.path == '/api/v1/token') {
+          return http.Response(jsonEncode({'two_factor_required': true, 'challenge': 'ch-1'}), 202,
+              headers: {'content-type': 'application/json'});
+        }
+        return second();
+      });
+
+  testWidgets('a two-factor account asks for a code, then signs in', (tester) async {
+    String? token;
+    final sent = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SignInPage(
+          api: OpenPakApi(
+            baseUrl: 'https://openpak.test',
+            client: twoFactor(
+              () => http.Response(jsonEncode({'token': 'opk_2fa'}), 201,
+                  headers: {'content-type': 'application/json'}),
+              sent: sent,
+            ),
+          ),
+          onSignedIn: (t) async => token = t,
+        ),
+      ),
+    );
+    await submit(tester);
+    expect(find.text('Enter your code'), findsOneWidget);
+    expect(token, isNull);
+    await tester.enterText(find.byType(TextField), '123456');
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+    expect(token, 'opk_2fa');
+    expect(sent.last, '/api/v1/token/2fa {"challenge":"ch-1","code":"123456"}');
+  });
+
+  // A wrong code and a spent challenge are the same 401; a spent challenge
+  // cannot be retried, so the page starts over from the password.
+  testWidgets('a rejected code goes back to the password', (tester) async {
+    await pumpSignIn(
+      tester,
+      twoFactor(() => http.Response(jsonEncode({'error': 'invalid code'}), 401,
+          headers: {'content-type': 'application/json'})),
+    );
+    await submit(tester);
+    await tester.enterText(find.byType(TextField), '000000');
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+    expect(find.text('Enter your code'), findsNothing);
+    expect(find.textContaining('Sign in again'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
+  });
+
+  testWidgets('a locked second factor says how long to wait', (tester) async {
+    await pumpSignIn(
+      tester,
+      twoFactor(() => http.Response(jsonEncode({'error': 'locked'}), 429,
+          headers: {'content-type': 'application/json'})),
+    );
+    await submit(tester);
+    await tester.enterText(find.byType(TextField), 'abcde-fghij');
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('15 minutes'), findsOneWidget);
+    expect(find.text('Enter your code'), findsOneWidget);
+  });
 }
 
 /// A stand-in for any transport failure; the page must not read it as a
