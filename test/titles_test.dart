@@ -159,4 +159,41 @@ void main() {
     expect(find.text('Request'), findsNothing); // features are never requestable
     expect(find.text('5'), findsNothing); // no count on the Network view
   });
+
+  test('newsDate prints the website\'s date', () {
+    expect(newsDate(DateTime.utc(2026, 9, 18, 9)), '18 September 2026');
+  });
+
+  testWidgets('the latest news sits on top and opens in full; none, and it is not there', (tester) async {
+    var articles = <Map<String, dynamic>>[
+      {
+        'slug': 'wiiu',
+        'title': 'Wii U friends are live',
+        'summary': 'Friends lists now work.',
+        'body': 'Friends lists now work.\n\nMore to come.',
+        'published_at': '2026-09-18T09:00:00Z',
+      },
+    ];
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      client: MockClient((req) async => switch (req.url.path) {
+            '/api/v1/news' => _json({'articles': articles}),
+            _ => _json({'items': []}),
+          }),
+    );
+    await tester.pumpWidget(wrap(api));
+    await tester.pumpAndSettle();
+    expect(find.text('NEWS'), findsOneWidget);
+    expect(find.text('18 September 2026'), findsOneWidget);
+    await tester.tap(find.text('Wii U friends are live'));
+    await tester.pumpAndSettle();
+    expect(find.text('More to come.'), findsOneWidget);
+    Navigator.of(tester.element(find.text('More to come.'))).pop();
+    await tester.pumpAndSettle();
+
+    articles = [];
+    await tester.fling(find.byType(ListView).first, const Offset(0, 400), 1000);
+    await tester.pumpAndSettle();
+    expect(find.text('NEWS'), findsNothing);
+  });
 }
