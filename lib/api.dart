@@ -50,6 +50,7 @@ class Account {
     this.birthday = '',
     this.avatarUrl,
     this.linkedPlatforms = const [],
+    this.email = '',
     this.emailVerified = true,
     this.twoFactorEnabled = false,
   });
@@ -72,6 +73,9 @@ class Account {
   final bool emailVerified;
   final bool twoFactorEnabled;
 
+  /// Empty when the server could not say (older servers, or the core was not asked).
+  final String email;
+
   factory Account.fromJson(Map<String, dynamic> j) => Account(
     id: j['account_id'] as String? ?? '',
     displayName: j['display_name'] as String? ?? '',
@@ -83,6 +87,7 @@ class Account {
         .map((e) => (e as Map<String, dynamic>)['namespace'] as String? ?? '')
         .where((e) => e.isNotEmpty)
         .toList(growable: false),
+    email: j['email'] as String? ?? '',
     emailVerified: j['email_verified'] != false,
     twoFactorEnabled: j['two_factor_enabled'] == true,
   );

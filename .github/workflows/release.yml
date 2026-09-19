@@ -13,7 +13,8 @@ permissions:
 
 jobs:
   apk:
-    runs-on: ubuntu-latest
+    # The OpenPak self-hosted runner: GitHub-hosted minutes are not used for private repositories.
+    runs-on: [self-hosted, linux, podman]
     steps:
       - uses: actions/checkout@v4
 
@@ -54,6 +55,11 @@ jobs:
           EOF
 
       - run: flutter build apk --release --split-per-abi
+
+      # The runner is a persistent machine: the keystore must not outlive the job.
+      - name: Remove signing material
+        if: always()
+        run: rm -f android/app/openpak-release.jks android/key.properties
 
       - name: GitHub Release
         uses: softprops/action-gh-release@v2

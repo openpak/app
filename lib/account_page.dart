@@ -146,11 +146,9 @@ class _AccountPageState extends State<AccountPage> {
                 Panel(
                   child: Column(
                     children: [
-                      // The address itself is not in the API; whether it is
-                      // confirmed is, and that is what needs acting on.
                       ListTile(
                         leading: const Icon(Icons.mail_outline),
-                        title: const Text('Email address'),
+                        title: Text(me.email.isEmpty ? 'Email address' : me.email),
                         subtitle: Text(
                           me.emailVerified ? 'Confirmed' : 'Not confirmed',
                           style: TextStyle(color: me.emailVerified ? t.ok : t.warn),
