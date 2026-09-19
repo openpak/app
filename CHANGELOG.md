@@ -5,6 +5,10 @@ of truth; this file is the readable summary.
 
 ## Unreleased
 
+- German, French, Brazilian Portuguese (also serving `pt`), Italian and Spanish: all 310
+  strings, reusing the website's reviewed wording where the English matches and the
+  shared glossary (`website/docs/glossary.md`) elsewhere.
+
 - Languages: every string in `lib/l10n/app_en.arb`, through Flutter's gen-l10n;
   German, French, Brazilian Portuguese, Italian and Spanish files are in place
   (English copies until translated)
