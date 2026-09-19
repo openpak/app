@@ -5,7 +5,8 @@ import 'chat_page.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
-/// Friends, the requests waiting on either side, and adding someone by code.
+/// Friends, the requests waiting on either side, adding someone by code, and
+/// the accounts you blocked.
 class FriendsPage extends StatefulWidget {
   const FriendsPage({super.key, required this.api});
   final OpenPakApi api;
@@ -15,7 +16,7 @@ class FriendsPage extends StatefulWidget {
 }
 
 class FriendsPageState extends State<FriendsPage> {
-  late Future<(List<Friend>, FriendRequests)> _data;
+  late Future<(List<Friend>, FriendRequests, List<BlockedAccount>)> _data;
 
   @override
   void initState() {
@@ -24,8 +25,13 @@ class FriendsPageState extends State<FriendsPage> {
   }
 
   void reload() => setState(() {
-    _data = Future.wait([widget.api.friends(), widget.api.friendRequests()])
-        .then((r) => (r[0] as List<Friend>, r[1] as FriendRequests));
+    _data = Future.wait([
+      widget.api.friends(),
+      widget.api.friendRequests(),
+      // The block list is the least of this page: a failure there must not
+      // take the friends down with it.
+      widget.api.blocked().catchError((_) => <BlockedAccount>[]),
+    ]).then((r) => (r[0] as List<Friend>, r[1] as FriendRequests, r[2] as List<BlockedAccount>));
   });
 
   Future<void> _act(Future<void> Function() action, String done) async {
@@ -38,7 +44,7 @@ class FriendsPageState extends State<FriendsPage> {
     reload();
   }
 
-  /// Nothing lists blocked accounts, so the only way back is Undo, right after.
+  /// Undo right after, or Unblock from the Blocked list at the bottom later.
   Future<void> _block(Friend f) async {
     try {
       await widget.api.blockAccount(f.accountId);
@@ -91,7 +97,7 @@ class FriendsPageState extends State<FriendsPage> {
       ),
       body: RefreshIndicator(
         onRefresh: () async => reload(),
-        child: FutureBuilder<(List<Friend>, FriendRequests)>(
+        child: FutureBuilder<(List<Friend>, FriendRequests, List<BlockedAccount>)>(
           future: _data,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
@@ -100,10 +106,11 @@ class FriendsPageState extends State<FriendsPage> {
             if (snap.hasError) {
               return LoadFailure(snap.error);
             }
-            final (friends, requests) = snap.data!;
+            final (friends, requests, blocked) = snap.data!;
             if (friends.isEmpty &&
                 requests.incoming.isEmpty &&
-                requests.outgoing.isEmpty) {
+                requests.outgoing.isEmpty &&
+                blocked.isEmpty) {
               return const ScrollableMessage(
                 'No friends yet.\nAdd someone with the button above.',
               );
@@ -119,12 +126,24 @@ class FriendsPageState extends State<FriendsPage> {
                       pill: 'Wants to add you',
                       state: RowState.warn,
                       leading: Avatar(name: f.displayName),
-                      trailing: TextButton(
-                        onPressed: () => _act(
-                          () => widget.api.acceptFriend(f.accountId),
-                          'Added ${f.displayName}.',
-                        ),
-                        child: const Text('Accept'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextButton(
+                            onPressed: () => _act(
+                              () => widget.api.declineFriend(f.accountId),
+                              'Declined.',
+                            ),
+                            child: Text('Decline', style: TextStyle(color: t.muted)),
+                          ),
+                          TextButton(
+                            onPressed: () => _act(
+                              () => widget.api.acceptFriend(f.accountId),
+                              'Added ${f.displayName}.',
+                            ),
+                            child: const Text('Accept'),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -151,6 +170,31 @@ class FriendsPageState extends State<FriendsPage> {
                       name: f.displayName,
                       pill: 'Request sent',
                       leading: Avatar(name: f.displayName, dim: true),
+                    ),
+                  ),
+                ],
+                if (blocked.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  SectionLabel('Blocked', trailing: '${blocked.length}'),
+                  ...blocked.map(
+                    (b) => StateRow(
+                      name: b.displayName,
+                      pill: b.blockedAt == null ? 'Blocked' : 'Since ${_date(b.blockedAt!)}',
+                      leading: Avatar(name: b.displayName, dim: true),
+                      trailing: TextButton(
+                        onPressed: () => _act(
+                          () => widget.api.unblockAccount(b.accountId),
+                          'Unblocked. Add them again by friend code.',
+                        ),
+                        child: const Text('Unblock'),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(
+                      'They cannot send you requests, messages or invitations.',
+                      style: TextStyle(color: t.muted, fontSize: 13),
                     ),
                   ),
                 ],
@@ -199,4 +243,8 @@ class FriendsPageState extends State<FriendsPage> {
     );
   }
 
+  String _date(DateTime d) {
+    final l = d.toLocal();
+    return '${l.day}/${l.month}/${l.year}';
+  }
 }
