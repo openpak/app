@@ -39,6 +39,21 @@ says `0.6.6` — version bumps have not tracked the tags. Working tree: modified
 4. `flutter test` is the local gate; release: tag → `openpak_release.yml`
    builds split-ABI APKs and publishes a GitHub Release.
 
+## Languages: DE, FR, PT-BR, IT, ES (with the website)
+
+Decided 2026-09-19: German, French, Brazilian Portuguese, Italian and Spanish, shipped with
+the website's (see `website/next-session.md`) so both say the same words.
+
+- The app has no localisation yet: roughly 60–80 UI strings are hard-coded in `lib/*.dart`.
+  1. Add `flutter_localizations` + `generate: true` and an `l10n.yaml`; ARB files
+     `app_en.arb`, `app_de.arb`, `app_fr.arb`, `app_pt_BR.arb`, `app_it.arb`, `app_es.arb`;
+     move every string into `app_en.arb` first (no behaviour change), then translate.
+  2. Locale follows the device; add an in-app override on the account page.
+  3. Send `Accept-Language` on every API call. Server error messages are English strings
+     today; the website plans stable error `code`s for the app to translate — show the
+     translated code, fall back to the message.
+  4. Use the shared glossary in the website's `docs/` so terms match the site.
+
 ## Pointers
 
 - README.md · CHANGELOG.md · prds/companion-apps-prd.md
