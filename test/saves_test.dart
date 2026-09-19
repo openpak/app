@@ -79,4 +79,38 @@ void main() {
     expect(find.text('Showing 1 / 2'), findsOneWidget);
     expect(find.text('Mario Kart 8 Deluxe'), findsNothing);
   });
+
+  testWidgets('connected storage offers to move the saves still in the allowance', (tester) async {
+    final calls = <String>[];
+    final api = OpenPakApi(
+      baseUrl: 'http://x',
+      token: 't',
+      client: MockClient((req) async {
+        if (req.method != 'GET') {
+          calls.add('${req.method} ${req.url.path}');
+          return http.Response(jsonEncode({'move_state': 'moving'}), 202);
+        }
+        return switch (req.url.path) {
+          '/api/v1/me/saves' => _json({'saves': [], 'usage': {'allowance_used': 2048, 'allowance': 1 << 20}}),
+          '/api/v1/me/saves/storage/kinds' => _json({'s3': true}),
+          _ => _json({
+            'connected': true,
+            'kind': 'webdav',
+            'url': 'https://dav.example',
+            'last_test_ok': true,
+            'move_state': 'moving',
+            'usage': {'allowance_used': 2048},
+          }),
+        };
+      }),
+    );
+    await tester.pumpWidget(MaterialApp(theme: openPakLight(), home: SavesPage(api: api)));
+    await tester.pumpAndSettle();
+    expect(find.text('Move: moving'), findsOneWidget);
+    final move = find.text('Move my saves here (2 kB)');
+    await tester.scrollUntilVisible(move, 200, scrollable: find.byType(Scrollable).first);
+    await tester.tap(move);
+    await tester.pumpAndSettle();
+    expect(calls, ['POST /api/v1/me/saves/storage/move']);
+  });
 }

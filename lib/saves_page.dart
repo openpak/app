@@ -307,10 +307,13 @@ class SavesPageState extends State<SavesPage> {
           spacing: 8,
           runSpacing: 8,
           children: [
+            // As on the website: offered while anything still sits in the
+            // allowance, and the copy runs in the background (its state is
+            // the "Move:" line above once the next refresh reads it).
             if (usage.allowanceUsed > 0)
               FilledButton.icon(
                 icon: const Icon(Icons.drive_file_move_outline),
-                label: Text('Move ${fmtBytes(usage.allowanceUsed)} here'),
+                label: Text('Move my saves here (${fmtBytes(usage.allowanceUsed)})'),
                 onPressed: () => _act(widget.api.moveSaves,
                     'Moving your saves. Pull to refresh in a moment.'),
               ),
