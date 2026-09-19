@@ -7,19 +7,22 @@ for nothing a person would notice).
 
 ## What it does
 
-- Sign in with an OpenPak account, or create one; the bearer is kept in the
-  platform keystore. A forgotten password is reset by mail.
+- Sign in with an OpenPak account (and its two-factor code, when it has one),
+  or create one; the bearer is kept in the platform keystore. A forgotten
+  password is reset by mail.
 - Friends, with presence: who is online and what they are playing. Offline
-  friends stay in the list rather than disappearing.
+  friends stay in the list rather than disappearing. Requests are accepted or
+  declined; blocked accounts are listed with Unblock.
 - Invitations waiting for you, and decline. Reading the inbox consumes nothing,
   so opening the app never takes an invitation away from your console.
-- Titles: what has a server, who is online per console network, and a request
-  for the next game.
+- Titles: the latest news, what has a server, who is online per console
+  network, and a request for the next game.
 - Saves: usage, each game's versions to restore, download or delete, and your
   own storage.
 - Chat with friends: tap one to open the thread.
-- Account: details, avatar (a built-in or your own photo), password, linked
-  consoles (link a Wii or DS, unlink any) and signed-in devices.
+- Account: details, avatar (a built-in or your own photo), password, email
+  (confirmation and change), two-factor, linked consoles (link a Wii or DS,
+  unlink any), signed-in devices, and deleting the account.
 
 ## Toolchain
 

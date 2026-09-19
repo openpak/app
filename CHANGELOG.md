@@ -3,6 +3,19 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.7.0 — 2026-09-19
+
+Parity with the website (v0.46.0):
+
+- Sign in: a code step for two-factor accounts (authenticator or recovery code)
+- Account: email confirmed or not, with the link sent again; change the email
+- Account: two-factor set up (key to copy or open in an authenticator app, the
+  consoles warning, recovery codes shown once) and turned off
+- Account: delete the account, asked twice, then signed out
+- Friends: decline a request beside Accept; the accounts you blocked, with Unblock
+- Titles: the latest news on top, opened in full with a tap
+- Saves: "Move my saves here" in the website's words
+
 ## v0.6.17 — 2026-09-19
 
 - Saves in alphabetical order, as on the website

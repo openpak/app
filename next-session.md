@@ -1,11 +1,27 @@
 # Next session — app
 
-Updated 2026-09-15.
+Updated 2026-09-19.
 
-The Flutter companion app. Tags run to `v0.6.14` with one unreleased commit on top
-(fdc7f7b, WD-0: linked consoles render as platform names); `pubspec.yaml` still
-says `0.6.6` — version bumps have not tracked the tags. Working tree: modified
-`pubspec.lock` plus untracked `CHANGELOG.md`, `docs/`, `prds/` scaffolding.
+The Flutter companion app. Tags run to `v0.6.17`. Branch `parity-2026-09-19`
+(not pushed, not tagged) brings it to parity with website v0.46.0 and bumps
+`pubspec.yaml` to `0.7.0+18`; merge it to `main`, then tag `v0.7.0` to release.
+
+## Parity with website v0.46.0 (branch parity-2026-09-19)
+
+- Sign in: `POST /token` 202 → code step → `POST /token/2fa` (one field; six
+  digits = `code`, else `recovery_code`, as the website's `SplitSecondFactor`).
+  401 starts over from the password; 429 says 15 minutes.
+- Account: Security panel (email confirmed/not + resend, change email,
+  two-factor set up/turn off with the consoles warning and recovery codes once),
+  Delete account (confirm, then password [+ code], then sign out).
+  `lib/two_factor_page.dart` is the setup page.
+- Friends: Decline beside Accept; Blocked section (`GET /me/blocked`) with Unblock.
+- Titles: latest 3 news articles on top (`GET /news`), hidden when empty.
+- Saves: the move button already existed; wording now matches the website.
+- `/me` does not return the email address itself, so the app shows only whether
+  it is confirmed. A 401 from `/me/2fa/enable|disable` means a wrong code, so
+  those calls do not sign the app out (`_decode(signOutOn401: false)`).
+- `Panel` is a `Material` now (ListTile ink inside it failed a debug assertion).
 
 ## Where things stand
 
@@ -31,8 +47,7 @@ says `0.6.6` — version bumps have not tracked the tags. Working tree: modified
 
 ## Next steps
 
-1. Commit the scaffolding; bump `pubspec.yaml` to match the tag line before the
-   next release.
+1. Merge `parity-2026-09-19`, tag `v0.7.0`.
 2. Fix README: stable-keystore line, drop stale "Not here yet" items.
 3. Wire push registration (call `registerPush` once FCM credentials exist on
    the server) — APP-05 remains the open functional requirement.
