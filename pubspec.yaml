@@ -23,6 +23,10 @@ dependencies:
   share_plus: ^12.0.2
   # An avatar photo from the gallery; the system picker, so no storage permission.
   image_picker: ^1.2.3
+  # The app's strings in six languages: Flutter's own gen-l10n, which needs both.
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
 dev_dependencies:
   flutter_test:
@@ -31,6 +35,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # lib/l10n/*.arb -> AppLocalizations, regenerated on `flutter pub get`.
+  generate: true
   assets:
     # A byte-for-byte copy of website/web/static/icon.svg. Refresh with
     # `cp ../website/web/static/icon.svg assets/icon.svg`, then regenerate the

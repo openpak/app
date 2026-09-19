@@ -1,0 +1,1397 @@
+{
+  "@@locale": "en",
+  "navFriends": "Friends",
+  "@navFriends": {
+    "description": "Bottom navigation bar: the Friends tab."
+  },
+  "navInvitations": "Invitations",
+  "@navInvitations": {
+    "description": "Bottom navigation bar: the Invitations tab (game invitations from friends)."
+  },
+  "navTitles": "Titles",
+  "@navTitles": {
+    "description": "Bottom navigation bar: the Titles tab (supported games)."
+  },
+  "navSaves": "Saves",
+  "@navSaves": {
+    "description": "Bottom navigation bar: the Saves tab (cloud saves)."
+  },
+  "navAccount": "Account",
+  "@navAccount": {
+    "description": "Bottom navigation bar: the Account tab."
+  },
+  "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Button in dialogs that closes the dialog without doing anything."
+  },
+  "commonConfirm": "Confirm",
+  "@commonConfirm": {
+    "description": "Button in a yes/no confirmation dialog that goes ahead with the action."
+  },
+  "commonContinue": "Continue",
+  "@commonContinue": {
+    "description": "Button in dialogs that goes ahead to the next step."
+  },
+  "commonSend": "Send",
+  "@commonSend": {
+    "description": "Button in a dialog that submits what was typed (a friend code, a password-reset request)."
+  },
+  "commonCopy": "Copy",
+  "@commonCopy": {
+    "description": "Button or tooltip that copies a value to the clipboard."
+  },
+  "commonUndo": "Undo",
+  "@commonUndo": {
+    "description": "Action on a snackbar that reverses what was just done."
+  },
+  "commonDecline": "Decline",
+  "@commonDecline": {
+    "description": "Button that turns down a friend request or a game invitation."
+  },
+  "commonDeclined": "Declined.",
+  "@commonDeclined": {
+    "description": "Snackbar after a friend request or game invitation was turned down."
+  },
+  "commonEmail": "E-mail",
+  "@commonEmail": {
+    "description": "Label of an e-mail address field on the sign-in, reset-password and create-account forms."
+  },
+  "commonPassword": "Password",
+  "@commonPassword": {
+    "description": "Label of a password field."
+  },
+  "commonCurrentPassword": "Current password",
+  "@commonCurrentPassword": {
+    "description": "Label of a field asking for the account's current password before a sensitive change."
+  },
+  "commonCode": "Code",
+  "@commonCode": {
+    "description": "Label of the field for a two-factor code (from the authenticator app, or a recovery code)."
+  },
+  "commonCodeHelp": "The six digits from your authenticator app, or one of your recovery codes.",
+  "@commonCodeHelp": {
+    "description": "Help text under a two-factor code field, when signing in or changing security settings."
+  },
+  "commonCodeMissing": "Type the code from your app.",
+  "@commonCodeMissing": {
+    "description": "Error when the two-factor code field was left empty."
+  },
+  "commonDisplayName": "Display name",
+  "@commonDisplayName": {
+    "description": "Label of the display name field: the name other players see."
+  },
+  "commonFriendCode": "Friend code",
+  "@commonFriendCode": {
+    "description": "Label for a friend code (like SW-1234-5678-9012) that players share to add each other."
+  },
+  "commonFriendCodeCopied": "Friend code copied.",
+  "@commonFriendCodeCopied": {
+    "description": "Snackbar after the account's friend code was copied to the clipboard."
+  },
+  "commonSearchByName": "Search by name",
+  "@commonSearchByName": {
+    "description": "Hint text of the search field on the Titles and Saves tabs."
+  },
+  "commonConsole": "Console",
+  "@commonConsole": {
+    "description": "Hint of the dropdown that filters a list by console (Switch, Wii, ...)."
+  },
+  "commonAllConsoles": "All consoles",
+  "@commonAllConsoles": {
+    "description": "Dropdown option that removes the console filter."
+  },
+  "commonNoConnection": "Could not reach OpenPak. Check your connection.",
+  "@commonNoConnection": {
+    "description": "Error when the phone could not reach the server at all (no network, server down)."
+  },
+  "loadFailed": "Could not load. Pull down to try again.",
+  "@loadFailed": {
+    "description": "Shown in place of a tab's content when it could not be loaded; pulling the list down retries."
+  },
+  "loadSignedOut": "Signed out — sign in again.",
+  "@loadSignedOut": {
+    "description": "Reason shown under the load failure message when the session has ended."
+  },
+  "loadNoRoute": "No route to the server from this phone.",
+  "@loadNoRoute": {
+    "description": "Reason shown under the load failure message when the server's address could not be reached."
+  },
+  "loadReason": "{reason} ({status})",
+  "@loadReason": {
+    "description": "Reason shown under the load failure message: the translated error, then the HTTP status code in brackets.",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "example": "That no longer exists."
+      },
+      "status": {
+        "type": "int",
+        "example": "404"
+      }
+    }
+  },
+  "signInButton": "Sign in",
+  "@signInButton": {
+    "description": "Main button on the sign-in form, and on the two-factor code step."
+  },
+  "signInForgot": "Forgot password?",
+  "@signInForgot": {
+    "description": "Link on the sign-in form that opens the password-reset dialog."
+  },
+  "signInCreateAccount": "Create an account",
+  "@signInCreateAccount": {
+    "description": "Link on the sign-in form, and title of the dialog that creates a new account."
+  },
+  "signInCreate": "Create",
+  "@signInCreate": {
+    "description": "Button in the create-account dialog."
+  },
+  "signInCreateHelp": "At least 8 characters for the password. You verify the address before signing in.",
+  "@signInCreateHelp": {
+    "description": "Help text in the create-account dialog."
+  },
+  "signInCreateSent": "Check {email} for a mail to verify it, then sign in.",
+  "@signInCreateSent": {
+    "description": "Snackbar after creating an account.",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "leia@example.org"
+      }
+    }
+  },
+  "signInResetTitle": "Reset your password",
+  "@signInResetTitle": {
+    "description": "Title of the password-reset dialog opened from the sign-in form."
+  },
+  "signInResetHelp": "A link to set a new one comes by mail.",
+  "@signInResetHelp": {
+    "description": "Help text in the password-reset dialog."
+  },
+  "signInResetSent": "If that address has an account, a reset mail is on its way.",
+  "@signInResetSent": {
+    "description": "Snackbar after asking for a password reset. Deliberately does not say whether the address has an account."
+  },
+  "signInCodeTitle": "Enter your code",
+  "@signInCodeTitle": {
+    "description": "Heading of the second sign-in step, for accounts with two-factor authentication."
+  },
+  "signInCodeSub": "This account uses two-factor authentication.",
+  "@signInCodeSub": {
+    "description": "Line under the heading of the second sign-in step."
+  },
+  "signInStartAgain": "Start again",
+  "@signInStartAgain": {
+    "description": "Button on the two-factor step that goes back to the e-mail and password."
+  },
+  "signInCodeWrong": "That code is not right, or it took too long. Sign in again.",
+  "@signInCodeWrong": {
+    "description": "Error after a wrong two-factor code at sign-in; the person has to start again from the password."
+  },
+  "twoFactorTitle": "Two-factor authentication",
+  "@twoFactorTitle": {
+    "description": "Title of the two-factor setup page, and of the two-factor row on the Account tab."
+  },
+  "twoFactorConsolesWarning": "Consoles that sign in with your password (Switch, Wii U and 3DS) cannot ask for a code yet. With two-factor on, those consoles can no longer sign in with your password until they support it.",
+  "@twoFactorConsolesWarning": {
+    "description": "Warning shown before two-factor authentication is switched on. Switch, Wii U and 3DS are product names; do not translate them."
+  },
+  "twoFactorSetupSub": "Add this key to an authenticator app, then type the code it shows to switch two-factor on.",
+  "@twoFactorSetupSub": {
+    "description": "Intro text on the two-factor setup page."
+  },
+  "twoFactorKey": "Key",
+  "@twoFactorKey": {
+    "description": "Section label above the secret key to type into an authenticator app."
+  },
+  "twoFactorKeyCopied": "Key copied.",
+  "@twoFactorKeyCopied": {
+    "description": "Snackbar after the two-factor secret key was copied."
+  },
+  "twoFactorOpenInApp": "Open in an authenticator app",
+  "@twoFactorOpenInApp": {
+    "description": "Button that opens the two-factor setup link in an authenticator app."
+  },
+  "twoFactorLinkCopied": "No authenticator app opened it, so the link is copied. Paste it into your app.",
+  "@twoFactorLinkCopied": {
+    "description": "Snackbar when no authenticator app could open the setup link, so it was copied to the clipboard instead."
+  },
+  "twoFactorCodeFromApp": "Code from the app",
+  "@twoFactorCodeFromApp": {
+    "description": "Label of the field for the first code from the authenticator app, which switches two-factor on."
+  },
+  "twoFactorTurnOn": "Turn on two-factor",
+  "@twoFactorTurnOn": {
+    "description": "Button that switches two-factor authentication on."
+  },
+  "twoFactorChanged": "Two-factor changed in the meantime. Go back and try again.",
+  "@twoFactorChanged": {
+    "description": "Error when two-factor was changed elsewhere while this page was open."
+  },
+  "twoFactorIsOn": "Two-factor authentication is on.",
+  "@twoFactorIsOn": {
+    "description": "Confirmation that two-factor authentication was switched on."
+  },
+  "twoFactorIsOff": "Two-factor authentication is off.",
+  "@twoFactorIsOff": {
+    "description": "Snackbar after two-factor authentication was switched off."
+  },
+  "twoFactorOnPill": "On",
+  "@twoFactorOnPill": {
+    "description": "Small status pill next to 'Two-factor authentication is on.'"
+  },
+  "twoFactorRecoveryCodes": "Recovery codes",
+  "@twoFactorRecoveryCodes": {
+    "description": "Section label above the list of recovery codes."
+  },
+  "twoFactorRecoveryCodesSub": "Each one signs you in once if you lose your phone. Save them somewhere safe now: they are not shown again.",
+  "@twoFactorRecoveryCodesSub": {
+    "description": "Text above the recovery codes, shown once after two-factor is switched on."
+  },
+  "twoFactorRecoveryCodesCopied": "Recovery codes copied.",
+  "@twoFactorRecoveryCodesCopied": {
+    "description": "Snackbar after the recovery codes were copied."
+  },
+  "twoFactorSaved": "I have saved them",
+  "@twoFactorSaved": {
+    "description": "Button that closes the recovery codes page once they are saved."
+  },
+  "friendsTitle": "Friends",
+  "@friendsTitle": {
+    "description": "Title of the Friends tab and label of the friends section."
+  },
+  "friendsMessagesTooltip": "Messages",
+  "@friendsMessagesTooltip": {
+    "description": "Tooltip of the button that opens the list of chat conversations."
+  },
+  "friendsAddTooltip": "Add by friend code",
+  "@friendsAddTooltip": {
+    "description": "Tooltip of the button that adds a friend by friend code."
+  },
+  "friendsAddTitle": "Add a friend",
+  "@friendsAddTitle": {
+    "description": "Title of the dialog that asks for a friend code."
+  },
+  "friendsAddHelp": "Their friend code, from their console or their account page.",
+  "@friendsAddHelp": {
+    "description": "Help text in the add-a-friend dialog."
+  },
+  "friendsRequestSent": "Request sent.",
+  "@friendsRequestSent": {
+    "description": "Snackbar after a friend request was sent."
+  },
+  "friendsEmpty": "No friends yet.\nAdd someone with the button above.",
+  "@friendsEmpty": {
+    "description": "Shown on the Friends tab when there are no friends, requests or blocked accounts. Keep the line break."
+  },
+  "friendsIncoming": "Wants to be your friend",
+  "@friendsIncoming": {
+    "description": "Section label above incoming friend requests."
+  },
+  "friendsWantsToAdd": "Wants to add you",
+  "@friendsWantsToAdd": {
+    "description": "Pill on an incoming friend request."
+  },
+  "friendsAccept": "Accept",
+  "@friendsAccept": {
+    "description": "Button that accepts a friend request."
+  },
+  "friendsAccepted": "Added {name}.",
+  "@friendsAccepted": {
+    "description": "Snackbar after accepting a friend request.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Leia"
+      }
+    }
+  },
+  "friendsNobody": "Nobody yet.",
+  "@friendsNobody": {
+    "description": "Shown in the friends section when there are no friends yet (but there are requests)."
+  },
+  "friendsWaiting": "Waiting for them",
+  "@friendsWaiting": {
+    "description": "Section label above friend requests this account sent."
+  },
+  "friendsRequestSentPill": "Request sent",
+  "@friendsRequestSentPill": {
+    "description": "Pill on a friend request this account sent, still waiting for an answer."
+  },
+  "friendsBlocked": "Blocked",
+  "@friendsBlocked": {
+    "description": "Section label above blocked accounts, and pill on a blocked account with no date."
+  },
+  "friendsBlockedSince": "Since {date}",
+  "@friendsBlockedSince": {
+    "description": "Pill on a blocked account: when it was blocked.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Sep 18, 2026"
+      }
+    }
+  },
+  "friendsBlockedNote": "They cannot send you requests, messages or invitations.",
+  "@friendsBlockedNote": {
+    "description": "Note under the blocked accounts."
+  },
+  "friendsBlockedToast": "{name} blocked.",
+  "@friendsBlockedToast": {
+    "description": "Snackbar after blocking a friend; it has an Undo action.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Leia"
+      }
+    }
+  },
+  "friendsUnblock": "Unblock",
+  "@friendsUnblock": {
+    "description": "Button that unblocks an account."
+  },
+  "friendsUnblocked": "Unblocked. Add them again by friend code.",
+  "@friendsUnblocked": {
+    "description": "Snackbar after unblocking an account."
+  },
+  "friendsOnline": "Online",
+  "@friendsOnline": {
+    "description": "Pill on a friend who is online but not in a known game."
+  },
+  "friendsOffline": "Offline",
+  "@friendsOffline": {
+    "description": "Pill on a friend who is offline."
+  },
+  "friendsRemove": "Remove",
+  "@friendsRemove": {
+    "description": "Menu item that removes a friend."
+  },
+  "friendsRemoveConfirm": "Remove {name}?",
+  "@friendsRemoveConfirm": {
+    "description": "Confirmation dialog title before removing a friend.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Leia"
+      }
+    }
+  },
+  "friendsRemoved": "Removed.",
+  "@friendsRemoved": {
+    "description": "Snackbar after removing a friend."
+  },
+  "friendsBlock": "Block",
+  "@friendsBlock": {
+    "description": "Menu item that blocks a friend."
+  },
+  "friendsBlockConfirm": "Block {name}?",
+  "@friendsBlockConfirm": {
+    "description": "Confirmation dialog title before blocking a friend.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Leia"
+      }
+    }
+  },
+  "friendsBlockDetail": "They are removed as a friend and cannot invite you.",
+  "@friendsBlockDetail": {
+    "description": "Confirmation dialog text before blocking a friend."
+  },
+  "invitationsTitle": "Invitations",
+  "@invitationsTitle": {
+    "description": "Title of the Invitations tab (game invitations from friends)."
+  },
+  "invitationsEmpty": "Nothing waiting for you.",
+  "@invitationsEmpty": {
+    "description": "Shown on the Invitations tab when there are no invitations."
+  },
+  "invitationsWaiting": "Waiting",
+  "@invitationsWaiting": {
+    "description": "Section label above the invitations."
+  },
+  "invitationsFrom": "{name} invited you",
+  "@invitationsFrom": {
+    "description": "One invitation row: who sent it.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Leia"
+      }
+    }
+  },
+  "invitationsExpired": "Expired",
+  "@invitationsExpired": {
+    "description": "Pill on an invitation that can no longer be accepted."
+  },
+  "invitationsNote": "Accepting happens on your console. This is where you see what is waiting and turn things down.",
+  "@invitationsNote": {
+    "description": "Note under the invitations list."
+  },
+  "chatTitle": "Messages",
+  "@chatTitle": {
+    "description": "Title of the list of chat conversations."
+  },
+  "chatNoConversations": "No messages yet.\nTap a friend to start one.",
+  "@chatNoConversations": {
+    "description": "Shown when there are no conversations. Keep the line break."
+  },
+  "chatNoMessages": "No messages yet.",
+  "@chatNoMessages": {
+    "description": "Shown in an open conversation that has no messages."
+  },
+  "chatFromYou": "You: {message}",
+  "@chatFromYou": {
+    "description": "Preview of the newest message in the conversations list, when this account sent it.",
+    "placeholders": {
+      "message": {
+        "type": "String",
+        "example": "See you tonight"
+      }
+    }
+  },
+  "chatSpecialMessage": "[{kind} message]",
+  "@chatSpecialMessage": {
+    "description": "Shown instead of the text of a message that is not text (for example an invite). The kind is a technical word from the server, shown as-is.",
+    "placeholders": {
+      "kind": {
+        "type": "String",
+        "example": "Invite"
+      }
+    }
+  },
+  "chatHint": "Message",
+  "@chatHint": {
+    "description": "Hint text of the field where a chat message is typed."
+  },
+  "chatSend": "Send",
+  "@chatSend": {
+    "description": "Tooltip of the button that sends a chat message."
+  },
+  "accountTitle": "Account",
+  "@accountTitle": {
+    "description": "Title of the Account tab."
+  },
+  "accountYou": "You",
+  "@accountYou": {
+    "description": "Shown instead of the display name when the account has none."
+  },
+  "accountNoFriendCode": "No friend code until a console is linked.",
+  "@accountNoFriendCode": {
+    "description": "Shown on the account card when no console is linked yet."
+  },
+  "accountLinked": "Linked",
+  "@accountLinked": {
+    "description": "Section label above the linked consoles."
+  },
+  "accountNothingLinked": "Nothing linked yet. Link a console from its own settings, or a Wii or DS below.",
+  "@accountNothingLinked": {
+    "description": "Shown when no console is linked. Wii and DS are product names."
+  },
+  "accountUnlink": "Unlink",
+  "@accountUnlink": {
+    "description": "Button that removes the link to a console."
+  },
+  "accountUnlinkConfirm": "Unlink your {console}?",
+  "@accountUnlinkConfirm": {
+    "description": "Confirmation dialog title before unlinking a console. The console is a product name such as Switch or Wii U.",
+    "placeholders": {
+      "console": {
+        "type": "String",
+        "example": "Switch"
+      }
+    }
+  },
+  "accountUnlinkDetail": "It stops signing in as you until it is linked again.",
+  "@accountUnlinkDetail": {
+    "description": "Confirmation dialog text before unlinking a console."
+  },
+  "accountUnlinked": "{console} unlinked.",
+  "@accountUnlinked": {
+    "description": "Snackbar after unlinking a console. The console is a product name such as Switch.",
+    "placeholders": {
+      "console": {
+        "type": "String",
+        "example": "Switch"
+      }
+    }
+  },
+  "accountLinkWfc": "Link a Wii or DS",
+  "@accountLinkWfc": {
+    "description": "Row and dialog title for linking a Wii or DS by friend code. Wii and DS are product names."
+  },
+  "accountLinkWfcHelp": "Type the friend code any Wii or DS game on that console shows you. The console has no login of its own, so this is how it joins your account.",
+  "@accountLinkWfcHelp": {
+    "description": "Help text in the Link a Wii or DS dialog."
+  },
+  "accountLink": "Link",
+  "@accountLink": {
+    "description": "Button in the Link a Wii or DS dialog."
+  },
+  "accountWfcLinked": "Wii / DS linked.",
+  "@accountWfcLinked": {
+    "description": "Snackbar after linking a Wii or DS."
+  },
+  "accountSecurity": "Security",
+  "@accountSecurity": {
+    "description": "Section label above e-mail and two-factor settings."
+  },
+  "accountEmailAddress": "Email address",
+  "@accountEmailAddress": {
+    "description": "Shown in place of the e-mail address when the server did not report it."
+  },
+  "accountEmailConfirmed": "Confirmed",
+  "@accountEmailConfirmed": {
+    "description": "Under the e-mail address: it has been confirmed."
+  },
+  "accountEmailNotConfirmed": "Not confirmed",
+  "@accountEmailNotConfirmed": {
+    "description": "Under the e-mail address: it has not been confirmed yet."
+  },
+  "accountVerifyResend": "Send the link again",
+  "@accountVerifyResend": {
+    "description": "Button that sends the e-mail confirmation link again."
+  },
+  "accountVerifySent": "If your address still needs confirming, a new link is on its way.",
+  "@accountVerifySent": {
+    "description": "Snackbar after asking for a new confirmation link."
+  },
+  "accountChangeEmail": "Change email",
+  "@accountChangeEmail": {
+    "description": "Row, dialog title and button for changing the account's e-mail address."
+  },
+  "accountNewEmail": "New email address",
+  "@accountNewEmail": {
+    "description": "Field label in the Change email dialog."
+  },
+  "accountChangeEmailHelp": "We send a link to the new address. Nothing changes until you open it.",
+  "@accountChangeEmailHelp": {
+    "description": "Help text in the Change email dialog."
+  },
+  "accountChangeEmailSent": "If that address can be used, a confirmation link is on its way to it.",
+  "@accountChangeEmailSent": {
+    "description": "Snackbar after asking to change the e-mail address."
+  },
+  "accountEmailInvalid": "That address cannot be used. Check it and try again.",
+  "@accountEmailInvalid": {
+    "description": "Error when the new e-mail address was refused."
+  },
+  "accountWrongPassword": "That password is not right, so nothing was changed.",
+  "@accountWrongPassword": {
+    "description": "Error when the current password typed for a security change was wrong."
+  },
+  "accountTwoFactorOn": "Signing in asks for a code from your authenticator app.",
+  "@accountTwoFactorOn": {
+    "description": "Under the two-factor row when two-factor is on."
+  },
+  "accountTwoFactorOff": "Off. Signing in on the website or the app asks for your password only.",
+  "@accountTwoFactorOff": {
+    "description": "Under the two-factor row when two-factor is off."
+  },
+  "accountSetUp": "Set up",
+  "@accountSetUp": {
+    "description": "Button that starts setting up two-factor authentication."
+  },
+  "accountTurnOff": "Turn off",
+  "@accountTurnOff": {
+    "description": "Button that switches two-factor authentication off, and the button in its dialog."
+  },
+  "accountSetUpTwoFactor": "Set up two-factor",
+  "@accountSetUpTwoFactor": {
+    "description": "Title of the dialog that asks for the password before two-factor setup."
+  },
+  "accountTurnOffTwoFactor": "Turn off two-factor",
+  "@accountTurnOffTwoFactor": {
+    "description": "Title of the dialog that switches two-factor authentication off."
+  },
+  "accountSignedIn": "Signed in",
+  "@accountSignedIn": {
+    "description": "Section label above the list of signed-in devices."
+  },
+  "accountSession": "Session",
+  "@accountSession": {
+    "description": "A signed-in device whose sign-in date is unknown."
+  },
+  "accountSignedInOn": "Signed in {date}",
+  "@accountSignedInOn": {
+    "description": "A signed-in device: when it signed in.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Sep 18, 2026"
+      }
+    }
+  },
+  "accountSessionExpires": "Expires {date}",
+  "@accountSessionExpires": {
+    "description": "Under a signed-in device: when its session ends.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Oct 18, 2026"
+      }
+    }
+  },
+  "accountRevoke": "Revoke",
+  "@accountRevoke": {
+    "description": "Button that signs a device out."
+  },
+  "accountRevokeConfirm": "Sign that device out?",
+  "@accountRevokeConfirm": {
+    "description": "Confirmation dialog title before signing a device out."
+  },
+  "accountRevokeDetail": "If it is this phone, you will be signed out here as well.",
+  "@accountRevokeDetail": {
+    "description": "Confirmation dialog text before signing a device out."
+  },
+  "accountChangePassword": "Change password",
+  "@accountChangePassword": {
+    "description": "Button and dialog title for changing the password."
+  },
+  "accountNewPassword": "New password",
+  "@accountNewPassword": {
+    "description": "Field label in the Change password dialog."
+  },
+  "accountChange": "Change",
+  "@accountChange": {
+    "description": "Button in the Change password dialog."
+  },
+  "accountChangePasswordHelp": "At least 8 characters. Your other devices are signed out.",
+  "@accountChangePasswordHelp": {
+    "description": "Help text in the Change password dialog."
+  },
+  "accountPasswordChanged": "Password changed.",
+  "@accountPasswordChanged": {
+    "description": "Snackbar after the password was changed."
+  },
+  "accountSignOut": "Sign out",
+  "@accountSignOut": {
+    "description": "Button that signs out of the app."
+  },
+  "accountDelete": "Delete account",
+  "@accountDelete": {
+    "description": "Button and dialog title for deleting the account."
+  },
+  "accountDeleteConfirm": "Delete your account?",
+  "@accountDeleteConfirm": {
+    "description": "First confirmation before deleting the account."
+  },
+  "accountDeleteDetail": "This signs you out everywhere and cannot be undone. Your friends, links and saves go with the account.",
+  "@accountDeleteDetail": {
+    "description": "Text of the first confirmation before deleting the account."
+  },
+  "accountDeleteAction": "Delete my account",
+  "@accountDeleteAction": {
+    "description": "Button that deletes the account, after the password."
+  },
+  "accountDeleteHelp": "The account cannot be recovered.",
+  "@accountDeleteHelp": {
+    "description": "Help text in the delete-account password dialog."
+  },
+  "accountDeleteWrongPassword": "That password is not right, so the account was not deleted.",
+  "@accountDeleteWrongPassword": {
+    "description": "Error when the password typed to delete the account was wrong."
+  },
+  "accountDeleteWrongCode": "That code is not right, so the account was not deleted. Use a current code from your authenticator app, or a recovery code.",
+  "@accountDeleteWrongCode": {
+    "description": "Error when the two-factor code typed to delete the account was wrong."
+  },
+  "accountDeleted": "Your account is being deleted and you have been signed out everywhere.",
+  "@accountDeleted": {
+    "description": "Snackbar after the account was deleted."
+  },
+  "detailsTitle": "Account details",
+  "@detailsTitle": {
+    "description": "Title of the page that edits avatar, name, country and date of birth."
+  },
+  "detailsChangeAvatar": "Change avatar",
+  "@detailsChangeAvatar": {
+    "description": "Button that opens the avatar picker."
+  },
+  "detailsChooseAvatar": "Choose an avatar",
+  "@detailsChooseAvatar": {
+    "description": "Label above the built-in avatars in the picker."
+  },
+  "detailsUploadPhoto": "Upload a photo",
+  "@detailsUploadPhoto": {
+    "description": "Button in the avatar picker that picks a photo from the gallery."
+  },
+  "detailsAvatarSaved": "Avatar saved.",
+  "@detailsAvatarSaved": {
+    "description": "Snackbar after the avatar was changed."
+  },
+  "detailsNameHint": "What other people see",
+  "@detailsNameHint": {
+    "description": "Hint text of the display name field."
+  },
+  "detailsNameRule": "3 to 32 characters.",
+  "@detailsNameRule": {
+    "description": "Rule under the display name field."
+  },
+  "detailsSaveName": "Save name",
+  "@detailsSaveName": {
+    "description": "Button that saves the display name."
+  },
+  "detailsNameSaved": "Name saved.",
+  "@detailsNameSaved": {
+    "description": "Snackbar after the display name was saved."
+  },
+  "detailsCountry": "Country",
+  "@detailsCountry": {
+    "description": "Section label above the country dropdown."
+  },
+  "detailsCountryWhy": "Your console sends this with your profile.",
+  "@detailsCountryWhy": {
+    "description": "Why the country is asked for."
+  },
+  "detailsCountrySaved": "Country saved.",
+  "@detailsCountrySaved": {
+    "description": "Snackbar after the country was saved."
+  },
+  "detailsNotSet": "Not set",
+  "@detailsNotSet": {
+    "description": "Shown when the country or date of birth has not been set."
+  },
+  "detailsBirthday": "Date of birth",
+  "@detailsBirthday": {
+    "description": "Section label above the date of birth."
+  },
+  "detailsBirthdaySaved": "Date of birth saved.",
+  "@detailsBirthdaySaved": {
+    "description": "Snackbar after the date of birth was saved."
+  },
+  "detailsNoConsole": "No console linked yet",
+  "@detailsNoConsole": {
+    "description": "Shown in place of the friend code when no console is linked."
+  },
+  "detailsTapToCopy": "Tap to copy",
+  "@detailsTapToCopy": {
+    "description": "Under the friend code: tapping it copies it."
+  },
+  "countryIe": "Ireland",
+  "@countryIe": {
+    "description": "Country name in the country dropdown (ISO code IE)."
+  },
+  "countryGb": "United Kingdom",
+  "@countryGb": {
+    "description": "Country name in the country dropdown (ISO code GB)."
+  },
+  "countryUs": "United States",
+  "@countryUs": {
+    "description": "Country name in the country dropdown (ISO code US)."
+  },
+  "countryCa": "Canada",
+  "@countryCa": {
+    "description": "Country name in the country dropdown (ISO code CA)."
+  },
+  "countryAu": "Australia",
+  "@countryAu": {
+    "description": "Country name in the country dropdown (ISO code AU)."
+  },
+  "countryNz": "New Zealand",
+  "@countryNz": {
+    "description": "Country name in the country dropdown (ISO code NZ)."
+  },
+  "countryFr": "France",
+  "@countryFr": {
+    "description": "Country name in the country dropdown (ISO code FR)."
+  },
+  "countryDe": "Germany",
+  "@countryDe": {
+    "description": "Country name in the country dropdown (ISO code DE)."
+  },
+  "countryEs": "Spain",
+  "@countryEs": {
+    "description": "Country name in the country dropdown (ISO code ES)."
+  },
+  "countryIt": "Italy",
+  "@countryIt": {
+    "description": "Country name in the country dropdown (ISO code IT)."
+  },
+  "countryPt": "Portugal",
+  "@countryPt": {
+    "description": "Country name in the country dropdown (ISO code PT)."
+  },
+  "countryNl": "Netherlands",
+  "@countryNl": {
+    "description": "Country name in the country dropdown (ISO code NL)."
+  },
+  "countryBe": "Belgium",
+  "@countryBe": {
+    "description": "Country name in the country dropdown (ISO code BE)."
+  },
+  "countrySe": "Sweden",
+  "@countrySe": {
+    "description": "Country name in the country dropdown (ISO code SE)."
+  },
+  "countryNo": "Norway",
+  "@countryNo": {
+    "description": "Country name in the country dropdown (ISO code NO)."
+  },
+  "countryDk": "Denmark",
+  "@countryDk": {
+    "description": "Country name in the country dropdown (ISO code DK)."
+  },
+  "countryFi": "Finland",
+  "@countryFi": {
+    "description": "Country name in the country dropdown (ISO code FI)."
+  },
+  "countryPl": "Poland",
+  "@countryPl": {
+    "description": "Country name in the country dropdown (ISO code PL)."
+  },
+  "countryBr": "Brazil",
+  "@countryBr": {
+    "description": "Country name in the country dropdown (ISO code BR)."
+  },
+  "countryMx": "Mexico",
+  "@countryMx": {
+    "description": "Country name in the country dropdown (ISO code MX)."
+  },
+  "countryJp": "Japan",
+  "@countryJp": {
+    "description": "Country name in the country dropdown (ISO code JP)."
+  },
+  "savesTitle": "Saves",
+  "@savesTitle": {
+    "description": "Title of the Saves tab (cloud saves) and of its list section."
+  },
+  "savesStorageHead": "Storage",
+  "@savesStorageHead": {
+    "description": "Heading of the section showing how much storage is used."
+  },
+  "savesUsageOwn": "Your saves go to your own storage. Your bucket is the only limit.",
+  "@savesUsageOwn": {
+    "description": "Under the Storage heading when the player connected their own storage."
+  },
+  "savesUsageAllowance": "Your OpenPak allowance. When it is full, uploads are refused until you connect your own storage below.",
+  "@savesUsageAllowance": {
+    "description": "Under the Storage heading when saves use the OpenPak allowance."
+  },
+  "savesListSub": "Pick a version to make it the current one; the older one is kept.",
+  "@savesListSub": {
+    "description": "Under the Saves heading."
+  },
+  "savesOwnHead": "Your own storage",
+  "@savesOwnHead": {
+    "description": "Heading of the section where the player connects their own storage."
+  },
+  "savesOwnSub": "Saves go straight there; OpenPak keeps only the index. The secret is tested once and never shown again.",
+  "@savesOwnSub": {
+    "description": "Under the Your own storage heading."
+  },
+  "savesBackupsNote": "Console backups have several parts and cannot be downloaded here yet.",
+  "@savesBackupsNote": {
+    "description": "Note at the bottom of the Saves tab."
+  },
+  "savesNone": "No saves yet. An emulator pushes one when you quit a game; a console backs up from its Save Data Cloud screen.",
+  "@savesNone": {
+    "description": "Shown when the account has no saves. 'Save Data Cloud' is the console's own screen name."
+  },
+  "savesShowing": "Showing {shown} / {total}",
+  "@savesShowing": {
+    "description": "How many games the filters leave visible, out of all.",
+    "placeholders": {
+      "shown": {
+        "type": "int",
+        "example": "2"
+      },
+      "total": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "savesNoMatch": "No saves match.",
+  "@savesNoMatch": {
+    "description": "Shown when the search and console filter match no game."
+  },
+  "savesConflict": "Conflict",
+  "@savesConflict": {
+    "description": "Badge on a game (and suffix in a version label) when a version was pushed from an older base; both are kept."
+  },
+  "savesVersion": "Version {number}",
+  "@savesVersion": {
+    "description": "Start of a version's label in the version dropdown.",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "savesYourStorage": "your storage",
+  "@savesYourStorage": {
+    "description": "Suffix in a version's label: the version is kept in the player's own storage."
+  },
+  "savesDownload": "Download",
+  "@savesDownload": {
+    "description": "Tooltip of the button that downloads the current version."
+  },
+  "savesDelete": "Delete",
+  "@savesDelete": {
+    "description": "Tooltip of the button that deletes the current version."
+  },
+  "savesDeleteTitle": "Delete this version?",
+  "@savesDeleteTitle": {
+    "description": "Confirmation dialog title before deleting a version."
+  },
+  "savesDeleteBody": "Its bytes are removed from storage.",
+  "@savesDeleteBody": {
+    "description": "Confirmation dialog text before deleting a version."
+  },
+  "savesDeleted": "Version deleted.",
+  "@savesDeleted": {
+    "description": "Snackbar after deleting a version."
+  },
+  "savesRestored": "Restored. That version is the current one now.",
+  "@savesRestored": {
+    "description": "Snackbar after picking an older version made it the current one."
+  },
+  "savesConnectedPill": "connected",
+  "@savesConnectedPill": {
+    "description": "Pill on the storage row when the player's own storage is connected."
+  },
+  "savesTested": "tested",
+  "@savesTested": {
+    "description": "Pill on the player's storage: the last test worked."
+  },
+  "savesNotAnswering": "not answering",
+  "@savesNotAnswering": {
+    "description": "Pill on the player's storage: the last test failed."
+  },
+  "savesNotTested": "not tested",
+  "@savesNotTested": {
+    "description": "Pill on the player's storage: it has not been tested yet."
+  },
+  "savesMoveState": "Move: {state}",
+  "@savesMoveState": {
+    "description": "The state of moving saves into the player's storage. The state is a word from the server, shown as-is.",
+    "placeholders": {
+      "state": {
+        "type": "String",
+        "example": "moving"
+      }
+    }
+  },
+  "savesMoveHere": "Move my saves here ({size})",
+  "@savesMoveHere": {
+    "description": "Button that moves saves from the OpenPak allowance into the player's storage; size is how much is moved.",
+    "placeholders": {
+      "size": {
+        "type": "String",
+        "example": "2 kB"
+      }
+    }
+  },
+  "savesMoving": "Moving your saves. Pull to refresh in a moment.",
+  "@savesMoving": {
+    "description": "Snackbar after starting to move saves."
+  },
+  "savesDisconnect": "Disconnect",
+  "@savesDisconnect": {
+    "description": "Button that disconnects the player's storage."
+  },
+  "savesDisconnectTitle": "Disconnect storage?",
+  "@savesDisconnectTitle": {
+    "description": "Confirmation dialog title before disconnecting storage."
+  },
+  "savesDisconnectBody": "Versions stored there stay listed but cannot be read until it is connected again.",
+  "@savesDisconnectBody": {
+    "description": "Confirmation dialog text before disconnecting storage."
+  },
+  "savesDisconnected": "Storage disconnected.",
+  "@savesDisconnected": {
+    "description": "Snackbar after disconnecting storage."
+  },
+  "savesConnected": "Storage connected. New saves go to your bucket.",
+  "@savesConnected": {
+    "description": "Snackbar after connecting storage."
+  },
+  "savesConnectedWarning": "Storage connected, with a warning: {warning}",
+  "@savesConnectedWarning": {
+    "description": "Snackbar after connecting storage when the server had a warning; the warning is technical text from the server.",
+    "placeholders": {
+      "warning": {
+        "type": "String",
+        "example": "the bucket is readable without credentials"
+      }
+    }
+  },
+  "savesConnectFailed": "Storage was not saved: {detail}",
+  "@savesConnectFailed": {
+    "description": "Snackbar when connecting storage failed; the detail is the storage provider's own technical error.",
+    "placeholders": {
+      "detail": {
+        "type": "String",
+        "example": "write: access denied"
+      }
+    }
+  },
+  "savesCloudHint": "Google Drive or OneDrive: sign in once and saves go to a folder there.",
+  "@savesCloudHint": {
+    "description": "Above the Google Drive and OneDrive buttons. Product names are not translated."
+  },
+  "savesBrowserFailed": "Could not open the browser.",
+  "@savesBrowserFailed": {
+    "description": "Snackbar when the browser could not be opened to connect Google Drive or OneDrive."
+  },
+  "savesFinishInBrowser": "Finish in the browser, then pull to refresh here.",
+  "@savesFinishInBrowser": {
+    "description": "Snackbar after the browser opened to connect Google Drive or OneDrive."
+  },
+  "savesAdvanced": "Advanced: your own bucket or server",
+  "@savesAdvanced": {
+    "description": "Title of the collapsible section for S3 and WebDAV storage."
+  },
+  "savesAdvancedSub": "For people who run their own storage. Everyone else needs none of this.",
+  "@savesAdvancedSub": {
+    "description": "Under the advanced storage title."
+  },
+  "savesS3Bucket": "S3 bucket",
+  "@savesS3Bucket": {
+    "description": "Button that connects an S3 bucket. S3 is a product name."
+  },
+  "savesEditBucket": "Edit bucket",
+  "@savesEditBucket": {
+    "description": "Button and dialog title for editing the connected S3 bucket."
+  },
+  "savesConnectBucket": "Connect a bucket",
+  "@savesConnectBucket": {
+    "description": "Dialog title for connecting an S3 bucket."
+  },
+  "savesEditWebdav": "Edit WebDAV",
+  "@savesEditWebdav": {
+    "description": "Button and dialog title for editing the connected WebDAV storage. WebDAV is a product name."
+  },
+  "savesConnectWebdav": "Connect WebDAV",
+  "@savesConnectWebdav": {
+    "description": "Dialog title for connecting WebDAV storage. WebDAV is a product name."
+  },
+  "savesWebdavUrl": "WebDAV URL",
+  "@savesWebdavUrl": {
+    "description": "Field label: the address of the WebDAV folder."
+  },
+  "savesUsername": "Username",
+  "@savesUsername": {
+    "description": "Field label: the WebDAV username."
+  },
+  "savesWebdavHelp": "Nextcloud shows the URL under Settings › Files; add a folder for OpenPak at the end. Use an app password. The share is tested before it is saved.",
+  "@savesWebdavHelp": {
+    "description": "Help text in the WebDAV dialog. 'Settings › Files' is Nextcloud's own menu path."
+  },
+  "savesEndpoint": "Endpoint",
+  "@savesEndpoint": {
+    "description": "Field label: the S3 endpoint host."
+  },
+  "savesRegion": "Region",
+  "@savesRegion": {
+    "description": "Field label: the S3 region."
+  },
+  "savesBucket": "Bucket",
+  "@savesBucket": {
+    "description": "Field label: the S3 bucket name."
+  },
+  "savesFolder": "Folder (optional)",
+  "@savesFolder": {
+    "description": "Field label: a folder inside the bucket."
+  },
+  "savesAccessKey": "Access key",
+  "@savesAccessKey": {
+    "description": "Field label: the S3 access key."
+  },
+  "savesSecretKey": "Secret key",
+  "@savesSecretKey": {
+    "description": "Field label: the S3 secret key."
+  },
+  "savesPathStyle": "Path-style addressing (most providers other than Amazon)",
+  "@savesPathStyle": {
+    "description": "Checkbox in the S3 dialog."
+  },
+  "savesInsecure": "Plain HTTP (a box on your own network only)",
+  "@savesInsecure": {
+    "description": "Checkbox in the S3 dialog: connect without TLS."
+  },
+  "savesS3Help": "R2: <account>.r2.cloudflarestorage.com, region auto. B2: s3.<region>.backblazeb2.com. The bucket is tested before it is saved.",
+  "@savesS3Help": {
+    "description": "Help text in the S3 dialog. Keep the host names and <account>, <region> as they are."
+  },
+  "savesTestAndSave": "Test and save",
+  "@savesTestAndSave": {
+    "description": "Button in the storage dialogs: tests the storage, then saves it."
+  },
+  "titlesTitle": "Titles",
+  "@titlesTitle": {
+    "description": "Title of the Titles tab, and the segment that shows games."
+  },
+  "titlesNetwork": "Network",
+  "@titlesNetwork": {
+    "description": "Segment on the Titles tab that shows network features instead of games."
+  },
+  "titlesNothingMatches": "Nothing matches.",
+  "@titlesNothingMatches": {
+    "description": "Shown when the filters match nothing."
+  },
+  "titlesStatus": "Status",
+  "@titlesStatus": {
+    "description": "Hint of the dropdown that filters by status."
+  },
+  "titlesAllStatuses": "All statuses",
+  "@titlesAllStatuses": {
+    "description": "Dropdown option that removes the status filter."
+  },
+  "titlesRequestGame": "Request a game",
+  "@titlesRequestGame": {
+    "description": "Button that opens the sheet for requesting a game that has no server yet."
+  },
+  "titlesRequestHint": "Everything above has a server. Anything else, ask for it here; requests decide what gets built next.",
+  "@titlesRequestHint": {
+    "description": "Under the Request a game button."
+  },
+  "titlesRequestSheetTitle": "Which game should OpenPak build next?",
+  "@titlesRequestSheetTitle": {
+    "description": "Title of the Request a game sheet."
+  },
+  "titlesPickTitle": "Pick a title",
+  "@titlesPickTitle": {
+    "description": "Label of the dropdown of games in the Request a game sheet."
+  },
+  "titlesRequestedMark": "(requested)",
+  "@titlesRequestedMark": {
+    "description": "After a game in the Request a game dropdown when this account already requested it."
+  },
+  "titlesSignInToRequest": "Sign in to request a game.",
+  "@titlesSignInToRequest": {
+    "description": "In the Request a game sheet when signed out."
+  },
+  "titlesRequest": "Request",
+  "@titlesRequest": {
+    "description": "Button that requests a game."
+  },
+  "titlesRequested": "Requested",
+  "@titlesRequested": {
+    "description": "Button state when this account already requested the game."
+  },
+  "titlesWithdraw": "Withdraw request",
+  "@titlesWithdraw": {
+    "description": "Button that withdraws this account's request for a game."
+  },
+  "titlesNews": "News",
+  "@titlesNews": {
+    "description": "Section label above the latest news articles."
+  },
+  "titlesNewsDate": "{day} {month} {year}",
+  "@titlesNewsDate": {
+    "description": "The date of a news article, as on the website ('18 September 2026'). Reorder or add words and punctuation for your language, e.g. '{day}. {month} {year}'. The month is already translated.",
+    "placeholders": {
+      "day": {
+        "type": "int",
+        "example": "18"
+      },
+      "month": {
+        "type": "String",
+        "example": "September"
+      },
+      "year": {
+        "type": "int",
+        "example": "2026"
+      }
+    }
+  },
+  "titlesOnlineNow": "Online now",
+  "@titlesOnlineNow": {
+    "description": "Section label above the players-online counts."
+  },
+  "titlesOnlineCount": "{count, plural, =1{1 online} other{{count} online}}",
+  "@titlesOnlineCount": {
+    "description": "How many players are online, in total or on one console network.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "statusLive": "Live",
+  "@statusLive": {
+    "description": "Status pill of a game or network feature: ready and playable."
+  },
+  "statusWorking": "Working",
+  "@statusWorking": {
+    "description": "Status pill of a game or network feature: works."
+  },
+  "statusBeta": "Beta",
+  "@statusBeta": {
+    "description": "Status pill of a game or network feature: runs but is not verified on a console."
+  },
+  "statusScaffold": "Scaffold",
+  "@statusScaffold": {
+    "description": "Status pill of a game or network feature: the server exists as a skeleton only."
+  },
+  "statusAlpha": "Alpha",
+  "@statusAlpha": {
+    "description": "Status pill of a game or network feature: early and incomplete."
+  },
+  "statusPartial": "Partial",
+  "@statusPartial": {
+    "description": "Status pill of a game or network feature: some of it works."
+  },
+  "statusPlanned": "Planned",
+  "@statusPlanned": {
+    "description": "Status pill of a game or network feature: planned, not started."
+  },
+  "statusRequestable": "Requestable",
+  "@statusRequestable": {
+    "description": "Status pill of a game or network feature: players can request it."
+  },
+  "statusNotFeasible": "Not feasible",
+  "@statusNotFeasible": {
+    "description": "Status pill of a game or network feature: cannot be done."
+  },
+  "statusBroken": "Broken",
+  "@statusBroken": {
+    "description": "Status pill of a game or network feature: currently broken."
+  },
+  "errorAccountSuspended": "This account is suspended.",
+  "@errorAccountSuspended": {
+    "description": "Error shown when the server answers with the error code 'account_suspended'."
+  },
+  "errorAvatarInvalid": "Upload a PNG or JPEG of up to 4 MiB.",
+  "@errorAvatarInvalid": {
+    "description": "Error shown when the server answers with the error code 'avatar_invalid'."
+  },
+  "errorAvatarsUnavailable": "Avatar storage is not available on this server right now.",
+  "@errorAvatarsUnavailable": {
+    "description": "Error shown when the server answers with the error code 'avatars_unavailable'."
+  },
+  "errorBadRequest": "That was not accepted. Check what you entered and try again.",
+  "@errorBadRequest": {
+    "description": "Error shown when the server answers with the error code 'bad_request'."
+  },
+  "errorChallengeExpired": "That code is not right, or it took too long. Sign in again.",
+  "@errorChallengeExpired": {
+    "description": "Error shown when the server answers with the error code 'challenge_expired'."
+  },
+  "errorChatBlocked": "That message was not sent: one of you has blocked the other.",
+  "@errorChatBlocked": {
+    "description": "Error shown when the server answers with the error code 'chat_blocked'."
+  },
+  "errorChatNotFriends": "That message was not sent: you can only message friends.",
+  "@errorChatNotFriends": {
+    "description": "Error shown when the server answers with the error code 'chat_not_friends'."
+  },
+  "errorChatUnavailable": "Chat is not running on this deployment yet.",
+  "@errorChatUnavailable": {
+    "description": "Error shown when the server answers with the error code 'chat_unavailable'."
+  },
+  "errorConflict": "That changed in the meantime. Refresh and try again.",
+  "@errorConflict": {
+    "description": "Error shown when the server answers with the error code 'conflict'."
+  },
+  "errorConsoleTaken": "That console is already linked to another account.",
+  "@errorConsoleTaken": {
+    "description": "Error shown when the server answers with the error code 'console_taken'."
+  },
+  "errorForbidden": "That is not allowed for this account.",
+  "@errorForbidden": {
+    "description": "Error shown when the server answers with the error code 'forbidden'."
+  },
+  "errorFriendCodeUnknown": "No account found for that friend code.",
+  "@errorFriendCodeUnknown": {
+    "description": "Error shown when the server answers with the error code 'friend_code_unknown'."
+  },
+  "errorFriendConflict": "There is already a request or a friendship with that account.",
+  "@errorFriendConflict": {
+    "description": "Error shown when the server answers with the error code 'friend_conflict'."
+  },
+  "errorFriendSelf": "You cannot add yourself.",
+  "@errorFriendSelf": {
+    "description": "Error shown when the server answers with the error code 'friend_self'."
+  },
+  "errorInternal": "Something went wrong on the server. Please try again.",
+  "@errorInternal": {
+    "description": "Error shown when the server answers with the error code 'internal'."
+  },
+  "errorInvalidCredentials": "That e-mail and password do not match.",
+  "@errorInvalidCredentials": {
+    "description": "Error shown when the server answers with the error code 'invalid_credentials'."
+  },
+  "errorLinkExpired": "This link is invalid or has expired.",
+  "@errorLinkExpired": {
+    "description": "Error shown when the server answers with the error code 'link_expired'."
+  },
+  "errorNoPendingRequest": "There is no pending request from that account.",
+  "@errorNoPendingRequest": {
+    "description": "Error shown when the server answers with the error code 'no_pending_request'."
+  },
+  "errorNotFound": "That no longer exists.",
+  "@errorNotFound": {
+    "description": "Error shown when the server answers with the error code 'not_found'."
+  },
+  "errorNotVotable": "That title cannot be requested.",
+  "@errorNotVotable": {
+    "description": "Error shown when the server answers with the error code 'not_votable'."
+  },
+  "errorQuotaExceeded": "Your OpenPak allowance is full. Connect your own storage or delete old versions.",
+  "@errorQuotaExceeded": {
+    "description": "Error shown when the server answers with the error code 'quota_exceeded'."
+  },
+  "errorRateLimited": "Too many attempts. Wait a minute and try again.",
+  "@errorRateLimited": {
+    "description": "Error shown when the server answers with the error code 'rate_limited'."
+  },
+  "errorRegistrationsClosed": "Registrations are currently closed. Please check back soon.",
+  "@errorRegistrationsClosed": {
+    "description": "Error shown when the server answers with the error code 'registrations_closed'."
+  },
+  "errorSavesUnavailable": "Cloud saves are not running on this deployment yet.",
+  "@errorSavesUnavailable": {
+    "description": "Error shown when the server answers with the error code 'saves_unavailable'."
+  },
+  "errorServiceUnavailable": "OpenPak is not answering right now. Try again in a moment.",
+  "@errorServiceUnavailable": {
+    "description": "Error shown when the server answers with the error code 'service_unavailable'."
+  },
+  "errorSessionExpired": "Signed out — sign in again.",
+  "@errorSessionExpired": {
+    "description": "Error shown when the server answers with the error code 'session_expired'."
+  },
+  "errorTwoFactorLocked": "Too many wrong codes. Try again in 15 minutes.",
+  "@errorTwoFactorLocked": {
+    "description": "Error shown when the server answers with the error code 'two_factor_locked'."
+  },
+  "errorTwoFactorRequired": "This account uses two-factor authentication. Enter your code.",
+  "@errorTwoFactorRequired": {
+    "description": "Error shown when the server answers with the error code 'two_factor_required'."
+  },
+  "errorUnauthorized": "Signed out — sign in again.",
+  "@errorUnauthorized": {
+    "description": "Error shown when the server answers with the error code 'unauthorized'."
+  },
+  "errorWfcNotFound": "No console has played online with that friend code yet. Check the digits, or connect the game once first.",
+  "@errorWfcNotFound": {
+    "description": "Error shown when the server answers with the error code 'wfc_not_found'."
+  },
+  "errorWfcUnavailable": "Wii / DS linking is not available right now.",
+  "@errorWfcUnavailable": {
+    "description": "Error shown when the server answers with the error code 'wfc_unavailable'."
+  },
+  "errorWrongCode": "That code is not right. Check the time on your phone and try the newest code.",
+  "@errorWrongCode": {
+    "description": "Error shown when the server answers with the error code 'wrong_code'."
+  },
+  "errorWrongPassword": "That password is not right, so nothing was changed.",
+  "@errorWrongPassword": {
+    "description": "Error shown when the server answers with the error code 'wrong_password'."
+  },
+  "errorGeneric": "Something went wrong ({status}). Please try again.",
+  "@errorGeneric": {
+    "description": "Error shown when the server's error is not one the app knows; status is the HTTP status code.",
+    "placeholders": {
+      "status": {
+        "type": "int",
+        "example": "500"
+      }
+    }
+  }
+}

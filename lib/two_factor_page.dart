@@ -3,15 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'api.dart';
+import 'l10n.dart';
 import 'theme.dart';
 import 'widgets.dart';
-
-/// Said before two-factor is switched on, as the website says it: consoles
-/// sign in with the password alone and cannot be asked for a code yet.
-const consolesWarning =
-    'Consoles that sign in with your password (Switch, Wii U and 3DS) cannot ask '
-    'for a code yet. With two-factor on, those consoles can no longer sign in '
-    'with your password until they support it.';
 
 /// Where the setup started by POST /me/2fa/setup is finished: the key goes into
 /// an authenticator app, its first code switches two-factor on, and the ten
@@ -47,13 +41,14 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
     if (opened) return;
     await Clipboard.setData(ClipboardData(text: widget.secret.otpauthUri));
     if (mounted) {
-      showToast(context, 'No authenticator app opened it, so the link is copied. Paste it into your app.');
+      showToast(context, context.l10n.twoFactorLinkCopied);
     }
   }
 
   Future<void> _enable() async {
+    final l = context.l10n;
     if (_code.text.trim().isEmpty) {
-      setState(() => _error = 'Type the code from your app.');
+      setState(() => _error = l.commonCodeMissing);
       return;
     }
     setState(() {
@@ -65,13 +60,13 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
       setState(() => _recoveryCodes = codes);
     } on ApiException catch (e) {
       setState(() => _error = switch (e.statusCode) {
-        401 => 'That code is not right. Check the time on your phone and try the newest code.',
-        429 => 'Too many wrong codes. Try again in 15 minutes.',
-        409 => 'Two-factor changed in the meantime. Go back and try again.',
-        _ => e.message,
+        401 => l.errorWrongCode,
+        429 => l.errorTwoFactorLocked,
+        409 => l.twoFactorChanged,
+        _ => apiErrorText(l, e),
       });
     } catch (_) {
-      setState(() => _error = 'Could not reach OpenPak. Check your connection.');
+      setState(() => _error = l.commonNoConnection);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -82,7 +77,7 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
     final t = tokensOf(context);
     final codes = _recoveryCodes;
     return Scaffold(
-      appBar: AppBar(title: const Text('Two-factor authentication')),
+      appBar: AppBar(title: Text(context.l10n.twoFactorTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: codes != null ? _done(t, codes) : _setup(t),
@@ -91,12 +86,9 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
   }
 
   List<Widget> _setup(Tokens t) => [
-    Text(
-      'Add this key to an authenticator app, then type the code it shows to switch two-factor on.',
-      style: TextStyle(color: t.muted),
-    ),
+    Text(context.l10n.twoFactorSetupSub, style: TextStyle(color: t.muted)),
     const SizedBox(height: 20),
-    const SectionLabel('Key'),
+    SectionLabel(context.l10n.twoFactorKey),
     Panel(
       child: ListTile(
         title: SelectableText(
@@ -104,9 +96,9 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
           style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w600, letterSpacing: 1),
         ),
         trailing: IconButton(
-          tooltip: 'Copy',
+          tooltip: context.l10n.commonCopy,
           icon: Icon(Icons.copy_rounded, color: t.muted),
-          onPressed: () => copyToClipboard(context, widget.secret.secret, 'Key'),
+          onPressed: () => copyToClipboard(context, widget.secret.secret, context.l10n.twoFactorKeyCopied),
         ),
       ),
     ),
@@ -114,14 +106,14 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
     OutlinedButton.icon(
       onPressed: _openInApp,
       icon: const Icon(Icons.open_in_new),
-      label: const Text('Open in an authenticator app'),
+      label: Text(context.l10n.twoFactorOpenInApp),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(48),
         side: BorderSide(color: t.line),
       ),
     ),
     const SizedBox(height: 20),
-    const Notice(consolesWarning),
+    Notice(context.l10n.twoFactorConsolesWarning),
     const SizedBox(height: 20),
     TextField(
       controller: _code,
@@ -129,7 +121,7 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
       autofillHints: const [AutofillHints.oneTimeCode],
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]'))],
       onSubmitted: (_) => _busy ? null : _enable(),
-      decoration: const InputDecoration(labelText: 'Code from the app', border: OutlineInputBorder()),
+      decoration: InputDecoration(labelText: context.l10n.twoFactorCodeFromApp, border: const OutlineInputBorder()),
     ),
     if (_error != null) ...[
       const SizedBox(height: 12),
@@ -141,19 +133,15 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
       style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
       child: _busy
           ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-          : const Text('Turn on two-factor'),
+          : Text(context.l10n.twoFactorTurnOn),
     ),
   ];
 
   List<Widget> _done(Tokens t, List<String> codes) => [
-    const StateRow(name: 'Two-factor authentication is on.', pill: 'On', state: RowState.ok),
+    StateRow(name: context.l10n.twoFactorIsOn, pill: context.l10n.twoFactorOnPill, state: RowState.ok),
     const SizedBox(height: 12),
-    SectionLabel('Recovery codes', trailing: '${codes.length}'),
-    Text(
-      'Each one signs you in once if you lose your phone. Save them somewhere safe now: '
-      'they are not shown again.',
-      style: TextStyle(color: t.muted),
-    ),
+    SectionLabel(context.l10n.twoFactorRecoveryCodes, trailing: '${codes.length}'),
+    Text(context.l10n.twoFactorRecoveryCodesSub, style: TextStyle(color: t.muted)),
     const SizedBox(height: 12),
     Panel(
       child: Padding(
@@ -166,9 +154,9 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
     ),
     const SizedBox(height: 12),
     OutlinedButton.icon(
-      onPressed: () => copyToClipboard(context, codes.join('\n'), 'Recovery codes'),
+      onPressed: () => copyToClipboard(context, codes.join('\n'), context.l10n.twoFactorRecoveryCodesCopied),
       icon: const Icon(Icons.copy_rounded),
-      label: const Text('Copy'),
+      label: Text(context.l10n.commonCopy),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(48),
         side: BorderSide(color: t.line),
@@ -178,7 +166,7 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
     FilledButton(
       onPressed: () => Navigator.pop(context, true),
       style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-      child: const Text('I have saved them'),
+      child: Text(context.l10n.twoFactorSaved),
     ),
   ];
 }

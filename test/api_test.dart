@@ -331,9 +331,9 @@ void main() {
     );
     final convs = await api.conversations();
     expect(convs.single.peer, 'acct-2');
-    expect(convs.single.newest.line, '[Invite message]');
+    expect(convs.single.newest.isText, isFalse); // worded by the UI: chatLine
     final ms = await api.chatHistory('acct-2', after: 7);
-    expect(ms.single.line, 'hi');
+    expect(ms.single.isText, isTrue);
     expect((await api.sendChat('acct-2', 'yo')).id, 9);
     await api.register(email: 'a@x.test', password: 'password-1', displayName: 'Leia');
     await api.forgotPassword('a@x.test');

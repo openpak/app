@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'account_details_page.dart';
 import 'api.dart';
+import 'l10n.dart';
 import 'theme.dart';
 import 'two_factor_page.dart';
 import 'widgets.dart';
@@ -33,8 +34,9 @@ class _AccountPageState extends State<AccountPage> {
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Account')),
+      appBar: AppBar(title: Text(l.accountTitle)),
       body: RefreshIndicator(
         onRefresh: () async => _reload(),
         child: FutureBuilder<(Account, List<WebSession>)>(
@@ -64,7 +66,7 @@ class _AccountPageState extends State<AccountPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                me.displayName.isEmpty ? 'You' : me.displayName,
+                                me.displayName.isEmpty ? l.accountYou : me.displayName,
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
                               const SizedBox(height: 2),
@@ -75,7 +77,7 @@ class _AccountPageState extends State<AccountPage> {
                                   onTap: () => copyToClipboard(
                                     context,
                                     me.friendCode!,
-                                    'Friend code',
+                                    l.commonFriendCodeCopied,
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -95,7 +97,7 @@ class _AccountPageState extends State<AccountPage> {
                                 )
                               else
                                 Text(
-                                  'No friend code until a console is linked.',
+                                  l.accountNoFriendCode,
                                   style: TextStyle(color: t.muted, fontSize: 13),
                                 ),
                             ],
@@ -108,7 +110,7 @@ class _AccountPageState extends State<AccountPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const SectionLabel('Linked'),
+                SectionLabel(l.accountLinked),
                 Panel(
                   child: Column(
                     children: [
@@ -116,8 +118,7 @@ class _AccountPageState extends State<AccountPage> {
                         Padding(
                           padding: const EdgeInsets.all(16),
                           child: Text(
-                            'Nothing linked yet. Link a console from its own '
-                            'settings, or a Wii or DS below.',
+                            l.accountNothingLinked,
                             style: TextStyle(color: t.muted),
                           ),
                         ),
@@ -127,7 +128,7 @@ class _AccountPageState extends State<AccountPage> {
                           title: Text(platformNames[ns] ?? ns),
                           trailing: TextButton(
                             onPressed: () => _unlink(ns),
-                            child: Text('Unlink', style: TextStyle(color: t.bad)),
+                            child: Text(l.accountUnlink, style: TextStyle(color: t.bad)),
                           ),
                         ),
                         const Divider(height: 1),
@@ -135,22 +136,22 @@ class _AccountPageState extends State<AccountPage> {
                       if (!me.linkedPlatforms.contains('wfc'))
                         ListTile(
                           leading: const Icon(Icons.add_link),
-                          title: const Text('Link a Wii or DS'),
+                          title: Text(l.accountLinkWfc),
                           onTap: _linkWfc,
                         ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
-                const SectionLabel('Security'),
+                SectionLabel(l.accountSecurity),
                 Panel(
                   child: Column(
                     children: [
                       ListTile(
                         leading: const Icon(Icons.mail_outline),
-                        title: Text(me.email.isEmpty ? 'Email address' : me.email),
+                        title: Text(me.email.isEmpty ? l.accountEmailAddress : me.email),
                         subtitle: Text(
-                          me.emailVerified ? 'Confirmed' : 'Not confirmed',
+                          me.emailVerified ? l.accountEmailConfirmed : l.accountEmailNotConfirmed,
                           style: TextStyle(color: me.emailVerified ? t.ok : t.warn),
                         ),
                         trailing: me.emailVerified
@@ -158,40 +159,38 @@ class _AccountPageState extends State<AccountPage> {
                             : TextButton(
                                 onPressed: () => _act(
                                   widget.api.resendVerification,
-                                  'If your address still needs confirming, a new link is on its way.',
+                                  l.accountVerifySent,
                                 ),
-                                child: const Text('Send the link again'),
+                                child: Text(l.accountVerifyResend),
                               ),
                       ),
                       const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.alternate_email),
-                        title: const Text('Change email'),
+                        title: Text(l.accountChangeEmail),
                         trailing: Icon(Icons.chevron_right, color: t.muted),
                         onTap: _changeEmail,
                       ),
                       const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.shield_outlined),
-                        title: const Text('Two-factor authentication'),
-                        subtitle: Text(me.twoFactorEnabled
-                            ? 'Signing in asks for a code from your authenticator app.'
-                            : 'Off. Signing in on the website or the app asks for your password only.'),
+                        title: Text(l.twoFactorTitle),
+                        subtitle: Text(me.twoFactorEnabled ? l.accountTwoFactorOn : l.accountTwoFactorOff),
                         trailing: me.twoFactorEnabled
                             ? TextButton(
                                 onPressed: _disableTwoFactor,
-                                child: Text('Turn off', style: TextStyle(color: t.bad)),
+                                child: Text(l.accountTurnOff, style: TextStyle(color: t.bad)),
                               )
                             : TextButton(
                                 onPressed: _setUpTwoFactor,
-                                child: const Text('Set up'),
+                                child: Text(l.accountSetUp),
                               ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
-                SectionLabel('Signed in', trailing: '${sessions.length}'),
+                SectionLabel(l.accountSignedIn, trailing: '${sessions.length}'),
                 Panel(
                   child: Column(
                     children: [
@@ -199,14 +198,14 @@ class _AccountPageState extends State<AccountPage> {
                         if (i > 0) const Divider(height: 1),
                         ListTile(
                           leading: const Icon(Icons.devices_outlined),
-                          title: Text(_when(sessions[i].createdAt)),
+                          title: Text(_when(l, sessions[i].createdAt)),
                           subtitle: sessions[i].expiresAt == null
                               ? null
-                              : Text('Expires ${_date(sessions[i].expiresAt!)}'),
+                              : Text(l.accountSessionExpires(shortDate(l, sessions[i].expiresAt!))),
                           trailing: TextButton(
                             onPressed: () => _revoke(sessions[i]),
                             child: Text(
-                              'Revoke',
+                              l.accountRevoke,
                               style: TextStyle(color: t.bad),
                             ),
                           ),
@@ -219,7 +218,7 @@ class _AccountPageState extends State<AccountPage> {
                 OutlinedButton.icon(
                   onPressed: _changePassword,
                   icon: const Icon(Icons.password),
-                  label: const Text('Change password'),
+                  label: Text(l.accountChangePassword),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
                     side: BorderSide(color: t.line),
@@ -229,7 +228,7 @@ class _AccountPageState extends State<AccountPage> {
                 OutlinedButton.icon(
                   onPressed: widget.onSignedOut,
                   icon: const Icon(Icons.logout),
-                  label: const Text('Sign out'),
+                  label: Text(l.accountSignOut),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
                     foregroundColor: t.bad,
@@ -240,7 +239,7 @@ class _AccountPageState extends State<AccountPage> {
                 TextButton.icon(
                   onPressed: () => _deleteAccount(me),
                   icon: const Icon(Icons.delete_forever_outlined),
-                  label: const Text('Delete account'),
+                  label: Text(l.accountDelete),
                   style: TextButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
                     foregroundColor: t.bad,
@@ -265,186 +264,172 @@ class _AccountPageState extends State<AccountPage> {
     if (changed ?? false) _reload();
   }
 
-  /// [errors] words a status the way the website does, where the server's own
-  /// message would be terse.
+  /// [errors] words a status the way the website does, where the generic
+  /// wording of the error would be terse.
   Future<void> _act(Future<void> Function() call, String done, {Map<int, String> errors = const {}}) async {
+    final l = context.l10n;
     try {
       await call();
       if (mounted) showToast(context, done);
     } on ApiException catch (e) {
-      if (mounted) showToast(context, errors[e.statusCode] ?? e.message);
+      if (mounted) showToast(context, errors[e.statusCode] ?? apiErrorText(l, e));
     }
     _reload();
   }
 
-  static const _wrongPassword = 'That password is not right, so nothing was changed.';
-  static const _codeHelp = 'The six digits from your authenticator app, or one of your recovery codes.';
-  static const _locked = 'Too many wrong codes. Try again in 15 minutes.';
-
   /// The change happens on the website, when the link mailed to the new
   /// address is opened; until then the account keeps the old one.
   Future<void> _changeEmail() async {
+    final l = context.l10n;
     final v = await promptForm(
       context,
-      title: 'Change email',
-      labels: const ['New email address', '*Current password'],
-      action: 'Change email',
-      help: 'We send a link to the new address. Nothing changes until you open it.',
+      title: l.accountChangeEmail,
+      labels: ['@${l.accountNewEmail}', '*${l.commonCurrentPassword}'],
+      action: l.accountChangeEmail,
+      help: l.accountChangeEmailHelp,
     );
     if (v == null || v[0].isEmpty || v[1].isEmpty) return;
     await _act(
       () => widget.api.changeEmail(v[0], v[1]),
-      'If that address can be used, a confirmation link is on its way to it.',
-      errors: const {
-        400: 'That address cannot be used. Check it and try again.',
-        403: _wrongPassword,
-      },
+      l.accountChangeEmailSent,
+      errors: {400: l.accountEmailInvalid, 403: l.accountWrongPassword},
     );
   }
 
   /// The consoles warning comes first, before the password is even asked for,
   /// and again on the page where two-factor is switched on.
   Future<void> _setUpTwoFactor() async {
+    final l = context.l10n;
     final v = await promptForm(
       context,
-      title: 'Set up two-factor',
-      labels: const ['*Current password'],
-      action: 'Continue',
-      help: consolesWarning,
+      title: l.accountSetUpTwoFactor,
+      labels: ['*${l.commonCurrentPassword}'],
+      action: l.commonContinue,
+      help: l.twoFactorConsolesWarning,
     );
     if (v == null || v[0].isEmpty) return;
     final TwoFactorSecret secret;
     try {
       secret = await widget.api.twoFactorSetup(v[0]);
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.statusCode == 403 ? _wrongPassword : e.message);
+      if (mounted) showToast(context, e.statusCode == 403 ? l.accountWrongPassword : apiErrorText(l, e));
       return;
     }
     if (!mounted) return;
     final on = await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => TwoFactorSetupPage(api: widget.api, secret: secret)),
     );
-    if ((on ?? false) && mounted) showToast(context, 'Two-factor authentication is on.');
+    if ((on ?? false) && mounted) showToast(context, l.twoFactorIsOn);
     _reload();
   }
 
   Future<void> _disableTwoFactor() async {
+    final l = context.l10n;
     final v = await promptForm(
       context,
-      title: 'Turn off two-factor',
-      labels: const ['*Current password', 'Code'],
-      action: 'Turn off',
-      help: _codeHelp,
+      title: l.accountTurnOffTwoFactor,
+      labels: ['*${l.commonCurrentPassword}', l.commonCode],
+      action: l.accountTurnOff,
+      help: l.commonCodeHelp,
     );
     if (v == null || v[0].isEmpty || v[1].isEmpty) return;
     await _act(
       () => widget.api.twoFactorDisable(v[0], v[1]),
-      'Two-factor authentication is off.',
-      errors: const {
-        401: 'That code is not right. Check the time on your phone and try the newest code.',
-        403: _wrongPassword,
-        429: _locked,
-      },
+      l.twoFactorIsOff,
+      errors: {401: l.errorWrongCode, 403: l.accountWrongPassword, 429: l.errorTwoFactorLocked},
     );
   }
 
   /// Asked twice on purpose: once to be sure, once for the password (and the
   /// code, with two-factor on) so a phone left unlocked cannot end an account.
   Future<void> _deleteAccount(Account me) async {
-    if (!await confirm(
-      context,
-      'Delete your account?',
-      detail: 'This signs you out everywhere and cannot be undone. Your friends, '
-          'links and saves go with the account.',
-    )) {
+    final l = context.l10n;
+    if (!await confirm(context, l.accountDeleteConfirm, detail: l.accountDeleteDetail)) {
       return;
     }
     if (!mounted) return;
     final v = await promptForm(
       context,
-      title: 'Delete account',
-      labels: me.twoFactorEnabled ? const ['*Current password', 'Code'] : const ['*Current password'],
-      action: 'Delete my account',
-      help: '${me.twoFactorEnabled ? '$_codeHelp ' : ''}The account cannot be recovered.',
+      title: l.accountDelete,
+      labels: ['*${l.commonCurrentPassword}', if (me.twoFactorEnabled) l.commonCode],
+      action: l.accountDeleteAction,
+      help: '${me.twoFactorEnabled ? '${l.commonCodeHelp} ' : ''}${l.accountDeleteHelp}',
     );
     if (v == null || v.any((e) => e.isEmpty)) return;
     try {
       await widget.api.deleteAccount(v[0], code: v.length > 1 ? v[1] : null);
     } on ApiException catch (e) {
       if (mounted) {
-        showToast(context, switch (e.message) {
-          'wrong password' => 'That password is not right, so the account was not deleted.',
-          'wrong code' => 'That code is not right, so the account was not deleted. Use a current '
-              'code from your authenticator app, or a recovery code.',
-          _ => e.statusCode == 429 ? _locked : e.message,
+        // By code, or by the English message from a server older than codes.
+        showToast(context, switch (e.code ?? e.message) {
+          'wrong_password' || 'wrong password' => l.accountDeleteWrongPassword,
+          'wrong_code' || 'wrong code' => l.accountDeleteWrongCode,
+          _ => e.statusCode == 429 ? l.errorTwoFactorLocked : apiErrorText(l, e),
         });
       }
       return;
     }
     if (mounted) {
-      showToast(context, 'Your account is being deleted and you have been signed out everywhere.');
+      showToast(context, l.accountDeleted);
     }
     await widget.onSignedOut();
   }
 
   Future<void> _unlink(String ns) async {
+    final l = context.l10n;
     final name = platformNames[ns] ?? ns;
-    if (!await confirm(context, 'Unlink your $name?',
-        detail: 'It stops signing in as you until it is linked again.')) {
+    if (!await confirm(context, l.accountUnlinkConfirm(name), detail: l.accountUnlinkDetail)) {
       return;
     }
-    await _act(() => widget.api.unlink(ns), '$name unlinked.');
+    await _act(() => widget.api.unlink(ns), l.accountUnlinked(name));
   }
 
   Future<void> _linkWfc() async {
+    final l = context.l10n;
     final v = await promptForm(
       context,
-      title: 'Link a Wii or DS',
-      labels: const ['Friend code'],
-      action: 'Link',
-      help: 'Type the friend code any Wii or DS game on that console shows you. '
-          'The console has no login of its own, so this is how it joins your account.',
+      title: l.accountLinkWfc,
+      labels: [l.commonFriendCode],
+      action: l.accountLink,
+      help: l.accountLinkWfcHelp,
     );
     if (v == null || v[0].isEmpty) return;
-    await _act(() => widget.api.linkWfc(v[0]), 'Wii / DS linked.');
+    await _act(() => widget.api.linkWfc(v[0]), l.accountWfcLinked);
   }
 
   /// Every other device is signed out by the change; this one stays.
   Future<void> _changePassword() async {
+    final l = context.l10n;
     final v = await promptForm(
       context,
-      title: 'Change password',
-      labels: const ['*Current password', '*New password'],
-      action: 'Change',
-      help: 'At least 8 characters. Your other devices are signed out.',
+      title: l.accountChangePassword,
+      labels: ['*${l.commonCurrentPassword}', '*${l.accountNewPassword}'],
+      action: l.accountChange,
+      help: l.accountChangePasswordHelp,
     );
     if (v == null || v[0].isEmpty || v[1].isEmpty) return;
-    await _act(() => widget.api.changePassword(v[0], v[1]), 'Password changed.');
+    await _act(() => widget.api.changePassword(v[0], v[1]), l.accountPasswordChanged);
   }
 
   Future<void> _revoke(WebSession s) async {
+    final l = context.l10n;
     if (!await confirm(
       context,
-      'Sign that device out?',
+      l.accountRevokeConfirm,
       // Revoking the session this app is using signs the app out too, which is
       // surprising unless it is said first.
-      detail: 'If it is this phone, you will be signed out here as well.',
+      detail: l.accountRevokeDetail,
     )) {
       return;
     }
     try {
       await widget.api.revokeSession(s.id);
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message);
+      if (mounted) showToast(context, apiErrorText(l, e));
     }
     _reload();
   }
 
-  String _when(DateTime? d) =>
-      d == null ? 'Session' : 'Signed in ${_date(d)}';
-
-  String _date(DateTime d) {
-    final l = d.toLocal();
-    return '${l.day}/${l.month}/${l.year}';
-  }
+  String _when(AppLocalizations l, DateTime? d) =>
+      d == null ? l.accountSession : l.accountSignedInOn(shortDate(l, d));
 }

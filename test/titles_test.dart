@@ -5,9 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:openpak/api.dart';
+import 'package:openpak/l10n.dart';
 import 'package:openpak/theme.dart';
 import 'package:openpak/titles_page.dart';
 import 'package:openpak/widgets.dart';
+
+import 'localized.dart';
 
 http.Response _json(Object body) =>
     http.Response(jsonEncode(body), 200, headers: {'content-type': 'application/json'});
@@ -58,11 +61,11 @@ void main() {
     expect(statusState('beta'), RowState.warn);
     expect(statusState('not-feasible'), RowState.bad);
     expect(statusState('requestable'), RowState.idle);
-    expect(statusLabel('not-feasible'), 'Not feasible');
+    expect(statusLabel(lookupAppLocalizations(const Locale('en')), 'not-feasible'), 'Not feasible');
   });
 
   Widget wrap(OpenPakApi api) =>
-      MaterialApp(theme: openPakLight(), home: TitlesPage(api: api));
+      localizedApp(theme: openPakLight(), home: TitlesPage(api: api));
 
   testWidgets('the list is what has a server; requestable titles sit behind Request a game', (tester) async {
     final api = OpenPakApi(
@@ -161,7 +164,7 @@ void main() {
   });
 
   test('newsDate prints the website\'s date', () {
-    expect(newsDate(DateTime.utc(2026, 9, 18, 9)), '18 September 2026');
+    expect(newsDate(lookupAppLocalizations(const Locale('en')), DateTime.utc(2026, 9, 18, 9)), '18 September 2026');
   });
 
   testWidgets('the latest news sits on top and opens in full; none, and it is not there', (tester) async {

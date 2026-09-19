@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 
 import 'api.dart';
+import 'l10n.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -62,7 +64,7 @@ class TitlesPageState extends State<TitlesPage> {
     } on ApiException catch (e) {
       // 409 = the id is not requestable (a started game or a feature). The
       // button is gated so this should be unreachable; restore the true state.
-      if (e.statusCode != 409 && mounted) showToast(context, e.message);
+      if (e.statusCode != 409 && mounted) showToast(context, apiErrorText(context.l10n, e));
       reload();
     }
   }
@@ -71,8 +73,9 @@ class TitlesPageState extends State<TitlesPage> {
   Widget build(BuildContext context) {
     final signedIn = widget.api.token != null;
     final isTitle = _kind == 'title';
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Titles')),
+      appBar: AppBar(title: Text(l.titlesTitle)),
       body: RefreshIndicator(
         onRefresh: () async => reload(),
         child: FutureBuilder<List<CatalogItem>>(
@@ -99,9 +102,9 @@ class TitlesPageState extends State<TitlesPage> {
                 _controls(served),
                 const SizedBox(height: 8),
                 if (shown.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: Text('Nothing matches.', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 48),
+                    child: Text(l.titlesNothingMatches, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
                   )
                 else
                   ...shown.map((i) => _CatalogRow(
@@ -115,11 +118,10 @@ class TitlesPageState extends State<TitlesPage> {
                   FilledButton.icon(
                     onPressed: () => _openRequestSheet(requestable, signedIn),
                     icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('Request a game'),
+                    label: Text(l.titlesRequestGame),
                   ),
                   const SizedBox(height: 6),
-                  const Text('Everything above has a server. Anything else, ask for it here; requests decide what gets built next.',
-                      style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(l.titlesRequestHint, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ],
             );
@@ -133,6 +135,7 @@ class TitlesPageState extends State<TitlesPage> {
   /// grouped by console in the label, and a button that toggles this account's request.
   Future<void> _openRequestSheet(List<CatalogItem> requestable, bool signedIn) async {
     CatalogItem? picked = requestable.first;
+    final l = context.l10n;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -143,21 +146,25 @@ class TitlesPageState extends State<TitlesPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Which game should OpenPak build next?', style: Theme.of(ctx).textTheme.titleMedium),
+              Text(l.titlesRequestSheetTitle, style: Theme.of(ctx).textTheme.titleMedium),
               const SizedBox(height: 12),
               DropdownButtonFormField<CatalogItem>(
                 initialValue: picked,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Pick a title'),
+                decoration: InputDecoration(labelText: l.titlesPickTitle),
                 items: [
                   for (final i in requestable)
-                    DropdownMenuItem(value: i, child: Text('${i.console} · ${i.name}${i.voted ? '  (requested)' : ''}', overflow: TextOverflow.ellipsis)),
+                    DropdownMenuItem(
+                      value: i,
+                      child: Text('${i.console} · ${i.name}${i.voted ? '  ${l.titlesRequestedMark}' : ''}',
+                          overflow: TextOverflow.ellipsis),
+                    ),
                 ],
                 onChanged: (v) => setSheet(() => picked = v),
               ),
               const SizedBox(height: 16),
               if (!signedIn)
-                const Text('Sign in to request a game.', style: TextStyle(color: Colors.grey))
+                Text(l.titlesSignInToRequest, style: const TextStyle(color: Colors.grey))
               else
                 FilledButton(
                   onPressed: picked == null
@@ -167,7 +174,7 @@ class TitlesPageState extends State<TitlesPage> {
                           Navigator.of(ctx).pop();
                           await _request(item);
                         },
-                  child: Text(picked?.voted == true ? 'Withdraw request' : 'Request'),
+                  child: Text(picked?.voted == true ? l.titlesWithdraw : l.titlesRequest),
                 ),
             ],
           ),
@@ -189,7 +196,7 @@ class TitlesPageState extends State<TitlesPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SectionLabel('News'),
+                SectionLabel(context.l10n.titlesNews),
                 for (final a in articles)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
@@ -204,7 +211,7 @@ class TitlesPageState extends State<TitlesPage> {
                               Text(a.title, style: const TextStyle(fontWeight: FontWeight.w600)),
                               if (a.publishedAt != null) ...[
                                 const SizedBox(height: 2),
-                                Text(newsDate(a.publishedAt!), style: TextStyle(color: t.muted, fontSize: 12.5)),
+                                Text(newsDate(context.l10n, a.publishedAt!), style: TextStyle(color: t.muted, fontSize: 12.5)),
                               ],
                               if (a.summary.isNotEmpty) ...[
                                 const SizedBox(height: 6),
@@ -241,7 +248,7 @@ class TitlesPageState extends State<TitlesPage> {
               Text(a.title, style: Theme.of(ctx).textTheme.titleLarge),
               if (a.publishedAt != null) ...[
                 const SizedBox(height: 4),
-                Text(newsDate(a.publishedAt!), style: TextStyle(color: tokensOf(ctx).muted)),
+                Text(newsDate(ctx.l10n, a.publishedAt!), style: TextStyle(color: tokensOf(ctx).muted)),
               ],
               const SizedBox(height: 16),
               for (final para in (a.body.isEmpty ? a.summary : a.body).split(RegExp(r'\n\s*\n')))
@@ -261,13 +268,13 @@ class TitlesPageState extends State<TitlesPage> {
         builder: (context, snap) {
           final s = snap.data;
           if (s == null) return const SizedBox.shrink();
-          String online(int n) => n == 1 ? '1 online' : '$n online';
+          final online = context.l10n.titlesOnlineCount;
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SectionLabel('Online now', trailing: online(s.playersOnline)),
+                SectionLabel(context.l10n.titlesOnlineNow, trailing: online(s.playersOnline)),
                 for (final e in s.networks.entries)
                   StateRow(
                     name: platformNames[e.key] ?? e.key,
@@ -281,9 +288,9 @@ class TitlesPageState extends State<TitlesPage> {
       );
 
   Widget _segmented() => SegmentedButton<String>(
-    segments: const [
-      ButtonSegment(value: 'title', label: Text('Titles'), icon: Icon(Icons.sports_esports_outlined)),
-      ButtonSegment(value: 'feature', label: Text('Network'), icon: Icon(Icons.lan_outlined)),
+    segments: [
+      ButtonSegment(value: 'title', label: Text(context.l10n.titlesTitle), icon: const Icon(Icons.sports_esports_outlined)),
+      ButtonSegment(value: 'feature', label: Text(context.l10n.titlesNetwork), icon: const Icon(Icons.lan_outlined)),
     ],
     selected: {_kind},
     showSelectedIcon: false,
@@ -301,12 +308,13 @@ class TitlesPageState extends State<TitlesPage> {
     final ofKind = all.where((i) => i.kind == _kind);
     final consoles = _distinct(ofKind.map((i) => i.console));
     final statuses = _distinct(ofKind.map((i) => i.status));
+    final l = context.l10n;
     return Column(
       children: [
         TextField(
-          decoration: const InputDecoration(
-            hintText: 'Search by name',
-            prefixIcon: Icon(Icons.search),
+          decoration: InputDecoration(
+            hintText: l.commonSearchByName,
+            prefixIcon: const Icon(Icons.search),
             isDense: true,
           ),
           onChanged: (v) => setState(() => _search = v),
@@ -317,7 +325,8 @@ class TitlesPageState extends State<TitlesPage> {
             if (_kind == 'title') ...[
               Expanded(
                 child: _filterDropdown(
-                  hint: 'Console',
+                  hint: l.commonConsole,
+                  all: l.commonAllConsoles,
                   value: _console,
                   options: consoles,
                   onChanged: (v) => setState(() => _console = v),
@@ -327,11 +336,12 @@ class TitlesPageState extends State<TitlesPage> {
             ],
             Expanded(
               child: _filterDropdown(
-                hint: 'Status',
+                hint: l.titlesStatus,
+                all: l.titlesAllStatuses,
                 value: _status,
                 options: statuses,
                 onChanged: (v) => setState(() => _status = v),
-                label: statusLabel,
+                label: (s) => statusLabel(l, s),
               ),
             ),
           ],
@@ -342,6 +352,7 @@ class TitlesPageState extends State<TitlesPage> {
 
   Widget _filterDropdown({
     required String hint,
+    required String all,
     required String? value,
     required List<String> options,
     required ValueChanged<String?> onChanged,
@@ -351,7 +362,7 @@ class TitlesPageState extends State<TitlesPage> {
     isExpanded: true,
     decoration: InputDecoration(hintText: hint, isDense: true),
     items: [
-      DropdownMenuItem(value: null, child: Text('All ${hint.toLowerCase()}s')),
+      DropdownMenuItem(value: null, child: Text(all)),
       ...options.map((o) => DropdownMenuItem(
             value: o,
             child: Text(label?.call(o) ?? o, overflow: TextOverflow.ellipsis),
@@ -430,7 +441,7 @@ class _CatalogRow extends StatelessWidget {
             if (showRequest)
               _RequestButton(requested: item.voted, enabled: signedIn, onTap: onRequest)
             else
-              _StatusPill(label: statusLabel(item.status), color: pillInk, border: pillLine, bg: pillBg),
+              _StatusPill(label: statusLabel(context.l10n, item.status), color: pillInk, border: pillLine, bg: pillBg),
           ],
         ),
       ),
@@ -464,7 +475,7 @@ class _RequestButton extends StatelessWidget {
           border: Border.all(color: active ? scheme.primary : t.line2),
         ),
         child: Text(
-          requested ? 'Requested' : 'Request',
+          requested ? context.l10n.titlesRequested : context.l10n.titlesRequest,
           style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12.5),
         ),
       ),
@@ -588,25 +599,25 @@ RowState statusState(String status) => switch (status) {
 
 /// A status token shown to a person: 'not-feasible' → 'Not feasible'. Unknown
 /// values pass through capitalised rather than being dropped.
-String statusLabel(String status) => switch (status) {
-  'live' => 'Live',
-  'working' => 'Working',
-  'beta' => 'Beta',
-  'scaffold' => 'Scaffold',
-  'alpha' => 'Alpha',
-  'partial' => 'Partial',
-  'planned' => 'Planned',
-  'requestable' => 'Requestable',
-  'not-feasible' => 'Not feasible',
-  'broken' => 'Broken',
+String statusLabel(AppLocalizations l, String status) => switch (status) {
+  'live' => l.statusLive,
+  'working' => l.statusWorking,
+  'beta' => l.statusBeta,
+  'scaffold' => l.statusScaffold,
+  'alpha' => l.statusAlpha,
+  'partial' => l.statusPartial,
+  'planned' => l.statusPlanned,
+  'requestable' => l.statusRequestable,
+  'not-feasible' => l.statusNotFeasible,
+  'broken' => l.statusBroken,
   '' => '—',
   _ => status[0].toUpperCase() + status.substring(1),
 };
 
-/// "18 September 2026", the website's news date, in UTC as it prints it.
-String newsDate(DateTime d) {
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-      'August', 'September', 'October', 'November', 'December'];
+/// "18 September 2026", the website's news date, in UTC as it prints it. The
+/// order and punctuation are the language's ("18. September 2026"), the month
+/// name the locale's own.
+String newsDate(AppLocalizations l, DateTime d) {
   final u = d.toUtc();
-  return '${u.day} ${months[u.month - 1]} ${u.year}';
+  return l.titlesNewsDate(u.day, DateFormat.MMMM(l.localeName).format(u), u.year);
 }

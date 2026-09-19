@@ -7,10 +7,12 @@ import 'package:http/testing.dart';
 import 'package:openpak/api.dart';
 import 'package:openpak/sign_in_page.dart';
 
+import 'localized.dart';
+
 void main() {
   Future<void> pumpSignIn(WidgetTester tester, MockClient client) async {
     await tester.pumpWidget(
-      MaterialApp(
+      localizedApp(
         home: SignInPage(
           api: OpenPakApi(baseUrl: 'https://openpak.test', client: client),
           onSignedIn: (_) async {},
@@ -73,7 +75,7 @@ void main() {
     String? token;
     final sent = <String>[];
     await tester.pumpWidget(
-      MaterialApp(
+      localizedApp(
         home: SignInPage(
           api: OpenPakApi(
             baseUrl: 'https://openpak.test',

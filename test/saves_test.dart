@@ -8,6 +8,8 @@ import 'package:openpak/api.dart';
 import 'package:openpak/saves_page.dart';
 import 'package:openpak/theme.dart';
 
+import 'localized.dart';
+
 http.Response _json(Object body) => http.Response(jsonEncode(body), 200, headers: {'content-type': 'application/json'});
 
 void main() {
@@ -50,7 +52,7 @@ void main() {
       }),
     );
     await tester.pumpWidget(
-      MaterialApp(
+      localizedApp(
         theme: openPakLight(),
         home: SavesPage(api: api),
       ),
@@ -104,7 +106,7 @@ void main() {
         };
       }),
     );
-    await tester.pumpWidget(MaterialApp(theme: openPakLight(), home: SavesPage(api: api)));
+    await tester.pumpWidget(localizedApp(theme: openPakLight(), home: SavesPage(api: api)));
     await tester.pumpAndSettle();
     expect(find.text('Move: moving'), findsOneWidget);
     final move = find.text('Move my saves here (2 kB)');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'api.dart';
+import 'l10n.dart';
 import 'logo.dart';
 import 'widgets.dart';
 
@@ -40,8 +41,9 @@ class _SignInPageState extends State<SignInPage> {
   });
 
   Future<void> _submitCode() async {
+    final l = context.l10n;
     if (_code.text.trim().isEmpty) {
-      setState(() => _error = 'Type the code from your app.');
+      setState(() => _error = l.commonCodeMissing);
       return;
     }
     setState(() {
@@ -55,20 +57,19 @@ class _SignInPageState extends State<SignInPage> {
       // A 401 cannot tell a wrong code from a spent challenge, and a spent one
       // cannot be retried, so both go back to the password.
       if (e.unauthorized) {
-        _startAgain(error: 'That code is not right, or it took too long. Sign in again.');
+        _startAgain(error: l.signInCodeWrong);
       } else {
-        setState(() => _error = e.statusCode == 429
-            ? 'Too many wrong codes. Try again in 15 minutes.'
-            : e.message);
+        setState(() => _error = e.statusCode == 429 ? l.errorTwoFactorLocked : apiErrorText(l, e));
       }
     } catch (_) {
-      setState(() => _error = 'Could not reach OpenPak. Check your connection.');
+      setState(() => _error = l.commonNoConnection);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
   Future<void> _submit() async {
+    final l = context.l10n;
     setState(() {
       _busy = true;
       _error = null;
@@ -85,12 +86,12 @@ class _SignInPageState extends State<SignInPage> {
       // The server distinguishes wrong credentials from being rate limited,
       // and so should the message: one is worth retrying immediately.
       setState(() => _error = e.statusCode == 429
-          ? 'Too many attempts. Wait a minute and try again.'
+          ? l.errorRateLimited
           : e.unauthorized
-          ? 'That e-mail and password do not match.'
-          : e.message);
+          ? l.errorInvalidCredentials
+          : apiErrorText(l, e));
     } catch (_) {
-      setState(() => _error = 'Could not reach OpenPak. Check your connection.');
+      setState(() => _error = l.commonNoConnection);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -99,41 +100,44 @@ class _SignInPageState extends State<SignInPage> {
   /// Both answers are the same whether or not the address has an account, so
   /// the message only says what to look for.
   Future<void> _forgot() async {
+    final l = context.l10n;
     final v = await promptForm(
       context,
-      title: 'Reset your password',
-      labels: const ['E-mail'],
+      title: l.signInResetTitle,
+      labels: ['@${l.commonEmail}'],
       initial: [_email.text.trim()],
-      action: 'Send',
-      help: 'A link to set a new one comes by mail.',
+      action: l.commonSend,
+      help: l.signInResetHelp,
     );
     if (v == null || v[0].isEmpty) return;
-    await _ask(() => widget.api.forgotPassword(v[0]), 'If that address has an account, a reset mail is on its way.');
+    await _ask(() => widget.api.forgotPassword(v[0]), l.signInResetSent);
   }
 
   Future<void> _register() async {
+    final l = context.l10n;
     final v = await promptForm(
       context,
-      title: 'Create an account',
-      labels: const ['Display name', 'E-mail', '*Password'],
-      action: 'Create',
-      help: 'At least 8 characters for the password. You verify the address before signing in.',
+      title: l.signInCreateAccount,
+      labels: [l.commonDisplayName, '@${l.commonEmail}', '*${l.commonPassword}'],
+      action: l.signInCreate,
+      help: l.signInCreateHelp,
     );
     if (v == null) return;
     await _ask(
       () => widget.api.register(displayName: v[0], email: v[1], password: v[2]),
-      'Check ${v[1]} for a mail to verify it, then sign in.',
+      l.signInCreateSent(v[1]),
     );
   }
 
   Future<void> _ask(Future<void> Function() call, String done) async {
+    final l = context.l10n;
     try {
       await call();
       if (mounted) showToast(context, done);
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.statusCode == 429 ? 'Too many attempts. Wait a minute and try again.' : e.message);
+      if (mounted) showToast(context, e.statusCode == 429 ? l.errorRateLimited : apiErrorText(l, e));
     } catch (_) {
-      if (mounted) showToast(context, 'Could not reach OpenPak. Check your connection.');
+      if (mounted) showToast(context, l.commonNoConnection);
     }
   }
 
@@ -170,9 +174,9 @@ class _SignInPageState extends State<SignInPage> {
 
   /// The second step, as the website's: one field for either kind of code.
   List<Widget> _codeStep(BuildContext context) => [
-    Text('Enter your code', style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
+    Text(context.l10n.signInCodeTitle, style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
     const SizedBox(height: 4),
-    const Text('This account uses two-factor authentication.', textAlign: TextAlign.center),
+    Text(context.l10n.signInCodeSub, textAlign: TextAlign.center),
     const SizedBox(height: 20),
     TextField(
       controller: _code,
@@ -180,21 +184,21 @@ class _SignInPageState extends State<SignInPage> {
       autocorrect: false,
       autofillHints: const [AutofillHints.oneTimeCode],
       onSubmitted: (_) => _busy ? null : _submitCode(),
-      decoration: const InputDecoration(
-        labelText: 'Code',
-        helperText: 'The six digits from your authenticator app, or one of your recovery codes.',
+      decoration: InputDecoration(
+        labelText: context.l10n.commonCode,
+        helperText: context.l10n.commonCodeHelp,
         helperMaxLines: 3,
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
       ),
     ),
     ..._errorLine(context),
     const SizedBox(height: 24),
     FilledButton(
       onPressed: _busy ? null : _submitCode,
-      child: _busy ? _spinner : const Text('Sign in'),
+      child: _busy ? _spinner : Text(context.l10n.signInButton),
     ),
     const SizedBox(height: 8),
-    TextButton(onPressed: _busy ? null : _startAgain, child: const Text('Start again')),
+    TextButton(onPressed: _busy ? null : _startAgain, child: Text(context.l10n.signInStartAgain)),
   ];
 
   static const _spinner = SizedBox(
@@ -219,9 +223,9 @@ class _SignInPageState extends State<SignInPage> {
       autofillHints: const [AutofillHints.email],
       keyboardType: TextInputType.emailAddress,
       autocorrect: false,
-      decoration: const InputDecoration(
-        labelText: 'E-mail',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        labelText: context.l10n.commonEmail,
+        border: const OutlineInputBorder(),
       ),
     ),
     const SizedBox(height: 12),
@@ -230,23 +234,23 @@ class _SignInPageState extends State<SignInPage> {
       autofillHints: const [AutofillHints.password],
       obscureText: true,
       onSubmitted: (_) => _busy ? null : _submit(),
-      decoration: const InputDecoration(
-        labelText: 'Password',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        labelText: context.l10n.commonPassword,
+        border: const OutlineInputBorder(),
       ),
     ),
     ..._errorLine(context),
     const SizedBox(height: 24),
     FilledButton(
       onPressed: _busy ? null : _submit,
-      child: _busy ? _spinner : const Text('Sign in'),
+      child: _busy ? _spinner : Text(context.l10n.signInButton),
     ),
     const SizedBox(height: 8),
     Wrap(
       alignment: WrapAlignment.spaceBetween,
       children: [
-        TextButton(onPressed: _forgot, child: const Text('Forgot password?')),
-        TextButton(onPressed: _register, child: const Text('Create an account')),
+        TextButton(onPressed: _forgot, child: Text(context.l10n.signInForgot)),
+        TextButton(onPressed: _register, child: Text(context.l10n.signInCreateAccount)),
       ],
     ),
   ];

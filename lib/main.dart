@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'api.dart';
+import 'l10n.dart';
 import 'shell.dart';
 import 'theme.dart';
 import 'session.dart';
@@ -65,6 +66,14 @@ class _OpenPakAppState extends State<OpenPakApp> {
       // The website's tokens, so the two are visibly one product.
       theme: openPakLight(),
       darkTheme: openPakDark(),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      // The language the app settled on goes with every call, so the account
+      // e-mails the website sends read in it too.
+      builder: (context, child) {
+        _api.language = Localizations.localeOf(context).toLanguageTag();
+        return child!;
+      },
       home: _restoring
           ? const Scaffold(body: Center(child: CircularProgressIndicator()))
           : _api.token == null

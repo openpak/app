@@ -3,8 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:openpak/theme.dart';
 import 'package:openpak/widgets.dart';
 
+import 'localized.dart';
+
 Widget wrap(Widget child) =>
-    MaterialApp(theme: openPakLight(), home: Scaffold(body: child));
+    localizedApp(theme: openPakLight(), home: Scaffold(body: child));
 
 void main() {
   // The tint is what a person reads first, so each state has to reach the row

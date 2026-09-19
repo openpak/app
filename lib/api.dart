@@ -13,10 +13,18 @@ import 'package:http/http.dart' as http;
 
 /// Thrown for any non-success reply. [unauthorized] is separated because it is
 /// the one the UI must act on: the token died, so the person is signed out.
+///
+/// [message] is English, for logs; the UI shows the translation of [code]
+/// (see apiErrorText in l10n.dart). [code] is null from a server older than
+/// the error codes, and for failures the client raises itself.
 class ApiException implements Exception {
-  ApiException(this.statusCode, this.message);
+  ApiException(this.statusCode, this.message, {this.code, this.fromServer = false});
   final int statusCode;
   final String message;
+  final String? code;
+
+  /// Whether [message] is the server's own words rather than a placeholder.
+  final bool fromServer;
   bool get unauthorized => statusCode == 401;
   @override
   String toString() => message;
@@ -181,10 +189,9 @@ class ChatMessage {
   final String body;
   final DateTime sentAt;
 
-  /// What a line shows: the text, or what kind of message it was, as on the website.
-  String get line => kind.isEmpty || kind == 'text'
-      ? body
-      : '[${kind[0].toUpperCase()}${kind.substring(1)} message]';
+  /// Plain text; anything else (an invite, say) is shown by its kind, which the
+  /// UI words, as the website does.
+  bool get isText => kind.isEmpty || kind == 'text';
 
   factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
     id: (j['id'] as num?)?.toInt() ?? 0,
@@ -526,6 +533,10 @@ class OpenPakApi {
   /// this class never decides where a credential is written.
   String? token;
 
+  /// The app's language as a BCP-47 tag (pt-BR, de), sent as Accept-Language
+  /// on every call: the website writes account e-mails in it.
+  String? language;
+
   /// Called once when the server rejects the bearer. A dead token is dead for
   /// every screen at once, so this is handled here rather than in each of
   /// them: without it a stale token leaves every tab saying "could not load"
@@ -534,8 +545,9 @@ class OpenPakApi {
 
   Uri _uri(String path) => Uri.parse('$baseUrl/api/v1$path');
 
-  Map<String, String> _headers({bool json = false}) => {
-    if (token != null) 'Authorization': 'Bearer $token',
+  Map<String, String> _headers({bool json = false, bool auth = true}) => {
+    if (auth && token != null) 'Authorization': 'Bearer $token',
+    if (language != null) 'Accept-Language': language!,
     if (json) 'Content-Type': 'application/json',
   };
 
@@ -547,10 +559,14 @@ class OpenPakApi {
       return jsonDecode(r.body) as Map<String, dynamic>;
     }
     var message = 'Request failed (${r.statusCode})';
+    String? code;
+    var fromServer = false;
     try {
       final body = jsonDecode(r.body);
       if (body is Map && body['error'] is String) message = body['error'];
       if (body is Map && body['detail'] is String) message = body['detail'];
+      if (body is Map && body['code'] is String) code = body['code'];
+      fromServer = body is Map && (body['error'] is String || body['detail'] is String);
     } catch (_) {
       // A non-JSON error body is a proxy or an outage, not something to show.
     }
@@ -558,7 +574,7 @@ class OpenPakApi {
       token = null;
       onUnauthorized?.call();
     }
-    throw ApiException(r.statusCode, message);
+    throw ApiException(r.statusCode, message, code: code, fromServer: fromServer);
   }
 
   /// POST /token — mints the bearer and keeps it on this instance. Throws
@@ -566,7 +582,7 @@ class OpenPakApi {
   Future<String> signIn(String email, String password) async {
     final r = await _http.post(
       _uri('/token'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers(json: true, auth: false),
       body: jsonEncode({'email': email, 'password': password}),
     );
     return _keepToken(r, await _decode(r));
@@ -580,7 +596,7 @@ class OpenPakApi {
     final second = splitSecondFactor(typed);
     final r = await _http.post(
       _uri('/token/2fa'),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers(json: true, auth: false),
       body: jsonEncode({
         'challenge': challenge,
         if (second.code != null) 'code': second.code,
@@ -682,7 +698,7 @@ class OpenPakApi {
 
   /// GET /news — public, newest first; empty when the deployment has none.
   Future<List<NewsArticle>> news({int limit = 3}) async {
-    final body = await _decode(await _http.get(_uri('/news?limit=$limit')));
+    final body = await _decode(await _http.get(_uri('/news?limit=$limit'), headers: _headers(auth: false)));
     return ((body['articles'] as List?) ?? const [])
         .map((e) => NewsArticle.fromJson(e as Map<String, dynamic>))
         .toList(growable: false);
@@ -875,7 +891,7 @@ class OpenPakApi {
 
   /// GET /status — public: who is online, per console network.
   Future<NetworkStatus> status() async {
-    final body = await _decode(await _http.get(_uri('/status')));
+    final body = await _decode(await _http.get(_uri('/status'), headers: _headers(auth: false)));
     return NetworkStatus(
       playersOnline: (body['players_online'] as num?)?.toInt() ?? 0,
       networks: {

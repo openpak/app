@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'api.dart';
+import 'l10n.dart';
 import 'theme.dart';
 import 'titles_page.dart' show consoleAsset;
 import 'widgets.dart';
@@ -39,25 +41,35 @@ class SavesPageState extends State<SavesPage> {
   });
 
   Future<void> _act(Future<void> Function() action, String done) async {
+    final l = context.l10n;
     try {
       await action();
       if (mounted) showToast(context, done);
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message);
+      if (mounted) showToast(context, apiErrorText(l, e));
     }
     reload();
   }
 
+  /// The warning and the failure are the storage's own words (a bucket that
+  /// answers without credentials, "write: access denied"), passed on as the
+  /// website does: they are what the person has to fix.
   Future<void> _connect(SavesStorage current, String kind) async {
+    final l = context.l10n;
     final cfg = await showDialog<StorageConfig>(
       context: context,
       builder: (_) => _StorageDialog(current: current, kind: kind),
     );
     if (cfg == null) return;
-    await _act(() async {
+    try {
       final warning = await widget.api.connectStorage(cfg);
-      if (warning != null && mounted) showToast(context, warning);
-    }, 'Storage connected. New saves go to your bucket.');
+      if (mounted) showToast(context, warning == null ? l.savesConnected : l.savesConnectedWarning(warning));
+    } on ApiException catch (e) {
+      if (mounted) {
+        showToast(context, e.statusCode == 502 && e.fromServer ? l.savesConnectFailed(e.message) : apiErrorText(l, e));
+      }
+    }
+    reload();
   }
 
   Future<bool> _confirm(String title, String body) async =>
@@ -67,8 +79,8 @@ class SavesPageState extends State<SavesPage> {
           title: Text(title),
           content: Text(body),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Continue')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(ctx.l10n.commonCancel)),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(ctx.l10n.commonContinue)),
           ],
         ),
       ) ??
@@ -77,23 +89,23 @@ class SavesPageState extends State<SavesPage> {
   /// The consent page opens in the browser; the website's callback finishes the connection
   /// for this account, so coming back here and pulling to refresh is all that is left.
   Future<void> _connectCloud(String provider) async {
+    final l = context.l10n;
     try {
       final url = await widget.api.storageOAuthUrl(provider);
       if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-        if (mounted) showToast(context, 'Could not open the browser.');
+        if (mounted) showToast(context, l.savesBrowserFailed);
         return;
       }
-      if (mounted) {
-        showToast(context, 'Finish in the browser, then pull to refresh here.');
-      }
+      if (mounted) showToast(context, l.savesFinishInBrowser);
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message);
+      if (mounted) showToast(context, apiErrorText(l, e));
     }
   }
 
   Future<void> _delete(SaveVersion v) async {
-    if (await _confirm('Delete this version?', 'Its bytes are removed from storage.')) {
-      await _act(() => widget.api.deleteSave(v.id), 'Version deleted.');
+    final l = context.l10n;
+    if (await _confirm(l.savesDeleteTitle, l.savesDeleteBody)) {
+      await _act(() => widget.api.deleteSave(v.id), l.savesDeleted);
     }
   }
 
@@ -106,15 +118,16 @@ class SavesPageState extends State<SavesPage> {
         fileNameOverrides: ['save-${v.id}.bin'],
       ));
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message);
+      if (mounted) showToast(context, apiErrorText(context.l10n, e));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Saves')),
+      appBar: AppBar(title: Text(l.savesTitle)),
       body: RefreshIndicator(
         onRefresh: () async => reload(),
         child: FutureBuilder<(CloudSaves, SavesStorage, Map<String, bool>)>(
@@ -131,22 +144,18 @@ class SavesPageState extends State<SavesPage> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               children: [
                 // The website's order: what is used, the saves themselves, then where they go.
-                _head('Storage', storage.connected
-                    ? 'Your saves go to your own storage. Your bucket is the only limit.'
-                    : 'Your OpenPak allowance. When it is full, uploads are refused until you '
-                        'connect your own storage below.'),
+                _head(l.savesStorageHead, storage.connected ? l.savesUsageOwn : l.savesUsageAllowance),
                 _usage(data.usage, storage),
                 const SizedBox(height: 28),
-                _head('Saves', 'Pick a version to make it the current one; the older one is kept.'),
+                _head(l.savesTitle, l.savesListSub),
                 _list(data.saves),
                 const SizedBox(height: 28),
-                _head('Your own storage', 'Saves go straight there; OpenPak keeps only the index. '
-                    'The secret is tested once and never shown again.'),
+                _head(l.savesOwnHead, l.savesOwnSub),
                 ..._storage(storage, data.usage, kinds),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 16, 4, 0),
                   child: Text(
-                    'Console backups have several parts and cannot be downloaded here yet.',
+                    l.savesBackupsNote,
                     style: TextStyle(color: t.muted, fontSize: 13, height: 1.4),
                   ),
                 ),
@@ -176,7 +185,7 @@ class SavesPageState extends State<SavesPage> {
 
   Widget _usage(SavesUsage usage, SavesStorage storage) {
     if (storage.connected) {
-      return StateRow(name: storage.name, pill: 'connected', state: RowState.ok);
+      return StateRow(name: storage.name, pill: context.l10n.savesConnectedPill, state: RowState.ok);
     }
     final pct = usage.allowance > 0 ? usage.allowanceUsed * 100 ~/ usage.allowance : 0;
     final warn = pct >= 90;
@@ -185,7 +194,7 @@ class SavesPageState extends State<SavesPage> {
       children: [
         StateRow(
           name: '${fmtBytes(usage.allowanceUsed)} / ${fmtBytes(usage.allowance)}',
-          pill: '$pct%',
+          pill: NumberFormat.percentPattern(context.l10n.localeName).format(pct / 100),
           state: warn ? RowState.warn : RowState.ok,
         ),
         ClipRRect(
@@ -204,14 +213,14 @@ class SavesPageState extends State<SavesPage> {
   /// Search and console filter, then one card holding a row per game, as on the website.
   Widget _list(List<CloudSave> saves) {
     final t = tokensOf(context);
+    final l = context.l10n;
     final withVersions = saves.where((s) => s.versions.isNotEmpty).toList();
     if (withVersions.isEmpty) {
       return Panel(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Text(
-            'No saves yet. An emulator pushes one when you quit a game; a console backs up '
-            'from its Save Data Cloud screen.',
+            l.savesNone,
             style: TextStyle(color: t.ink2, height: 1.5),
           ),
         ),
@@ -228,9 +237,9 @@ class SavesPageState extends State<SavesPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
-          decoration: const InputDecoration(
-            hintText: 'Search by name',
-            prefixIcon: Icon(Icons.search),
+          decoration: InputDecoration(
+            hintText: l.commonSearchByName,
+            prefixIcon: const Icon(Icons.search),
             isDense: true,
           ),
           onChanged: (v) => setState(() => _search = v),
@@ -239,22 +248,22 @@ class SavesPageState extends State<SavesPage> {
         DropdownButtonFormField<String?>(
           initialValue: _console,
           isExpanded: true,
-          decoration: const InputDecoration(hintText: 'Console', isDense: true),
+          decoration: InputDecoration(hintText: l.commonConsole, isDense: true),
           items: [
-            const DropdownMenuItem(value: null, child: Text('All consoles')),
+            DropdownMenuItem(value: null, child: Text(l.commonAllConsoles)),
             ...consoles.map((c) => DropdownMenuItem(value: c, child: Text(c))),
           ],
           onChanged: (v) => setState(() => _console = v),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
-          child: Text('Showing ${shown.length} / ${withVersions.length}',
+          child: Text(l.savesShowing(shown.length, withVersions.length),
               style: TextStyle(color: t.muted, fontSize: 13)),
         ),
         if (shown.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: Text('No saves match.', style: TextStyle(color: t.muted))),
+            child: Center(child: Text(l.savesNoMatch, style: TextStyle(color: t.muted))),
           )
         else
           Panel(
@@ -266,8 +275,7 @@ class SavesPageState extends State<SavesPage> {
                     key: ObjectKey(s), // a reload resets the dropdown to the current version
                     save: s,
                     api: widget.api,
-                    onRestore: (id) => _act(() => widget.api.restoreSave(id),
-                        'Restored. That version is the current one now.'),
+                    onRestore: (id) => _act(() => widget.api.restoreSave(id), l.savesRestored),
                     onDownload: _download,
                     onDelete: _delete,
                   ),
@@ -281,6 +289,7 @@ class SavesPageState extends State<SavesPage> {
 
   List<Widget> _storage(SavesStorage storage, SavesUsage usage, Map<String, bool> kinds) {
     final t = tokensOf(context);
+    final l = context.l10n;
     Widget hint(String s) => Padding(
           padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
           child: Text(s, style: TextStyle(color: t.muted, fontSize: 13, height: 1.4)),
@@ -290,9 +299,9 @@ class SavesPageState extends State<SavesPage> {
         StateRow(
           name: storage.name,
           pill: switch (storage.lastTestOk) {
-            true => 'tested',
-            false => 'not answering',
-            null => 'not tested',
+            true => l.savesTested,
+            false => l.savesNotAnswering,
+            null => l.savesNotTested,
           },
           state: switch (storage.lastTestOk) {
             true => RowState.ok,
@@ -301,7 +310,7 @@ class SavesPageState extends State<SavesPage> {
           },
         ),
       if (storage.lastError != null) hint(storage.lastError!),
-      if (storage.moveState != null) hint('Move: ${storage.moveState}'),
+      if (storage.moveState != null) hint(l.savesMoveState(storage.moveState!)),
       if (storage.connected) ...[
         Wrap(
           spacing: 8,
@@ -313,20 +322,16 @@ class SavesPageState extends State<SavesPage> {
             if (usage.allowanceUsed > 0)
               FilledButton.icon(
                 icon: const Icon(Icons.drive_file_move_outline),
-                label: Text('Move my saves here (${fmtBytes(usage.allowanceUsed)})'),
-                onPressed: () => _act(widget.api.moveSaves,
-                    'Moving your saves. Pull to refresh in a moment.'),
+                label: Text(l.savesMoveHere(fmtBytes(usage.allowanceUsed))),
+                onPressed: () => _act(widget.api.moveSaves, l.savesMoving),
               ),
             OutlinedButton.icon(
               icon: const Icon(Icons.link_off),
-              label: const Text('Disconnect'),
+              label: Text(l.savesDisconnect),
               style: OutlinedButton.styleFrom(foregroundColor: t.bad),
               onPressed: () async {
-                if (await _confirm(
-                  'Disconnect storage?',
-                  'Versions stored there stay listed but cannot be read until it is connected again.',
-                )) {
-                  await _act(widget.api.disconnectStorage, 'Storage disconnected.');
+                if (await _confirm(l.savesDisconnectTitle, l.savesDisconnectBody)) {
+                  await _act(widget.api.disconnectStorage, l.savesDisconnected);
                 }
               },
             ),
@@ -337,7 +342,7 @@ class SavesPageState extends State<SavesPage> {
       // One tap, nothing to type: the clouds come first when the deployment
       // offers them. Running your own storage is the advanced case below.
       if (kinds['gdrive'] == true || kinds['onedrive'] == true) ...[
-        hint('Google Drive or OneDrive: sign in once and saves go to a folder there.'),
+        hint(l.savesCloudHint),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -360,10 +365,9 @@ class SavesPageState extends State<SavesPage> {
       ],
       ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 4),
-        title: Text('Advanced: your own bucket or server',
-            style: TextStyle(color: t.ink2, fontSize: 14)),
+        title: Text(l.savesAdvanced, style: TextStyle(color: t.ink2, fontSize: 14)),
         subtitle: Text(
-          'For people who run their own storage. Everyone else needs none of this.',
+          l.savesAdvancedSub,
           style: TextStyle(color: t.muted, fontSize: 12),
         ),
         initiallyExpanded: storage.connected && (storage.kind == 's3' || storage.kind == 'webdav'),
@@ -374,12 +378,12 @@ class SavesPageState extends State<SavesPage> {
             children: [
               OutlinedButton.icon(
                 icon: const Icon(Icons.storage_outlined),
-                label: Text(storage.connected && storage.kind == 's3' ? 'Edit bucket' : 'S3 bucket'),
+                label: Text(storage.connected && storage.kind == 's3' ? l.savesEditBucket : l.savesS3Bucket),
                 onPressed: () => _connect(storage, 's3'),
               ),
               OutlinedButton.icon(
                 icon: const Icon(Icons.dns_outlined),
-                label: Text(storage.connected && storage.kind == 'webdav' ? 'Edit WebDAV' : 'WebDAV'),
+                label: Text(storage.connected && storage.kind == 'webdav' ? l.savesEditWebdav : 'WebDAV'),
                 onPressed: () => _connect(storage, 'webdav'),
               ),
             ],
@@ -412,6 +416,7 @@ class _SaveRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
+    final l = context.l10n;
     final brightness = Theme.of(context).brightness;
     final console = platformConsole(save.platform);
     final cur = save.versions.first;
@@ -468,7 +473,7 @@ class _SaveRow extends StatelessWidget {
                               borderRadius: BorderRadius.circular(999),
                               border: Border.all(color: t.warnLine),
                             ),
-                            child: Text('Conflict',
+                            child: Text(l.savesConflict,
                                 style: TextStyle(color: t.warn, fontSize: 11.5, fontWeight: FontWeight.w700)),
                           ),
                         ],
@@ -492,7 +497,7 @@ class _SaveRow extends StatelessWidget {
                     for (final v in save.versions)
                       DropdownMenuItem(
                         value: v.id,
-                        child: Text(_versionLabel(v), overflow: TextOverflow.ellipsis),
+                        child: Text(_versionLabel(l, v), overflow: TextOverflow.ellipsis),
                       ),
                   ],
                   onChanged: (id) {
@@ -503,12 +508,12 @@ class _SaveRow extends StatelessWidget {
               const SizedBox(width: 4),
               IconButton(
                 icon: const Icon(Icons.download),
-                tooltip: 'Download',
+                tooltip: l.savesDownload,
                 onPressed: cur.parts == 1 ? () => onDownload(cur) : null,
               ),
               IconButton(
                 icon: Icon(Icons.delete_outline, color: t.bad),
-                tooltip: 'Delete',
+                tooltip: l.savesDelete,
                 onPressed: () => onDelete(cur),
               ),
             ],
@@ -520,11 +525,14 @@ class _SaveRow extends StatelessWidget {
 }
 
 /// A version as the website's dropdown words it.
-String _versionLabel(SaveVersion v) =>
-    'Version ${v.number} · ${_when(v.savedAt ?? v.createdAt)} · ${fmtBytes(v.size)}'
-    '${v.device != null ? ' · ${v.device}' : ''}'
-    '${v.backend != 'local' ? ' · your storage' : ''}'
-    '${v.conflict ? ' · Conflict' : ''}';
+String _versionLabel(AppLocalizations l, SaveVersion v) => [
+  l.savesVersion(v.number),
+  shortDateTime(l, v.savedAt ?? v.createdAt),
+  fmtBytes(v.size),
+  ?v.device,
+  if (v.backend != 'local') l.savesYourStorage,
+  if (v.conflict) l.savesConflict,
+].join(' · ');
 
 /// The console behind a saves platform, for the logo and the filter: the emulators' names
 /// and the console's own. Same mapping as the website's platformConsole.
@@ -534,13 +542,6 @@ String platformConsole(String p) => switch (p.toLowerCase()) {
   'ds' => 'DS',
   _ => p,
 };
-
-String _when(DateTime at) {
-  final local = at.toLocal();
-  String two(int n) => n.toString().padLeft(2, '0');
-  return '${local.year}-${two(local.month)}-${two(local.day)} '
-      '${two(local.hour)}:${two(local.minute)}';
-}
 
 /// The connect form. The secret is never shown back; empty keeps the stored one
 /// when the access key is unchanged.
@@ -590,30 +591,30 @@ class _StorageDialogState extends State<_StorageDialog> {
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
+    final l = context.l10n;
     if (widget.kind == 'webdav') {
       final ready = _url.text.trim().isNotEmpty &&
           _user.text.trim().isNotEmpty &&
           (_pass.text.isNotEmpty || _editing);
       return AlertDialog(
-        title: Text(_editing ? 'Edit WebDAV' : 'Connect WebDAV'),
+        title: Text(_editing ? l.savesEditWebdav : l.savesConnectWebdav),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _field(_url, 'WebDAV URL', hint: 'https://cloud.example.org/remote.php/dav/files/me/OpenPak'),
-              _field(_user, 'Username'),
-              _field(_pass, 'Password', secret: true),
+              _field(_url, l.savesWebdavUrl, hint: 'https://cloud.example.org/remote.php/dav/files/me/OpenPak'),
+              _field(_user, l.savesUsername),
+              _field(_pass, l.commonPassword, secret: true),
               Text(
-                'Nextcloud shows the URL under Settings › Files; add a folder for OpenPak at '
-                'the end. Use an app password. The share is tested before it is saved.',
+                l.savesWebdavHelp,
                 style: TextStyle(color: t.muted, fontSize: 12, height: 1.4),
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l.commonCancel)),
           FilledButton(
             onPressed: ready
                 ? () => Navigator.pop(
@@ -625,7 +626,7 @@ class _StorageDialogState extends State<_StorageDialog> {
                       ),
                     )
                 : null,
-            child: const Text('Test and save'),
+            child: Text(l.savesTestAndSave),
           ),
         ],
       );
@@ -635,42 +636,41 @@ class _StorageDialogState extends State<_StorageDialog> {
         _access.text.trim().isNotEmpty &&
         (_secret.text.isNotEmpty || _editing);
     return AlertDialog(
-      title: Text(_editing ? 'Edit bucket' : 'Connect a bucket'),
+      title: Text(_editing ? l.savesEditBucket : l.savesConnectBucket),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _field(_endpoint, 'Endpoint', hint: 's3.eu-west-1.amazonaws.com'),
-            _field(_region, 'Region', hint: 'auto'),
-            _field(_bucket, 'Bucket'),
-            _field(_prefix, 'Folder (optional)', hint: 'openpak'),
-            _field(_access, 'Access key'),
-            _field(_secret, 'Secret key', secret: true),
+            _field(_endpoint, l.savesEndpoint, hint: 's3.eu-west-1.amazonaws.com'),
+            _field(_region, l.savesRegion, hint: 'auto'),
+            _field(_bucket, l.savesBucket),
+            _field(_prefix, l.savesFolder, hint: 'openpak'),
+            _field(_access, l.savesAccessKey),
+            _field(_secret, l.savesSecretKey, secret: true),
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               dense: true,
               value: _pathStyle,
               onChanged: (v) => setState(() => _pathStyle = v ?? true),
-              title: const Text('Path-style addressing (most providers other than Amazon)'),
+              title: Text(l.savesPathStyle),
             ),
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               dense: true,
               value: _insecure,
               onChanged: (v) => setState(() => _insecure = v ?? false),
-              title: const Text('Plain HTTP (a box on your own network only)'),
+              title: Text(l.savesInsecure),
             ),
             Text(
-              'R2: <account>.r2.cloudflarestorage.com, region auto. '
-              'B2: s3.<region>.backblazeb2.com. The bucket is tested before it is saved.',
+              l.savesS3Help,
               style: TextStyle(color: t.muted, fontSize: 12, height: 1.4),
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l.commonCancel)),
         FilledButton(
           onPressed: ready
               ? () => Navigator.pop(
@@ -687,7 +687,7 @@ class _StorageDialogState extends State<_StorageDialog> {
                     ),
                   )
               : null,
-          child: const Text('Test and save'),
+          child: Text(l.savesTestAndSave),
         ),
       ],
     );

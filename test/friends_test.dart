@@ -1,12 +1,13 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:openpak/api.dart';
 import 'package:openpak/friends_page.dart';
 import 'package:openpak/theme.dart';
+
+import 'localized.dart';
 
 http.Response _json(Object body) =>
     http.Response(jsonEncode(body), 200, headers: {'content-type': 'application/json'});
@@ -39,7 +40,7 @@ void main() {
         };
       }),
     );
-    await tester.pumpWidget(MaterialApp(theme: openPakLight(), home: FriendsPage(api: api)));
+    await tester.pumpWidget(localizedApp(theme: openPakLight(), home: FriendsPage(api: api)));
     await tester.pumpAndSettle();
 
     expect(find.text('Accept'), findsOneWidget);
@@ -68,7 +69,7 @@ void main() {
             _ => http.Response('{"error":"nope"}', 502),
           }),
     );
-    await tester.pumpWidget(MaterialApp(theme: openPakLight(), home: FriendsPage(api: api)));
+    await tester.pumpWidget(localizedApp(theme: openPakLight(), home: FriendsPage(api: api)));
     await tester.pumpAndSettle();
     expect(find.text('Han'), findsOneWidget);
     expect(find.text('Unblock'), findsNothing);

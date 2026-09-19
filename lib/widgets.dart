@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'api.dart';
-
+import 'l10n.dart';
 import 'theme.dart';
 
 /// Core link namespace → what a person calls the console. A Wii or DS links
@@ -151,15 +151,13 @@ class LoadFailure extends StatelessWidget {
   const LoadFailure(this.error, {super.key});
   final Object? error;
 
-  static String reasonOf(Object? e) {
+  static String reasonOf(AppLocalizations l, Object? e) {
     if (e is ApiException) {
-      return e.unauthorized
-          ? 'Signed out — sign in again.'
-          : '${e.message} (${e.statusCode})';
+      return e.unauthorized ? l.loadSignedOut : l.loadReason(apiErrorText(l, e), e.statusCode);
     }
     final s = e?.toString() ?? '';
     if (s.contains('Failed host lookup') || s.contains('SocketException')) {
-      return 'No route to the server from this phone.';
+      return l.loadNoRoute;
     }
     return s.isEmpty ? '' : s.split('\n').first;
   }
@@ -174,13 +172,13 @@ class LoadFailure extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'Could not load. Pull down to try again.',
+                context.l10n.loadFailed,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: t.muted),
               ),
               const SizedBox(height: 8),
               Text(
-                reasonOf(error),
+                reasonOf(context.l10n, error),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: t.muted, fontSize: 12),
               ),
@@ -205,11 +203,11 @@ Future<bool> confirm(BuildContext context, String title, {String? detail}) async
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.commonCancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Confirm'),
+          child: Text(context.l10n.commonConfirm),
         ),
       ],
     ),
@@ -218,7 +216,9 @@ Future<bool> confirm(BuildContext context, String title, {String? detail}) async
 }
 
 /// A dialog of a few text fields; the values in order, or null when cancelled.
-/// A label starting with '*' is a secret; the star is not shown.
+/// A label starting with '*' is a secret and one starting with '@' an e-mail
+/// address; the mark is not shown. (Marked rather than guessed from the words,
+/// which are translated.)
 Future<List<String>?> promptForm(
   BuildContext context, {
   required String title,
@@ -246,10 +246,8 @@ Future<List<String>?> promptForm(
                 autofocus: i == 0,
                 obscureText: labels[i].startsWith('*'),
                 autocorrect: false,
-                keyboardType: labels[i].toLowerCase().contains('mail')
-                    ? TextInputType.emailAddress
-                    : null,
-                decoration: InputDecoration(labelText: labels[i].replaceFirst('*', '')),
+                keyboardType: labels[i].startsWith('@') ? TextInputType.emailAddress : null,
+                decoration: InputDecoration(labelText: labels[i].replaceFirst(RegExp('^[*@]'), '')),
               ),
             if (help != null) ...[
               const SizedBox(height: 12),
@@ -259,7 +257,7 @@ Future<List<String>?> promptForm(
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(context.l10n.commonCancel)),
         FilledButton(
           onPressed: () => Navigator.pop(context, [
             for (var i = 0; i < labels.length; i++)
@@ -306,22 +304,22 @@ Future<String?> promptForText(
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.commonCancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, controller.text),
-          child: const Text('Send'),
+          child: Text(context.l10n.commonSend),
         ),
       ],
     ),
   );
 }
 
-/// Copy something short, and say so. Used for the friend code, which exists to
-/// be given to someone else.
-Future<void> copyToClipboard(BuildContext context, String value, String what) async {
+/// Copy something short, and say so with [done]. Used for the friend code,
+/// which exists to be given to someone else.
+Future<void> copyToClipboard(BuildContext context, String value, String done) async {
   await Clipboard.setData(ClipboardData(text: value));
-  if (context.mounted) showToast(context, '$what copied.');
+  if (context.mounted) showToast(context, done);
 }
 
 /// An account's avatar: the stored image when there is one, the initial when

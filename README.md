@@ -85,6 +85,21 @@ for d in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
 done
 ```
 
+## Languages
+
+English, German, French, Brazilian Portuguese, Italian and Spanish, following
+the phone's language. The strings live in `lib/l10n/*.arb` (English,
+`app_en.arb`, is the template and describes every key for translators);
+Flutter's own gen-l10n turns them into `AppLocalizations` on `flutter pub get`,
+so the generated Dart is not committed. Terms follow the website's glossary
+(`website/docs/glossary.md`). `app_pt.arb` carries the same strings as
+`app_pt_BR.arb`: gen-l10n needs a base `pt` for the regional one.
+
+Every call sends `Accept-Language` with the app's language, so the account
+e-mails the website sends read in it too. API errors carry a stable `code`;
+`apiErrorText` in `lib/l10n.dart` shows its translation, never the server's
+English.
+
 ## The API client is hand-written
 
 The PRD asks for a generated client. Thirteen endpoints of JSON in and JSON out
@@ -93,6 +108,17 @@ implements the same contract by hand — every method names the path it serves.
 The contract is still the source of truth: it lives in the website repo as
 `openapi/openapi.yaml`, with a test there that fails when a served route is
 missing from it. If this ever grows past a few dozen endpoints, generate it.
+
+## Languages
+
+English, German, French, Brazilian Portuguese, Italian and Spanish, following
+the phone's language. Strings live in `lib/l10n/*.arb` (`app_en.arb` is the
+template; every key has a description for translators) and Flutter's gen-l10n
+turns them into `AppLocalizations` on `flutter pub get`, so the generated Dart
+is not committed. `app_pt.arb` carries the same strings as `app_pt_BR.arb`
+(gen-l10n needs a base `pt`). Terms follow the website's `docs/glossary.md`.
+Every API call sends the app's language as `Accept-Language`, and API errors
+are shown by their `code`, translated (`apiErrorText` in `lib/l10n.dart`).
 
 ## Not here yet
 

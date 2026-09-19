@@ -46,3 +46,6 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# gen-l10n output: `flutter pub get` writes it from lib/l10n/*.arb (generate: true).
+/lib/l10n/app_localizations*.dart

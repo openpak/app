@@ -8,6 +8,8 @@ import 'package:openpak/account_page.dart';
 import 'package:openpak/api.dart';
 import 'package:openpak/theme.dart';
 
+import 'localized.dart';
+
 http.Response _json(Object body) =>
     http.Response(jsonEncode(body), 200, headers: {'content-type': 'application/json'});
 
@@ -34,7 +36,7 @@ void main() {
       );
 
   Future<void> pump(WidgetTester tester, OpenPakApi api, {Future<void> Function()? onSignedOut}) async {
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(localizedApp(
       theme: openPakLight(),
       home: AccountPage(api: api, onSignedOut: onSignedOut ?? () async {}),
     ));

@@ -3,6 +3,24 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## Unreleased
+
+- Languages: every string in `lib/l10n/app_en.arb`, through Flutter's gen-l10n;
+  German, French, Brazilian Portuguese, Italian and Spanish files are in place
+  (English copies until translated)
+- API errors shown by their stable `code`, translated; unknown codes by status
+- `Accept-Language` on every call, so the website's account e-mails follow the app
+- Dates in the locale's own format
+
+## Unreleased
+
+- Languages: the app's strings move to ARB files (Flutter gen-l10n) for English,
+  German, French, Brazilian Portuguese, Italian and Spanish; the non-English
+  files hold English until translated
+- API errors are shown by their stable `code`, in the app's language
+- Every API call sends `Accept-Language`, so account e-mails follow the app
+- Dates follow the language
+
 ## v0.7.0 — 2026-09-19
 
 Parity with the website (v0.46.0):

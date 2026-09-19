@@ -4,6 +4,7 @@ import 'account_page.dart';
 import 'api.dart';
 import 'friends_page.dart';
 import 'invitations_page.dart';
+import 'l10n.dart';
 import 'saves_page.dart';
 import 'titles_page.dart';
 
@@ -30,36 +31,37 @@ class _ShellState extends State<Shell> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return Scaffold(
       body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.people_outline),
             selectedIcon: Icon(Icons.people),
-            label: 'Friends',
+            label: l.navFriends,
           ),
           NavigationDestination(
             icon: Icon(Icons.mail_outline),
             selectedIcon: Icon(Icons.mail),
-            label: 'Invitations',
+            label: l.navInvitations,
           ),
           NavigationDestination(
             icon: Icon(Icons.sports_esports_outlined),
             selectedIcon: Icon(Icons.sports_esports),
-            label: 'Titles',
+            label: l.navTitles,
           ),
           NavigationDestination(
             icon: Icon(Icons.save_outlined),
             selectedIcon: Icon(Icons.save),
-            label: 'Saves',
+            label: l.navSaves,
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
-            label: 'Account',
+            label: l.navAccount,
           ),
         ],
       ),

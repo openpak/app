@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'api.dart';
+import 'l10n.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -41,28 +42,30 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
   }
 
   Future<void> _save(Future<void> Function() action, String done) async {
+    final l = context.l10n;
     try {
       await action();
       _dirty = true;
       await _reload();
       if (mounted) showToast(context, done);
     } on ApiException catch (e) {
-      // The server says which field and why; repeating it is more use than
+      // The error code says which field and why; that is more use than
       // "could not save".
-      if (mounted) showToast(context, e.message);
+      if (mounted) showToast(context, apiErrorText(l, e));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
+    final l = context.l10n;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) Navigator.pop(context, _dirty);
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Account details')),
+        appBar: AppBar(title: Text(l.detailsTitle)),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           children: [
@@ -74,13 +77,13 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
                   TextButton.icon(
                     onPressed: _pickAvatar,
                     icon: const Icon(Icons.palette_outlined, size: 18),
-                    label: const Text('Change avatar'),
+                    label: Text(l.detailsChangeAvatar),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 8),
-            const SectionLabel('Display name'),
+            SectionLabel(l.commonDisplayName),
             Panel(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -90,12 +93,10 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
                     TextField(
                       controller: _name,
                       maxLength: 32,
-                      decoration: const InputDecoration(
-                        hintText: 'What other people see',
-                      ),
+                      decoration: InputDecoration(hintText: l.detailsNameHint),
                     ),
                     Text(
-                      '3 to 32 characters.',
+                      l.detailsNameRule,
                       style: TextStyle(color: t.muted, fontSize: 13),
                     ),
                     const SizedBox(height: 12),
@@ -104,16 +105,16 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
                         () => widget.api.updateProfile(
                           displayName: _name.text.trim(),
                         ),
-                        'Name saved.',
+                        l.detailsNameSaved,
                       ),
-                      child: const Text('Save name'),
+                      child: Text(l.detailsSaveName),
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            const SectionLabel('Country'),
+            SectionLabel(l.detailsCountry),
             Panel(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -123,22 +124,22 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
                     Text(
                       // Not decoration: the console reads it, and an account
                       // that holds nothing sends nothing.
-                      'Your console sends this with your profile.',
+                      l.detailsCountryWhy,
                       style: TextStyle(color: t.muted, fontSize: 13),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _me.country.isEmpty ? null : _me.country,
-                      hint: const Text('Not set'),
+                      hint: Text(l.detailsNotSet),
                       items: [
                         for (final c in countries)
-                          DropdownMenuItem(value: c.$1, child: Text(c.$2)),
+                          DropdownMenuItem(value: c, child: Text(countryName(l, c))),
                       ],
                       onChanged: (v) {
                         if (v != null) {
                           _save(
                             () => widget.api.updateProfile(country: v),
-                            'Country saved.',
+                            l.detailsCountrySaved,
                           );
                         }
                       },
@@ -148,22 +149,22 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const SectionLabel('Date of birth'),
+            SectionLabel(l.detailsBirthday),
             Panel(
               child: ListTile(
-                title: Text(_me.birthday.isEmpty ? 'Not set' : _me.birthday),
+                title: Text(_me.birthday.isEmpty ? l.detailsNotSet : _me.birthday),
                 trailing: const Icon(Icons.edit_calendar_outlined),
                 onTap: _pickBirthday,
               ),
             ),
             const SizedBox(height: 20),
-            const SectionLabel('Friend code'),
+            SectionLabel(l.commonFriendCode),
             Panel(
               child: ListTile(
-                title: Text(_me.friendCode ?? 'No console linked yet'),
+                title: Text(_me.friendCode ?? l.detailsNoConsole),
                 subtitle: _me.friendCode == null
                     ? null
-                    : const Text('Tap to copy'),
+                    : Text(l.detailsTapToCopy),
                 trailing: _me.friendCode == null
                     ? null
                     : const Icon(Icons.copy_rounded, size: 18),
@@ -172,7 +173,7 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
                     : () => copyToClipboard(
                         context,
                         _me.friendCode!,
-                        'Friend code',
+                        l.commonFriendCodeCopied,
                       ),
               ),
             ),
@@ -197,18 +198,20 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
         '${picked.year.toString().padLeft(4, '0')}-'
         '${picked.month.toString().padLeft(2, '0')}-'
         '${picked.day.toString().padLeft(2, '0')}';
+    if (!mounted) return;
     await _save(
       () => widget.api.updateProfile(birthday: iso),
-      'Date of birth saved.',
+      context.l10n.detailsBirthdaySaved,
     );
   }
 
   Future<void> _pickAvatar() async {
+    final l = context.l10n;
     final List<AvatarChoice> choices;
     try {
       choices = await widget.api.avatarChoices();
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message);
+      if (mounted) showToast(context, apiErrorText(l, e));
       return;
     }
     if (!mounted) return;
@@ -222,7 +225,7 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SectionLabel('Choose an avatar'),
+              SectionLabel(l.detailsChooseAvatar),
               const SizedBox(height: 8),
               GridView.count(
                 shrinkWrap: true,
@@ -249,7 +252,7 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
               OutlinedButton.icon(
                 onPressed: () => Navigator.pop(context, _photo),
                 icon: const Icon(Icons.photo_outlined),
-                label: const Text('Upload a photo'),
+                label: Text(l.detailsUploadPhoto),
               ),
             ],
           ),
@@ -258,7 +261,7 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
     );
     if (chosen == null) return;
     if (chosen == _photo) return _uploadPhoto();
-    await _save(() => widget.api.chooseAvatar(chosen), 'Avatar saved.');
+    await _save(() => widget.api.chooseAvatar(chosen), l.detailsAvatarSaved);
   }
 
   static const _photo = '\u0000photo'; // the sheet's answer for "Upload a photo"
@@ -274,32 +277,38 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
     );
     if (file == null) return;
     final bytes = await file.readAsBytes();
-    await _save(() => widget.api.uploadAvatar(bytes, file.name), 'Avatar saved.');
+    if (!mounted) return;
+    await _save(() => widget.api.uploadAvatar(bytes, file.name), context.l10n.detailsAvatarSaved);
   }
 }
 
 /// The ISO codes the site offers, kept short: the console cares about the code,
 /// and a full list belongs behind a search field rather than in a dropdown.
-const countries = <(String, String)>[
-  ('IE', 'Ireland'),
-  ('GB', 'United Kingdom'),
-  ('US', 'United States'),
-  ('CA', 'Canada'),
-  ('AU', 'Australia'),
-  ('NZ', 'New Zealand'),
-  ('FR', 'France'),
-  ('DE', 'Germany'),
-  ('ES', 'Spain'),
-  ('IT', 'Italy'),
-  ('PT', 'Portugal'),
-  ('NL', 'Netherlands'),
-  ('BE', 'Belgium'),
-  ('SE', 'Sweden'),
-  ('NO', 'Norway'),
-  ('DK', 'Denmark'),
-  ('FI', 'Finland'),
-  ('PL', 'Poland'),
-  ('BR', 'Brazil'),
-  ('MX', 'Mexico'),
-  ('JP', 'Japan'),
-];
+const countries = ['IE', 'GB', 'US', 'CA', 'AU', 'NZ', 'FR', 'DE', 'ES', 'IT', 'PT',
+    'NL', 'BE', 'SE', 'NO', 'DK', 'FI', 'PL', 'BR', 'MX', 'JP'];
+
+/// A country's name in the app's language.
+String countryName(AppLocalizations l, String code) => switch (code) {
+  'IE' => l.countryIe,
+  'GB' => l.countryGb,
+  'US' => l.countryUs,
+  'CA' => l.countryCa,
+  'AU' => l.countryAu,
+  'NZ' => l.countryNz,
+  'FR' => l.countryFr,
+  'DE' => l.countryDe,
+  'ES' => l.countryEs,
+  'IT' => l.countryIt,
+  'PT' => l.countryPt,
+  'NL' => l.countryNl,
+  'BE' => l.countryBe,
+  'SE' => l.countrySe,
+  'NO' => l.countryNo,
+  'DK' => l.countryDk,
+  'FI' => l.countryFi,
+  'PL' => l.countryPl,
+  'BR' => l.countryBr,
+  'MX' => l.countryMx,
+  'JP' => l.countryJp,
+  _ => code,
+};

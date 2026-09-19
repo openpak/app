@@ -3,8 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'api.dart';
+import 'l10n.dart';
 import 'theme.dart';
 import 'widgets.dart';
+
+/// What a message shows: its text, or what kind of message it was, as the
+/// website words it.
+String chatLine(AppLocalizations l, ChatMessage m) => m.isText
+    ? m.body
+    : l.chatSpecialMessage('${m.kind[0].toUpperCase()}${m.kind.substring(1)}');
 
 /// Conversations, newest first, as on the website's chat page. A peer who is
 /// not a friend any more shows by account id, the same as there.
@@ -35,8 +42,9 @@ class _ConversationsPageState extends State<ConversationsPage> {
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Messages')),
+      appBar: AppBar(title: Text(l.chatTitle)),
       body: RefreshIndicator(
         onRefresh: () async => _reload(),
         child: FutureBuilder(
@@ -48,7 +56,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
             if (snap.hasError) return LoadFailure(snap.error);
             final (convs, names) = snap.data!;
             if (convs.isEmpty) {
-              return const ScrollableMessage('No messages yet.\nTap a friend to start one.');
+              return ScrollableMessage(l.chatNoConversations);
             }
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -58,7 +66,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
                     leading: Avatar(name: names[c.peer] ?? c.peer),
                     title: Text(names[c.peer] ?? c.peer),
                     subtitle: Text(
-                      '${c.newest.from == c.peer ? '' : 'You: '}${c.newest.line}',
+                      c.newest.from == c.peer ? chatLine(l, c.newest) : l.chatFromYou(chatLine(l, c.newest)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: t.muted),
@@ -140,7 +148,7 @@ class _ChatPageState extends State<ChatPage> {
       _input.clear();
       await _fetch();
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message);
+      if (mounted) showToast(context, apiErrorText(context.l10n, e));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -149,6 +157,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
+    final l = context.l10n;
     return Scaffold(
       appBar: AppBar(title: Text(widget.name)),
       body: Column(
@@ -159,7 +168,7 @@ class _ChatPageState extends State<ChatPage> {
                 : !_loaded
                 ? const Center(child: CircularProgressIndicator())
                 : _messages.isEmpty
-                ? Center(child: Text('No messages yet.', style: TextStyle(color: t.muted)))
+                ? Center(child: Text(l.chatNoMessages, style: TextStyle(color: t.muted)))
                 : ListView.builder(
                     reverse: true,
                     padding: const EdgeInsets.all(16),
@@ -177,7 +186,7 @@ class _ChatPageState extends State<ChatPage> {
                             color: mine ? t.accentWeak : t.paper2,
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: Text(m.line),
+                          child: Text(chatLine(l, m)),
                         ),
                       );
                     },
@@ -195,12 +204,12 @@ class _ChatPageState extends State<ChatPage> {
                       minLines: 1,
                       maxLines: 4,
                       textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(hintText: 'Message'),
+                      decoration: InputDecoration(hintText: l.chatHint),
                       onSubmitted: (_) => _send(),
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Send',
+                    tooltip: l.chatSend,
                     onPressed: _sending ? null : _send,
                     icon: const Icon(Icons.send),
                   ),

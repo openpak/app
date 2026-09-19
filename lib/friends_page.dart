@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'api.dart';
 import 'chat_page.dart';
+import 'l10n.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -39,57 +40,60 @@ class FriendsPageState extends State<FriendsPage> {
       await action();
       if (mounted) showToast(context, done);
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message);
+      if (mounted) showToast(context, apiErrorText(context.l10n, e));
     }
     reload();
   }
 
   /// Undo right after, or Unblock from the Blocked list at the bottom later.
   Future<void> _block(Friend f) async {
+    final l = context.l10n;
     try {
       await widget.api.blockAccount(f.accountId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('${f.displayName} blocked.'),
+          content: Text(l.friendsBlockedToast(f.displayName)),
           action: SnackBarAction(
-            label: 'Undo',
-            onPressed: () => _act(() => widget.api.unblockAccount(f.accountId), 'Unblocked. Add them again by friend code.'),
+            label: l.commonUndo,
+            onPressed: () => _act(() => widget.api.unblockAccount(f.accountId), l.friendsUnblocked),
           ),
         ));
       }
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message);
+      if (mounted) showToast(context, apiErrorText(l, e));
     }
     reload();
   }
 
   Future<void> _addByCode() async {
+    final l = context.l10n;
     final code = await promptForText(
       context,
-      title: 'Add a friend',
+      title: l.friendsAddTitle,
       hint: 'SW-0000-0000-0000',
-      help: 'Their friend code, from their console or their account page.',
+      help: l.friendsAddHelp,
     );
     if (code == null || code.trim().isEmpty) return;
-    await _act(() => widget.api.addFriend(code.trim()), 'Request sent.');
+    await _act(() => widget.api.addFriend(code.trim()), l.friendsRequestSent);
   }
 
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
+    final l = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Friends'),
+        title: Text(l.friendsTitle),
         actions: [
           IconButton(
-            tooltip: 'Messages',
+            tooltip: l.friendsMessagesTooltip,
             icon: const Icon(Icons.chat_bubble_outline),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (_) => ConversationsPage(api: widget.api),
             )),
           ),
           IconButton(
-            tooltip: 'Add by friend code',
+            tooltip: l.friendsAddTooltip,
             icon: const Icon(Icons.person_add_alt),
             onPressed: _addByCode,
           ),
@@ -111,19 +115,17 @@ class FriendsPageState extends State<FriendsPage> {
                 requests.incoming.isEmpty &&
                 requests.outgoing.isEmpty &&
                 blocked.isEmpty) {
-              return const ScrollableMessage(
-                'No friends yet.\nAdd someone with the button above.',
-              );
+              return ScrollableMessage(l.friendsEmpty);
             }
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               children: [
                 if (requests.incoming.isNotEmpty) ...[
-                  const SectionLabel('Wants to be your friend'),
+                  SectionLabel(l.friendsIncoming),
                   ...requests.incoming.map(
                     (f) => StateRow(
                       name: f.displayName,
-                      pill: 'Wants to add you',
+                      pill: l.friendsWantsToAdd,
                       state: RowState.warn,
                       leading: Avatar(name: f.displayName),
                       trailing: Row(
@@ -132,16 +134,16 @@ class FriendsPageState extends State<FriendsPage> {
                           TextButton(
                             onPressed: () => _act(
                               () => widget.api.declineFriend(f.accountId),
-                              'Declined.',
+                              l.commonDeclined,
                             ),
-                            child: Text('Decline', style: TextStyle(color: t.muted)),
+                            child: Text(l.commonDecline, style: TextStyle(color: t.muted)),
                           ),
                           TextButton(
                             onPressed: () => _act(
                               () => widget.api.acceptFriend(f.accountId),
-                              'Added ${f.displayName}.',
+                              l.friendsAccepted(f.displayName),
                             ),
-                            child: const Text('Accept'),
+                            child: Text(l.friendsAccept),
                           ),
                         ],
                       ),
@@ -149,13 +151,13 @@ class FriendsPageState extends State<FriendsPage> {
                   ),
                   const SizedBox(height: 20),
                 ],
-                SectionLabel('Friends', trailing: '${friends.length}'),
+                SectionLabel(l.friendsTitle, trailing: '${friends.length}'),
                 if (friends.isEmpty)
                   Panel(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Text(
-                        'Nobody yet.',
+                        l.friendsNobody,
                         style: TextStyle(color: t.muted),
                       ),
                     ),
@@ -164,36 +166,36 @@ class FriendsPageState extends State<FriendsPage> {
                   ...friends.map(_friendRow),
                 if (requests.outgoing.isNotEmpty) ...[
                   const SizedBox(height: 20),
-                  const SectionLabel('Waiting for them'),
+                  SectionLabel(l.friendsWaiting),
                   ...requests.outgoing.map(
                     (f) => StateRow(
                       name: f.displayName,
-                      pill: 'Request sent',
+                      pill: l.friendsRequestSentPill,
                       leading: Avatar(name: f.displayName, dim: true),
                     ),
                   ),
                 ],
                 if (blocked.isNotEmpty) ...[
                   const SizedBox(height: 20),
-                  SectionLabel('Blocked', trailing: '${blocked.length}'),
+                  SectionLabel(l.friendsBlocked, trailing: '${blocked.length}'),
                   ...blocked.map(
                     (b) => StateRow(
                       name: b.displayName,
-                      pill: b.blockedAt == null ? 'Blocked' : 'Since ${_date(b.blockedAt!)}',
+                      pill: b.blockedAt == null ? l.friendsBlocked : l.friendsBlockedSince(shortDate(l, b.blockedAt!)),
                       leading: Avatar(name: b.displayName, dim: true),
                       trailing: TextButton(
                         onPressed: () => _act(
                           () => widget.api.unblockAccount(b.accountId),
-                          'Unblocked. Add them again by friend code.',
+                          l.friendsUnblocked,
                         ),
-                        child: const Text('Unblock'),
+                        child: Text(l.friendsUnblock),
                       ),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Text(
-                      'They cannot send you requests, messages or invitations.',
+                      l.friendsBlockedNote,
                       style: TextStyle(color: t.muted, fontSize: 13),
                     ),
                   ),
@@ -210,10 +212,11 @@ class FriendsPageState extends State<FriendsPage> {
   /// says what they are playing when the adapter told us, and "Online" when it
   /// did not — a title id would mean nothing to a person.
   Widget _friendRow(Friend f) {
+    final l = context.l10n;
     final playing = f.titleId?.isNotEmpty ?? false;
     return StateRow(
       name: f.displayName,
-      pill: f.online ? (playing ? f.titleId! : 'Online') : 'Offline',
+      pill: f.online ? (playing ? f.titleId! : l.friendsOnline) : l.friendsOffline,
       state: f.online ? RowState.ok : RowState.idle,
       leading: Avatar(name: f.displayName, online: f.online),
       onTap: () => Navigator.of(context).push(MaterialPageRoute(
@@ -222,29 +225,24 @@ class FriendsPageState extends State<FriendsPage> {
       trailing: PopupMenuButton<String>(
         onSelected: (v) async {
           if (v == 'remove') {
-            if (await confirm(context, 'Remove ${f.displayName}?')) {
-              await _act(() => widget.api.removeFriend(f.accountId), 'Removed.');
+            if (await confirm(context, l.friendsRemoveConfirm(f.displayName))) {
+              await _act(() => widget.api.removeFriend(f.accountId), l.friendsRemoved);
             }
           } else if (v == 'block') {
             if (await confirm(
               context,
-              'Block ${f.displayName}?',
-              detail: 'They are removed as a friend and cannot invite you.',
+              l.friendsBlockConfirm(f.displayName),
+              detail: l.friendsBlockDetail,
             )) {
               await _block(f);
             }
           }
         },
-        itemBuilder: (_) => const [
-          PopupMenuItem(value: 'remove', child: Text('Remove')),
-          PopupMenuItem(value: 'block', child: Text('Block')),
+        itemBuilder: (_) => [
+          PopupMenuItem(value: 'remove', child: Text(l.friendsRemove)),
+          PopupMenuItem(value: 'block', child: Text(l.friendsBlock)),
         ],
       ),
     );
-  }
-
-  String _date(DateTime d) {
-    final l = d.toLocal();
-    return '${l.day}/${l.month}/${l.year}';
   }
 }

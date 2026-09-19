@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'api.dart';
+import 'l10n.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -26,11 +27,12 @@ class _InvitationsPageState extends State<InvitationsPage> {
   void _reload() => setState(() => _data = widget.api.invitations());
 
   Future<void> _decline(Invitation inv) async {
+    final l = context.l10n;
     try {
       await widget.api.decline(inv.id);
-      if (mounted) showToast(context, 'Declined.');
+      if (mounted) showToast(context, l.commonDeclined);
     } on ApiException catch (e) {
-      if (mounted) showToast(context, e.message);
+      if (mounted) showToast(context, apiErrorText(l, e));
     }
     _reload();
   }
@@ -38,8 +40,9 @@ class _InvitationsPageState extends State<InvitationsPage> {
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Invitations')),
+      appBar: AppBar(title: Text(l.invitationsTitle)),
       body: RefreshIndicator(
         onRefresh: () async => _reload(),
         child: FutureBuilder<List<Invitation>>(
@@ -53,30 +56,29 @@ class _InvitationsPageState extends State<InvitationsPage> {
             }
             final items = snap.data ?? const <Invitation>[];
             if (items.isEmpty) {
-              return const ScrollableMessage('Nothing waiting for you.');
+              return ScrollableMessage(l.invitationsEmpty);
             }
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               children: [
-                SectionLabel('Waiting', trailing: '${items.length}'),
+                SectionLabel(l.invitationsWaiting, trailing: '${items.length}'),
                 // Green while it can still be accepted, grey once it cannot:
                 // an expired invitation is not a problem, it is just over.
                 ...items.map(
                   (inv) => StateRow(
-                    name: '${inv.from} invited you',
-                    pill: inv.expired ? 'Expired' : inv.titleId,
+                    name: l.invitationsFrom(inv.from),
+                    pill: inv.expired ? l.invitationsExpired : inv.titleId,
                     state: inv.expired ? RowState.idle : RowState.ok,
                     leading: Avatar(name: inv.from, dim: inv.expired),
                     trailing: TextButton(
                       onPressed: () => _decline(inv),
-                      child: const Text('Decline'),
+                      child: Text(l.commonDecline),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Accepting happens on your console. This is where you see '
-                  'what is waiting and turn things down.',
+                  l.invitationsNote,
                   style: TextStyle(color: t.muted, fontSize: 13),
                 ),
               ],
