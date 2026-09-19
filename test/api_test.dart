@@ -285,4 +285,70 @@ void main() {
       throwsA(isA<ApiException>().having((e) => e.statusCode, 'status', 502)),
     );
   });
+
+  test('status reads players per network; unblock posts the account', () async {
+    final seen = <String>[];
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 'opk_abc',
+      client: MockClient((req) async {
+        seen.add('${req.method} ${req.url.path} ${req.body}');
+        return json({
+          'players_online': 3,
+          'networks': [
+            {'namespace': 'switch', 'players': 2},
+            {'namespace': 'wfc', 'players': 1},
+          ],
+        });
+      }),
+    );
+    final s = await api.status();
+    expect(s.playersOnline, 3);
+    expect(s.networks, {'switch': 2, 'wfc': 1});
+    await api.unblockAccount('acct-2');
+    expect(seen.last, 'POST /api/v1/me/friends/unblock {"account_id":"acct-2"}');
+  });
+
+  test('account and chat calls hit the contract paths', () async {
+    final seen = <String>[];
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 'opk_abc',
+      client: MockClient((req) async {
+        seen.add('${req.method} ${req.url.path}${req.url.hasQuery ? '?${req.url.query}' : ''}');
+        if (req.url.path == '/api/v1/me/chat') {
+          return json({'conversations': [
+            {'peer': 'acct-2', 'newest': {'id': 7, 'from_account': 'acct-2', 'kind': 'invite', 'body': '', 'sent_at_unix': 60}},
+          ]});
+        }
+        if (req.url.path == '/api/v1/me/chat/acct-2' && req.method == 'GET') {
+          return json({'messages': [
+            {'id': 8, 'from_account': 'acct-1', 'kind': 'text', 'body': 'hi', 'sent_at_unix': 61},
+          ]});
+        }
+        return json({'message': {'id': 9, 'body': 'yo'}}, status: 201);
+      }),
+    );
+    final convs = await api.conversations();
+    expect(convs.single.peer, 'acct-2');
+    expect(convs.single.newest.line, '[Invite message]');
+    final ms = await api.chatHistory('acct-2', after: 7);
+    expect(ms.single.line, 'hi');
+    expect((await api.sendChat('acct-2', 'yo')).id, 9);
+    await api.register(email: 'a@x.test', password: 'password-1', displayName: 'Leia');
+    await api.forgotPassword('a@x.test');
+    await api.changePassword('old-pass-1', 'new-pass-1');
+    await api.linkWfc('1234-5678-9012');
+    await api.unlink('wfc');
+    expect(seen, [
+      'GET /api/v1/me/chat',
+      'GET /api/v1/me/chat/acct-2?after=7',
+      'POST /api/v1/me/chat/acct-2',
+      'POST /api/v1/register',
+      'POST /api/v1/password/forgot',
+      'POST /api/v1/me/password',
+      'POST /api/v1/me/links/wfc',
+      'DELETE /api/v1/me/links/wfc',
+    ]);
+  });
 }

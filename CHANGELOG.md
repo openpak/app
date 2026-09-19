@@ -3,6 +3,16 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.6.17 — 2026-09-19
+
+- Saves in alphabetical order, as on the website
+- Friends: a block can be undone from its notice
+- Titles: who is online now, per console network
+- Sign in: create an account, and a reset mail for a forgotten password
+- Account: change the password, link a Wii or DS by friend code, unlink a console
+- Avatar: upload a photo from the gallery
+- Chat: messages with friends, a conversation list, and a thread per friend
+
 ## v0.6.16 — 2026-09-18
 
 - Saves: each game shows its name and icon; a version dropdown restores, and download

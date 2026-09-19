@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'api.dart';
 import 'theme.dart';
@@ -245,9 +246,10 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
                 ],
               ),
               const SizedBox(height: 12),
-              Text(
-                'Uploading your own picture is on the website.',
-                style: TextStyle(color: tokensOf(context).muted, fontSize: 13),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.pop(context, _photo),
+                icon: const Icon(Icons.photo_outlined),
+                label: const Text('Upload a photo'),
               ),
             ],
           ),
@@ -255,7 +257,24 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
       ),
     );
     if (chosen == null) return;
+    if (chosen == _photo) return _uploadPhoto();
     await _save(() => widget.api.chooseAvatar(chosen), 'Avatar saved.');
+  }
+
+  static const _photo = '\u0000photo'; // the sheet's answer for "Upload a photo"
+
+  /// The server takes a PNG or JPEG of up to 4 MiB; asking the picker for a
+  /// scaled JPEG keeps a phone photo well inside that.
+  Future<void> _uploadPhoto() async {
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (file == null) return;
+    final bytes = await file.readAsBytes();
+    await _save(() => widget.api.uploadAvatar(bytes, file.name), 'Avatar saved.');
   }
 }
 

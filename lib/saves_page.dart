@@ -222,7 +222,8 @@ class SavesPageState extends State<SavesPage> {
     final shown = withVersions
         .where((s) => (q.isEmpty || s.name.toLowerCase().contains(q)) &&
             (_console == null || platformConsole(s.platform) == _console))
-        .toList();
+        .toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

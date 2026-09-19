@@ -22,6 +22,7 @@ class TitlesPage extends StatefulWidget {
 
 class TitlesPageState extends State<TitlesPage> {
   late Future<List<CatalogItem>> _data;
+  late Future<NetworkStatus> _online;
 
   // View controls, all applied client-side over the one fetched list — the
   // same as the web page, and it keeps a filter change from hitting the server.
@@ -38,6 +39,7 @@ class TitlesPageState extends State<TitlesPage> {
 
   void reload() => setState(() {
     _data = widget.api.requests();
+    _online = widget.api.status();
   });
 
   /// A request is optimistic: flip the row before the call, then let the
@@ -88,6 +90,7 @@ class TitlesPageState extends State<TitlesPage> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
+                _onlineNow(),
                 _segmented(),
                 const SizedBox(height: 12),
                 _controls(served),
@@ -169,6 +172,32 @@ class TitlesPageState extends State<TitlesPage> {
       ),
     );
   }
+
+  /// The website's status page in brief: who is online, per console network.
+  /// Nothing is shown when the counts cannot be read; the catalog still is.
+  Widget _onlineNow() => FutureBuilder<NetworkStatus>(
+        future: _online,
+        builder: (context, snap) {
+          final s = snap.data;
+          if (s == null) return const SizedBox.shrink();
+          String online(int n) => n == 1 ? '1 online' : '$n online';
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SectionLabel('Online now', trailing: online(s.playersOnline)),
+                for (final e in s.networks.entries)
+                  StateRow(
+                    name: platformNames[e.key] ?? e.key,
+                    pill: online(e.value),
+                    state: e.value > 0 ? RowState.ok : RowState.idle,
+                  ),
+              ],
+            ),
+          );
+        },
+      );
 
   Widget _segmented() => SegmentedButton<String>(
     segments: const [

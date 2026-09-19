@@ -88,6 +88,41 @@ class FriendRequests {
   final List<Friend> outgoing;
 }
 
+class ChatMessage {
+  ChatMessage({required this.id, required this.from, required this.kind, required this.body, required this.sentAt});
+  final int id;
+  final String from;
+  final String kind;
+  final String body;
+  final DateTime sentAt;
+
+  /// What a line shows: the text, or what kind of message it was, as on the website.
+  String get line => kind.isEmpty || kind == 'text'
+      ? body
+      : '[${kind[0].toUpperCase()}${kind.substring(1)} message]';
+
+  factory ChatMessage.fromJson(Map<String, dynamic> j) => ChatMessage(
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    from: j['from_account'] as String? ?? '',
+    kind: j['kind'] as String? ?? '',
+    body: j['body'] as String? ?? '',
+    sentAt: DateTime.fromMillisecondsSinceEpoch(((j['sent_at_unix'] as num?)?.toInt() ?? 0) * 1000),
+  );
+}
+
+class Conversation {
+  Conversation({required this.peer, required this.newest});
+  final String peer;
+  final ChatMessage newest;
+}
+
+/// Players online, in total and per console network (namespace → players).
+class NetworkStatus {
+  NetworkStatus({required this.playersOnline, required this.networks});
+  final int playersOnline;
+  final Map<String, int> networks;
+}
+
 class Friend {
   Friend({
     required this.accountId,
@@ -638,6 +673,94 @@ class OpenPakApi {
   /// POST /me/friends/block — also removes the friendship.
   Future<void> blockAccount(String accountId) =>
       _post('/me/friends/block', {'account_id': accountId});
+
+  /// POST /me/friends/unblock
+  Future<void> unblockAccount(String accountId) =>
+      _post('/me/friends/unblock', {'account_id': accountId});
+
+  /// GET /status — public: who is online, per console network.
+  Future<NetworkStatus> status() async {
+    final body = await _decode(await _http.get(_uri('/status')));
+    return NetworkStatus(
+      playersOnline: (body['players_online'] as num?)?.toInt() ?? 0,
+      networks: {
+        for (final n in (body['networks'] as List?) ?? const [])
+          (n as Map)['namespace'] as String: (n['players'] as num?)?.toInt() ?? 0,
+      },
+    );
+  }
+
+  /// POST /register — public; the same answer whether or not the address is
+  /// taken, and a verification mail follows.
+  Future<void> register({
+    required String email,
+    required String password,
+    required String displayName,
+  }) => _post('/register', {
+    'email': email,
+    'password': password,
+    'display_name': displayName,
+  });
+
+  /// POST /password/forgot — public; the mail links to the website's reset page.
+  Future<void> forgotPassword(String email) =>
+      _post('/password/forgot', {'email': email});
+
+  /// POST /me/password — every other session and bearer ends; this one stays.
+  Future<void> changePassword(String current, String next) => _post(
+    '/me/password',
+    {'current_password': current, 'new_password': next},
+  );
+
+  /// POST /me/links/wfc — a Wii or DS, by a friend code read off a game.
+  Future<void> linkWfc(String friendCode) =>
+      _post('/me/links/wfc', {'friend_code': friendCode});
+
+  /// DELETE /me/links/{namespace}
+  Future<void> unlink(String namespace) async => _decode(await _http.delete(
+    _uri('/me/links/${Uri.encodeComponent(namespace)}'),
+    headers: _headers(),
+  ));
+
+  /// POST /me/avatar, multipart — a PNG or JPEG of up to 4 MiB.
+  Future<void> uploadAvatar(Uint8List bytes, String filename) async {
+    final req = http.MultipartRequest('POST', _uri('/me/avatar'))
+      ..headers.addAll(_headers())
+      ..files.add(http.MultipartFile.fromBytes('avatar', bytes, filename: filename));
+    await _decode(await http.Response.fromStream(await _http.send(req)));
+  }
+
+  /// GET /me/chat — one entry per peer, newest message first.
+  Future<List<Conversation>> conversations() async {
+    final body = await _decode(await _http.get(_uri('/me/chat'), headers: _headers()));
+    return ((body['conversations'] as List?) ?? const [])
+        .map((e) => Conversation(
+              peer: (e as Map)['peer'] as String? ?? '',
+              newest: ChatMessage.fromJson(e['newest'] as Map<String, dynamic>? ?? const {}),
+            ))
+        .toList(growable: false);
+  }
+
+  /// GET /me/chat/{peer} — oldest first; [after] fetches only newer ones.
+  Future<List<ChatMessage>> chatHistory(String peer, {int after = 0}) async {
+    final body = await _decode(await _http.get(
+      _uri('/me/chat/${Uri.encodeComponent(peer)}${after > 0 ? '?after=$after' : ''}'),
+      headers: _headers(),
+    ));
+    return ((body['messages'] as List?) ?? const [])
+        .map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  /// POST /me/chat/{peer}
+  Future<ChatMessage> sendChat(String peer, String text) async {
+    final body = await _decode(await _http.post(
+      _uri('/me/chat/${Uri.encodeComponent(peer)}'),
+      headers: _headers(json: true),
+      body: jsonEncode({'body': text}),
+    ));
+    return ChatMessage.fromJson(body['message'] as Map<String, dynamic>? ?? const {});
+  }
 
   /// GET /me/sessions
   Future<List<WebSession>> sessions() async {
