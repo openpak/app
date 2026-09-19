@@ -27,11 +27,13 @@ class Panel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: t.raised,
+    // A Material rather than a decorated box, so a ListTile inside draws its
+    // ink on the card instead of under it.
+    return Material(
+      color: t.raised,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: t.line),
+        side: BorderSide(color: t.line),
       ),
       clipBehavior: Clip.antiAlias,
       child: child,
@@ -469,4 +471,31 @@ class _Pill extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// A paragraph that must be read before acting: the website's amber notice.
+class Notice extends StatelessWidget {
+  const Notice(this.text, {super.key});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: t.warnWeak,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: t.warnLine),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.warning_amber_rounded, size: 20, color: t.warn),
+          const SizedBox(width: 10),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 13.5, height: 1.4))),
+        ],
+      ),
+    );
+  }
 }
