@@ -351,4 +351,155 @@ void main() {
       'DELETE /api/v1/me/links/wfc',
     ]);
   });
+
+  test('a two-factor account gets a challenge, then a bearer for the code', () async {
+    final sent = <String>[];
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      client: MockClient((req) async {
+        sent.add('${req.url.path} ${req.body}');
+        if (req.url.path == '/api/v1/token') {
+          return json({'two_factor_required': true, 'challenge': 'ch-1'}, status: 202);
+        }
+        return json({'token': 'opk_2fa', 'token_type': 'Bearer'}, status: 201);
+      }),
+    );
+    // No token yet: the 202 must not read as signed in.
+    await expectLater(
+      api.signIn('a@x.test', 'password-1'),
+      throwsA(isA<TwoFactorRequired>().having((e) => e.challenge, 'challenge', 'ch-1')),
+    );
+    expect(api.token, isNull);
+
+    expect(await api.signInSecondFactor('ch-1', ' 123 456 '), 'opk_2fa');
+    expect(api.token, 'opk_2fa');
+    expect(sent.last, '/api/v1/token/2fa {"challenge":"ch-1","code":"123456"}');
+
+    // Anything but six digits is a recovery code, as on the website.
+    await api.signInSecondFactor('ch-2', 'abcde-fghij');
+    expect(sent.last, '/api/v1/token/2fa {"challenge":"ch-2","recovery_code":"abcde-fghij"}');
+  });
+
+  test('a wrong second-factor code is a 401, and a lock is a 429', () async {
+    var status = 401;
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      client: MockClient((_) async => json({'error': 'nope'}, status: status)),
+    );
+    await expectLater(
+      api.signInSecondFactor('ch', '000000'),
+      throwsA(isA<ApiException>().having((e) => e.unauthorized, 'unauthorized', true)),
+    );
+    status = 429;
+    await expectLater(
+      api.signInSecondFactor('ch', '000000'),
+      throwsA(isA<ApiException>().having((e) => e.statusCode, 'status', 429)),
+    );
+  });
+
+  test('me reports email and two-factor state; absent means confirmed', () async {
+    var body = <String, dynamic>{'account_id': 'a', 'email_verified': false, 'two_factor_enabled': true};
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((_) async => json(body)),
+    );
+    var me = await api.me();
+    expect(me.emailVerified, isFalse);
+    expect(me.twoFactorEnabled, isTrue);
+    body = {'account_id': 'a'};
+    me = await api.me();
+    expect(me.emailVerified, isTrue);
+    expect(me.twoFactorEnabled, isFalse);
+  });
+
+  test('a wrong code while enabling two-factor does not sign out', () async {
+    var signedOut = 0;
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 'opk_live',
+      client: MockClient((_) async => json({'error': 'invalid code'}, status: 401)),
+    )..onUnauthorized = () => signedOut++;
+    await expectLater(api.twoFactorEnable('123456'), throwsA(isA<ApiException>()));
+    await expectLater(api.twoFactorDisable('pw', '123456'), throwsA(isA<ApiException>()));
+    expect(signedOut, 0);
+    expect(api.token, 'opk_live');
+  });
+
+  test('security, friends and news calls hit the contract paths', () async {
+    final seen = <String>[];
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 'opk_abc',
+      client: MockClient((req) async {
+        seen.add('${req.method} ${req.url.path}${req.url.hasQuery ? '?${req.url.query}' : ''} ${req.body}');
+        return switch (req.url.path) {
+          '/api/v1/me/2fa/setup' => json({'secret': 'JBSWY3DP', 'otpauth_uri': 'otpauth://totp/OpenPak:a?secret=JBSWY3DP'}),
+          '/api/v1/me/2fa/enable' => json({'recovery_codes': List.generate(10, (i) => 'code-$i')}),
+          '/api/v1/me/blocked' => json({'blocked': [
+            {'account_id': 'b', 'display_name': 'Boba', 'blocked_at': '2026-09-01T10:00:00Z'},
+          ]}),
+          '/api/v1/news' => json({'articles': [
+            {'slug': 's', 'title': 'Hello', 'summary': 'First.', 'body': 'First.\n\nSecond.', 'published_at': '2026-09-18T09:00:00Z'},
+          ]}),
+          _ => json({'message': 'ok'}),
+        };
+      }),
+    );
+    final secret = await api.twoFactorSetup('pw-1');
+    expect(secret.secret, 'JBSWY3DP');
+    expect(secret.otpauthUri, startsWith('otpauth://'));
+    expect(await api.twoFactorEnable('123 456'), hasLength(10));
+    await api.twoFactorDisable('pw-1', 'abcde-fghij');
+    await api.changeEmail('new@x.test', 'pw-1');
+    await api.resendVerification();
+    await api.declineFriend('acct-2');
+    final blocked = (await api.blocked()).single;
+    expect(blocked.displayName, 'Boba');
+    expect(blocked.blockedAt, DateTime.utc(2026, 9, 1, 10));
+    final news = (await api.news()).single;
+    expect(news.title, 'Hello');
+    expect(news.publishedAt, isNotNull);
+    expect(seen, [
+      'POST /api/v1/me/2fa/setup {"password":"pw-1"}',
+      'POST /api/v1/me/2fa/enable {"code":"123456"}',
+      'POST /api/v1/me/2fa/disable {"password":"pw-1","code":"abcde-fghij"}',
+      'POST /api/v1/me/email {"new_email":"new@x.test","password":"pw-1"}',
+      'POST /api/v1/me/verify/resend {}',
+      'POST /api/v1/me/friends/requests/decline {"account_id":"acct-2"}',
+      'GET /api/v1/me/blocked ',
+      'GET /api/v1/news?limit=3 ',
+    ]);
+  });
+
+  test('deleting the account sends the password and code, then drops the bearer', () async {
+    String? sent;
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 'opk_abc',
+      client: MockClient((req) async {
+        sent = '${req.method} ${req.url.path} ${req.body}';
+        return json({'deleted': true});
+      }),
+    );
+    await api.deleteAccount('pw-1', code: '123456');
+    expect(sent, 'DELETE /api/v1/me {"password":"pw-1","code":"123456"}');
+    expect(api.token, isNull);
+  });
+
+  test('deleting a two-factor account without a code keeps everything', () async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 'opk_abc',
+      client: MockClient((_) async => json(
+            {'error': 'this account has two-factor authentication: send a code', 'two_factor_required': true},
+            status: 403,
+          )),
+    );
+    await expectLater(
+      api.deleteAccount('pw-1'),
+      throwsA(isA<ApiException>().having((e) => e.statusCode, 'status', 403)),
+    );
+    expect(api.token, 'opk_abc');
+  });
 }

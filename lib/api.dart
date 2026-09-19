@@ -22,6 +22,25 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+/// POST /token answered 202: the password was right and the account wants a
+/// second factor. Redeem [challenge] with [OpenPakApi.signInSecondFactor]. Not
+/// a failure, but thrown so that every existing caller of signIn keeps its
+/// shape and cannot mistake "no token yet" for a signed-in state.
+class TwoFactorRequired implements Exception {
+  TwoFactorRequired(this.challenge);
+
+  /// Single use, valid ten minutes, burned after five wrong codes.
+  final String challenge;
+}
+
+/// How the website reads the one code field: six digits are from the
+/// authenticator app, anything else is a recovery code.
+({String? code, String? recoveryCode}) splitSecondFactor(String typed) {
+  final digits = typed.trim().replaceAll(' ', '');
+  if (RegExp(r'^[0-9]{6}$').hasMatch(digits)) return (code: digits, recoveryCode: null);
+  return (code: null, recoveryCode: typed.trim());
+}
+
 class Account {
   Account({
     required this.id,
@@ -31,6 +50,8 @@ class Account {
     this.birthday = '',
     this.avatarUrl,
     this.linkedPlatforms = const [],
+    this.emailVerified = true,
+    this.twoFactorEnabled = false,
   });
   final String id;
   final String displayName;
@@ -45,6 +66,12 @@ class Account {
   final String? avatarUrl;
   final List<String> linkedPlatforms;
 
+  /// False until the address is confirmed. A server that does not say is
+  /// taken at its word elsewhere, so absent reads as confirmed rather than
+  /// nagging about something nobody reported.
+  final bool emailVerified;
+  final bool twoFactorEnabled;
+
   factory Account.fromJson(Map<String, dynamic> j) => Account(
     id: j['account_id'] as String? ?? '',
     displayName: j['display_name'] as String? ?? '',
@@ -56,7 +83,60 @@ class Account {
         .map((e) => (e as Map<String, dynamic>)['namespace'] as String? ?? '')
         .where((e) => e.isNotEmpty)
         .toList(growable: false),
+    emailVerified: j['email_verified'] != false,
+    twoFactorEnabled: j['two_factor_enabled'] == true,
   );
+}
+
+/// Someone this account blocked. They cannot send requests, messages or
+/// invitations until unblocked.
+class BlockedAccount {
+  BlockedAccount({required this.accountId, required this.displayName, this.blockedAt});
+  final String accountId;
+  final String displayName;
+  final DateTime? blockedAt;
+
+  factory BlockedAccount.fromJson(Map<String, dynamic> j) => BlockedAccount(
+    accountId: j['account_id'] as String? ?? '',
+    displayName: j['display_name'] as String? ?? '',
+    blockedAt: DateTime.tryParse(j['blocked_at'] as String? ?? ''),
+  );
+}
+
+/// One published news article, as the website's landing page shows it.
+class NewsArticle {
+  NewsArticle({
+    required this.slug,
+    required this.title,
+    required this.summary,
+    required this.body,
+    this.publishedAt,
+  });
+  final String slug;
+  final String title;
+
+  /// The first paragraph of the body.
+  final String summary;
+
+  /// Plain text; paragraphs are separated by a blank line.
+  final String body;
+  final DateTime? publishedAt;
+
+  factory NewsArticle.fromJson(Map<String, dynamic> j) => NewsArticle(
+    slug: j['slug'] as String? ?? '',
+    title: j['title'] as String? ?? '',
+    summary: j['summary'] as String? ?? '',
+    body: j['body'] as String? ?? '',
+    publishedAt: DateTime.tryParse(j['published_at'] as String? ?? ''),
+  );
+}
+
+/// What two-factor setup hands back: the key to type into an authenticator
+/// app, and the same key as a link an app can open.
+class TwoFactorSecret {
+  TwoFactorSecret({required this.secret, required this.otpauthUri});
+  final String secret;
+  final String otpauthUri;
 }
 
 /// One of the built-in avatars.
@@ -454,7 +534,9 @@ class OpenPakApi {
     if (json) 'Content-Type': 'application/json',
   };
 
-  Future<Map<String, dynamic>> _decode(http.Response r) async {
+  /// [signOutOn401] is false only where the server also answers 401 for a
+  /// wrong two-factor code: a typo there must not cost the person their sign-in.
+  Future<Map<String, dynamic>> _decode(http.Response r, {bool signOutOn401 = true}) async {
     if (r.statusCode >= 200 && r.statusCode < 300) {
       if (r.body.isEmpty) return {};
       return jsonDecode(r.body) as Map<String, dynamic>;
@@ -467,21 +549,46 @@ class OpenPakApi {
     } catch (_) {
       // A non-JSON error body is a proxy or an outage, not something to show.
     }
-    if (r.statusCode == 401 && token != null) {
+    if (r.statusCode == 401 && token != null && signOutOn401) {
       token = null;
       onUnauthorized?.call();
     }
     throw ApiException(r.statusCode, message);
   }
 
-  /// POST /token — mints the bearer and keeps it on this instance.
+  /// POST /token — mints the bearer and keeps it on this instance. Throws
+  /// [TwoFactorRequired] when the account asks for a code first.
   Future<String> signIn(String email, String password) async {
     final r = await _http.post(
       _uri('/token'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'password': password}),
     );
-    final body = await _decode(r);
+    return _keepToken(r, await _decode(r));
+  }
+
+  /// POST /token/2fa — finishes a sign-in [signIn] answered with a challenge.
+  /// [typed] is whatever the person entered: an authenticator code or a
+  /// recovery code, told apart the way the website does. A 401 means the code
+  /// was wrong or the challenge is spent; either way, sign in again.
+  Future<String> signInSecondFactor(String challenge, String typed) async {
+    final second = splitSecondFactor(typed);
+    final r = await _http.post(
+      _uri('/token/2fa'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'challenge': challenge,
+        if (second.code != null) 'code': second.code,
+        if (second.recoveryCode != null) 'recovery_code': second.recoveryCode,
+      }),
+    );
+    return _keepToken(r, await _decode(r));
+  }
+
+  String _keepToken(http.Response r, Map<String, dynamic> body) {
+    if (r.statusCode == 202 && body['two_factor_required'] == true) {
+      throw TwoFactorRequired(body['challenge'] as String? ?? '');
+    }
     final t = body['token'] as String?;
     if (t == null || t.isEmpty) {
       throw ApiException(r.statusCode, 'The server returned no token');
@@ -504,6 +611,77 @@ class OpenPakApi {
   /// GET /me
   Future<Account> me() async =>
       Account.fromJson(await _decode(await _http.get(_uri('/me'), headers: _headers())));
+
+  /// DELETE /me — ends the account. The password again, and for a two-factor
+  /// account a current code or a recovery code; every bearer, this one
+  /// included, stops working, so the caller signs out afterwards.
+  Future<void> deleteAccount(String password, {String? code}) async {
+    await _decode(await _http.delete(
+      _uri('/me'),
+      headers: _headers(json: true),
+      body: jsonEncode({
+        'password': password,
+        if (code != null && code.isNotEmpty) 'code': code,
+      }),
+    ));
+    token = null;
+  }
+
+  /// POST /me/email — a confirmation link goes to the new address; nothing
+  /// changes until it is opened on the website.
+  Future<void> changeEmail(String newEmail, String password) =>
+      _post('/me/email', {'new_email': newEmail, 'password': password});
+
+  /// POST /me/verify/resend — the same answer whether or not a mail went out.
+  Future<void> resendVerification() => _post('/me/verify/resend', const {});
+
+  /// POST /me/2fa/setup — asks for the password even though signed in.
+  Future<TwoFactorSecret> twoFactorSetup(String password) async {
+    final body = await _decode(await _http.post(
+      _uri('/me/2fa/setup'),
+      headers: _headers(json: true),
+      body: jsonEncode({'password': password}),
+    ));
+    return TwoFactorSecret(
+      secret: body['secret'] as String? ?? '',
+      otpauthUri: body['otpauth_uri'] as String? ?? '',
+    );
+  }
+
+  /// POST /me/2fa/enable — the ten recovery codes, shown once and never again.
+  Future<List<String>> twoFactorEnable(String code) async {
+    final body = await _decode(
+      await _http.post(
+        _uri('/me/2fa/enable'),
+        headers: _headers(json: true),
+        body: jsonEncode({'code': code.replaceAll(' ', '')}),
+      ),
+      signOutOn401: false,
+    );
+    return ((body['recovery_codes'] as List?) ?? const [])
+        .map((e) => e.toString())
+        .toList(growable: false);
+  }
+
+  /// POST /me/2fa/disable — a recovery code counts as a code.
+  Future<void> twoFactorDisable(String password, String code) async {
+    await _decode(
+      await _http.post(
+        _uri('/me/2fa/disable'),
+        headers: _headers(json: true),
+        body: jsonEncode({'password': password, 'code': code.trim()}),
+      ),
+      signOutOn401: false,
+    );
+  }
+
+  /// GET /news — public, newest first; empty when the deployment has none.
+  Future<List<NewsArticle>> news({int limit = 3}) async {
+    final body = await _decode(await _http.get(_uri('/news?limit=$limit')));
+    return ((body['articles'] as List?) ?? const [])
+        .map((e) => NewsArticle.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
 
   /// GET /me/friends — carries presence.
   Future<List<Friend>> friends() async {
@@ -665,6 +843,18 @@ class OpenPakApi {
   /// POST /me/friends/requests/accept
   Future<void> acceptFriend(String accountId) =>
       _post('/me/friends/requests/accept', {'account_id': accountId});
+
+  /// POST /me/friends/requests/decline — one already gone is not an error.
+  Future<void> declineFriend(String accountId) =>
+      _post('/me/friends/requests/decline', {'account_id': accountId});
+
+  /// GET /me/blocked
+  Future<List<BlockedAccount>> blocked() async {
+    final body = await _decode(await _http.get(_uri('/me/blocked'), headers: _headers()));
+    return ((body['blocked'] as List?) ?? const [])
+        .map((e) => BlockedAccount.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
 
   /// POST /me/friends/remove
   Future<void> removeFriend(String accountId) =>
