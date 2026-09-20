@@ -221,6 +221,7 @@ class Friend {
     required this.displayName,
     required this.online,
     this.titleId,
+    this.namespace,
     this.since,
   });
   final String accountId;
@@ -230,6 +231,10 @@ class Friend {
   /// present when this is true.
   final bool online;
   final String? titleId;
+
+  /// The account core's link namespace the session is on ("switch", "wiiu",
+  /// "3ds", ...). Present exactly when [titleId] and [since] are.
+  final String? namespace;
   final DateTime? since;
 
   factory Friend.fromJson(Map<String, dynamic> j) => Friend(
@@ -237,6 +242,7 @@ class Friend {
     displayName: j['display_name'] as String? ?? '',
     online: j['online'] as bool? ?? false,
     titleId: j['title_id'] as String?,
+    namespace: j['namespace'] as String?,
     since: j['since'] == null ? null : DateTime.tryParse(j['since'] as String),
   );
 }
@@ -280,6 +286,7 @@ class CatalogItem {
     this.notes = '',
     this.votes = 0,
     this.voted = false,
+    this.titleId = '',
   });
 
   /// Kept as a String regardless of whether the server emits a JSON number or
@@ -294,6 +301,11 @@ class CatalogItem {
   final String notes;
   final int votes;
   final bool voted;
+
+  /// The console's own title id, e.g. a Switch title's 16 hex digits. Empty
+  /// for features and for a title the console side has none for. This is how
+  /// a friend's presence title id is turned into a name elsewhere in the app.
+  final String titleId;
 
   bool get isTitle => kind == 'title';
 
@@ -310,6 +322,7 @@ class CatalogItem {
     notes: notes,
     votes: votes,
     voted: voted,
+    titleId: titleId,
   );
 
   factory CatalogItem.fromJson(Map<String, dynamic> j) => CatalogItem(
@@ -323,6 +336,7 @@ class CatalogItem {
     notes: j['notes'] as String? ?? '',
     votes: (j['votes'] as num?)?.toInt() ?? 0,
     voted: j['voted'] as bool? ?? false,
+    titleId: j['title_id'] as String? ?? '',
   );
 }
 

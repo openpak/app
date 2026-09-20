@@ -376,7 +376,11 @@ enum RowState { ok, warn, bad, idle }
 /// One tinted row: name on the left, pill on the right. The same shape as the
 /// website's status page and the console link pages, so the three read as one
 /// product rather than three things that share a logo.
-class StateRow extends StatelessWidget {
+///
+/// [expandedChild] turns the row into a disclosure: a tap reveals it below
+/// the header rather than firing [onTap]. Leaving it null keeps every other
+/// caller's row exactly as it was — a single line, no chevron.
+class StateRow extends StatefulWidget {
   const StateRow({
     super.key,
     required this.name,
@@ -385,6 +389,7 @@ class StateRow extends StatelessWidget {
     this.leading,
     this.trailing,
     this.onTap,
+    this.expandedChild,
   });
 
   final String name;
@@ -395,11 +400,20 @@ class StateRow extends StatelessWidget {
   /// An action that belongs to this row, after the pill.
   final Widget? trailing;
   final VoidCallback? onTap;
+  final Widget? expandedChild;
+
+  @override
+  State<StateRow> createState() => _StateRowState();
+}
+
+class _StateRowState extends State<StateRow> {
+  bool _open = false;
 
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
-    final (bg, border, ink) = switch (state) {
+    final expandable = widget.expandedChild != null;
+    final (bg, border, ink) = switch (widget.state) {
       RowState.ok => (t.okWeak, t.okLine, t.ok),
       RowState.warn => (t.warnWeak, t.warnLine, t.warn),
       RowState.bad => (t.badWeak, t.badLine, t.bad),
@@ -414,22 +428,55 @@ class StateRow extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: onTap,
+        onTap: expandable ? () => setState(() => _open = !_open) : widget.onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (leading != null) ...[leading!, const SizedBox(width: 12)],
-              Expanded(
-                child: Text(
-                  name,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                  overflow: TextOverflow.ellipsis,
-                ),
+              Row(
+                children: [
+                  if (widget.leading != null) ...[widget.leading!, const SizedBox(width: 12)],
+                  Expanded(
+                    child: Text(
+                      widget.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: _Pill(
+                      text: widget.pill,
+                      color: ink,
+                      border: widget.state == RowState.idle ? t.line2 : border,
+                    ),
+                  ),
+                  if (widget.trailing != null) ...[const SizedBox(width: 4), widget.trailing!],
+                  if (expandable) ...[
+                    const SizedBox(width: 4),
+                    AnimatedRotation(
+                      turns: _open ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 150),
+                      child: Icon(Icons.expand_more, size: 20, color: t.muted),
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(width: 10),
-              _Pill(text: pill, color: ink, border: state == RowState.idle ? t.line2 : border),
-              if (trailing != null) ...[const SizedBox(width: 4), trailing!],
+              if (expandable)
+                // AnimatedSize rather than AnimatedCrossFade: the latter lays
+                // out both children at all times to interpolate between them,
+                // which would keep the detail's widgets (and the game icon's
+                // network request) alive even while collapsed. This animates
+                // the same height change with only one child mounted at a time.
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 150),
+                  curve: Curves.easeInOut,
+                  alignment: Alignment.topCenter,
+                  child: _open
+                      ? Padding(padding: const EdgeInsets.only(top: 12), child: widget.expandedChild!)
+                      : const SizedBox(width: double.infinity),
+                ),
             ],
           ),
         ),
@@ -462,9 +509,15 @@ class _Pill extends StatelessWidget {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
-        Text(
-          text,
-          style: TextStyle(color: color, fontSize: 12.5, fontWeight: FontWeight.w600),
+        // Flexible rather than a bare Text: a pill can now carry a game name
+        // instead of a fixed word like "Online", and a long one is truncated
+        // rather than pushing the row past its bounds.
+        Flexible(
+          child: Text(
+            text,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: color, fontSize: 12.5, fontWeight: FontWeight.w600),
+          ),
         ),
       ],
     ),

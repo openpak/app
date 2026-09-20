@@ -264,6 +264,10 @@
   "@friendsMessagesTooltip": {
     "description": "Tooltip of the button that opens the list of chat conversations."
   },
+  "friendsMessageTooltip": "Message",
+  "@friendsMessageTooltip": {
+    "description": "Tooltip of the icon button on a friend row that opens a chat with them."
+  },
   "friendsAddTooltip": "Add by friend code",
   "@friendsAddTooltip": {
     "description": "Tooltip of the button that adds a friend by friend code."
@@ -362,9 +366,23 @@
   "@friendsOffline": {
     "description": "Pill on a friend who is offline."
   },
+  "friendsInAGame": "In a game",
+  "@friendsInAGame": {
+    "description": "Shown for a friend who is online in a game the catalog has no name for. Paired with the platform name, e.g. 'Nintendo Switch · In a game'."
+  },
+  "friendsOnlineSince": "Online since {time}",
+  "@friendsOnlineSince": {
+    "description": "In a friend row's expanded detail: when their current session began.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "Sep 18, 2026 14:05"
+      }
+    }
+  },
   "friendsRemove": "Remove",
   "@friendsRemove": {
-    "description": "Menu item that removes a friend."
+    "description": "Tooltip of the icon button that removes a friend."
   },
   "friendsRemoveConfirm": "Remove {name}?",
   "@friendsRemoveConfirm": {
@@ -382,7 +400,7 @@
   },
   "friendsBlock": "Block",
   "@friendsBlock": {
-    "description": "Menu item that blocks a friend."
+    "description": "Tooltip of the icon button that blocks a friend."
   },
   "friendsBlockConfirm": "Block {name}?",
   "@friendsBlockConfirm": {

@@ -17,7 +17,7 @@ class FriendsPage extends StatefulWidget {
 }
 
 class FriendsPageState extends State<FriendsPage> {
-  late Future<(List<Friend>, FriendRequests, List<BlockedAccount>)> _data;
+  late Future<(List<Friend>, FriendRequests, List<BlockedAccount>, List<CatalogItem>)> _data;
 
   @override
   void initState() {
@@ -32,7 +32,18 @@ class FriendsPageState extends State<FriendsPage> {
       // The block list is the least of this page: a failure there must not
       // take the friends down with it.
       widget.api.blocked().catchError((_) => <BlockedAccount>[]),
-    ]).then((r) => (r[0] as List<Friend>, r[1] as FriendRequests, r[2] as List<BlockedAccount>));
+      // Same reasoning for the catalog: it only turns a title id into a name,
+      // so a friend row falls back to the platform rather than losing the
+      // whole page when the catalog cannot be reached.
+      widget.api.requests().catchError((_) => <CatalogItem>[]),
+    ]).then(
+      (r) => (
+        r[0] as List<Friend>,
+        r[1] as FriendRequests,
+        r[2] as List<BlockedAccount>,
+        r[3] as List<CatalogItem>,
+      ),
+    );
   });
 
   Future<void> _act(Future<void> Function() action, String done) async {
@@ -101,7 +112,7 @@ class FriendsPageState extends State<FriendsPage> {
       ),
       body: RefreshIndicator(
         onRefresh: () async => reload(),
-        child: FutureBuilder<(List<Friend>, FriendRequests, List<BlockedAccount>)>(
+        child: FutureBuilder<(List<Friend>, FriendRequests, List<BlockedAccount>, List<CatalogItem>)>(
           future: _data,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
@@ -110,7 +121,14 @@ class FriendsPageState extends State<FriendsPage> {
             if (snap.hasError) {
               return LoadFailure(snap.error);
             }
-            final (friends, requests, blocked) = snap.data!;
+            final (friends, requests, blocked, catalog) = snap.data!;
+            // Title id → game name, the same catalog the Titles tab shows.
+            // Only started games carry a name worth showing; features and
+            // rows with no title id never match a friend's presence.
+            final gameNames = {
+              for (final c in catalog)
+                if (c.isTitle && c.titleId.isNotEmpty) c.titleId.toUpperCase(): c.name,
+            };
             if (friends.isEmpty &&
                 requests.incoming.isEmpty &&
                 requests.outgoing.isEmpty &&
@@ -163,7 +181,7 @@ class FriendsPageState extends State<FriendsPage> {
                     ),
                   )
                 else
-                  ...friends.map(_friendRow),
+                  ...friends.map((f) => _friendRow(f, gameNames)),
                 if (requests.outgoing.isNotEmpty) ...[
                   const SizedBox(height: 20),
                   SectionLabel(l.friendsWaiting),
@@ -209,40 +227,130 @@ class FriendsPageState extends State<FriendsPage> {
   }
 
   /// Online is the whole point of a friends list, so it is the tint. The pill
-  /// says what they are playing when the adapter told us, and "Online" when it
-  /// did not — a title id would mean nothing to a person.
-  Widget _friendRow(Friend f) {
+  /// says what they are playing when the catalog can name it, the platform and
+  /// "in a game" when it cannot, and "Online" when there is no session at all
+  /// — never the bare title id, which would mean nothing to a person. Tapping
+  /// the row opens the detail below it; the actions that used to live behind
+  /// the tap and the overflow menu are icon buttons instead.
+  Widget _friendRow(Friend f, Map<String, String> gameNames) {
     final l = context.l10n;
     final playing = f.titleId?.isNotEmpty ?? false;
+    final gameName = playing ? gameNames[f.titleId!.toUpperCase()] : null;
+    final platform = (f.namespace?.isEmpty ?? true) ? null : friendPlatformName(f.namespace!);
+    final pill = !f.online
+        ? l.friendsOffline
+        : gameName ?? (playing ? [if (platform != null) platform, l.friendsInAGame].join(' · ') : l.friendsOnline);
     return StateRow(
       name: f.displayName,
-      pill: f.online ? (playing ? f.titleId! : l.friendsOnline) : l.friendsOffline,
+      pill: pill,
       state: f.online ? RowState.ok : RowState.idle,
       leading: Avatar(name: f.displayName, online: f.online),
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => ChatPage(api: widget.api, peer: f.accountId, name: f.displayName),
-      )),
-      trailing: PopupMenuButton<String>(
-        onSelected: (v) async {
-          if (v == 'remove') {
-            if (await confirm(context, l.friendsRemoveConfirm(f.displayName))) {
-              await _act(() => widget.api.removeFriend(f.accountId), l.friendsRemoved);
-            }
-          } else if (v == 'block') {
-            if (await confirm(
-              context,
-              l.friendsBlockConfirm(f.displayName),
-              detail: l.friendsBlockDetail,
-            )) {
-              await _block(f);
-            }
-          }
-        },
-        itemBuilder: (_) => [
-          PopupMenuItem(value: 'remove', child: Text(l.friendsRemove)),
-          PopupMenuItem(value: 'block', child: Text(l.friendsBlock)),
+      expandedChild: _friendDetail(f, gameName, platform),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: l.friendsMessageTooltip,
+            icon: const Icon(Icons.chat_bubble_outline, size: 20),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => ChatPage(api: widget.api, peer: f.accountId, name: f.displayName),
+            )),
+          ),
+          IconButton(
+            tooltip: l.friendsRemove,
+            icon: const Icon(Icons.person_remove_outlined, size: 20),
+            onPressed: () async {
+              if (await confirm(context, l.friendsRemoveConfirm(f.displayName))) {
+                await _act(() => widget.api.removeFriend(f.accountId), l.friendsRemoved);
+              }
+            },
+          ),
+          IconButton(
+            tooltip: l.friendsBlock,
+            icon: const Icon(Icons.block, size: 20),
+            onPressed: () async {
+              if (await confirm(
+                context,
+                l.friendsBlockConfirm(f.displayName),
+                detail: l.friendsBlockDetail,
+              )) {
+                await _block(f);
+              }
+            },
+          ),
         ],
       ),
     );
   }
+
+  /// What is under the disclosure: the game (art and name, or the platform
+  /// and "in a game" when the catalog has no name for it), the platform, and
+  /// when the session began. A friend's own friend code and the date the
+  /// friendship was made are not in this reply — GET /me/friends carries
+  /// account_id, display_name, online, title_id, namespace and since, and
+  /// nothing else about the relationship — so neither is shown rather than
+  /// making one up.
+  Widget _friendDetail(Friend f, String? gameName, String? platform) {
+    final l = context.l10n;
+    final t = tokensOf(context);
+    if (!f.online) {
+      return Text(l.friendsOffline, style: TextStyle(color: t.muted, fontSize: 13));
+    }
+    final playing = f.titleId?.isNotEmpty ?? false;
+    Widget row(Widget icon, String text) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 28, height: 28, child: Center(child: icon)),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text, style: TextStyle(color: t.ink2, fontSize: 13))),
+        ],
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (playing)
+          row(
+            looksLikeSwitchTitleId(f.titleId!)
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.network(
+                      widget.api.absolute('/titles/icon/${f.titleId}'),
+                      width: 28,
+                      height: 28,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Icon(Icons.videogame_asset_outlined, color: t.muted),
+                    ),
+                  )
+                : Icon(Icons.videogame_asset_outlined, color: t.muted),
+            gameName ?? l.friendsInAGame,
+          ),
+        if (platform != null) row(Icon(Icons.devices_outlined, color: t.muted, size: 20), platform),
+        if (f.since != null)
+          row(Icon(Icons.schedule_outlined, color: t.muted, size: 20), l.friendsOnlineSince(shortDateTime(l, f.since!))),
+      ],
+    );
+  }
 }
+
+// ── Pure helpers, unit-tested ────────────────────────────────────────────────
+
+/// A friend's session platform, in the app's own words rather than the
+/// account core's wire namespace. Unlike widgets.dart's `platformNames` (built
+/// for the shorter linked-consoles list), a friend's current console is
+/// spelled out in full. An unrecognised namespace shows its own name,
+/// capitalised, rather than nothing at all.
+String friendPlatformName(String namespace) => switch (namespace) {
+  'switch' => 'Nintendo Switch',
+  'wiiu' => 'Wii U',
+  '3ds' => 'Nintendo 3DS',
+  _ => namespace.isEmpty ? namespace : namespace[0].toUpperCase() + namespace.substring(1),
+};
+
+/// Whether a title id is shaped like a Switch one — 16 hex digits — which is
+/// the only console /titles/icon/{id} can draw an icon for. Same shape the
+/// website checks before it calls out to nlib.
+final _switchTitleId = RegExp(r'^[0-9A-Fa-f]{16}$');
+bool looksLikeSwitchTitleId(String id) => _switchTitleId.hasMatch(id);
