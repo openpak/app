@@ -86,18 +86,58 @@ class SectionLabel extends StatelessWidget {
   }
 }
 
-/// An initial in a disc, with a presence ring. There are no avatar images in
-/// the API yet, so this is the honest version rather than a placeholder face.
+/// An initial in a disc, with a presence ring. When [avatarUrl] is
+/// provided the image is shown instead of the initial, falling back
+/// to the initial on any error.
 class Avatar extends StatelessWidget {
-  const Avatar({super.key, required this.name, this.online = false, this.dim = false});
+  const Avatar({
+    super.key,
+    required this.name,
+    this.online = false,
+    this.dim = false,
+    this.avatarUrl,
+  });
   final String name;
   final bool online;
   final bool dim;
+  final String? avatarUrl;
 
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
     final scheme = Theme.of(context).colorScheme;
+    if (avatarUrl != null && avatarUrl!.isNotEmpty) {
+      return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: dim ? t.paper2 : t.accentWeak,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: online ? t.ok : t.line,
+            width: online ? 2 : 1,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: ClipOval(
+          child: Image.network(
+            avatarUrl!,
+            width: 40,
+            height: 40,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, __) => Text(
+              name.isEmpty ? '?' : name.characters.first.toUpperCase(),
+              style: TextStyle(
+                color: dim ? t.muted : scheme.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            loadingBuilder: (context, child, progress) =>
+                progress == null ? child : Container(width: 40, height: 40, color: t.paper2),
+          ),
+        ),
+      );
+    }
     return Container(
       width: 40,
       height: 40,

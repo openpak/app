@@ -198,4 +198,26 @@ void main() {
     expect(looksLikeSwitchTitleId(''), isFalse);
     expect(looksLikeSwitchTitleId('0100ABCD0000100'), isFalse); // 15 digits
   });
+
+  test('friends parse avatar_url', () async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((_) async => json({
+            'friends': [
+              {
+                'account_id': 'f1',
+                'display_name': 'Leia',
+                'online': true,
+                'avatar_url': '/media/avatars/f1/256',
+              },
+              {'account_id': 'f2', 'display_name': 'Han', 'online': false},
+            ]
+          })),
+    );
+    final friends = await api.friends();
+    expect(friends, hasLength(2));
+    expect(friends[0].avatarUrl, '/media/avatars/f1/256');
+    expect(friends[1].avatarUrl, isNull);
+  });
 }

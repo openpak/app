@@ -223,6 +223,7 @@ class Friend {
     this.titleId,
     this.namespace,
     this.since,
+    this.avatarUrl,
   });
   final String accountId;
   final String displayName;
@@ -237,6 +238,10 @@ class Friend {
   final String? namespace;
   final DateTime? since;
 
+  /// The URL of the friend's avatar image, relative to the server root.
+  /// Null when the account has never chosen one.
+  final String? avatarUrl;
+
   factory Friend.fromJson(Map<String, dynamic> j) => Friend(
     accountId: j['account_id'] as String? ?? '',
     displayName: j['display_name'] as String? ?? '',
@@ -244,6 +249,7 @@ class Friend {
     titleId: j['title_id'] as String?,
     namespace: j['namespace'] as String?,
     since: j['since'] == null ? null : DateTime.tryParse(j['since'] as String),
+    avatarUrl: j['avatar_url'] as String?,
   );
 }
 

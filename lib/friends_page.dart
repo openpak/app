@@ -145,7 +145,12 @@ class FriendsPageState extends State<FriendsPage> {
                       name: f.displayName,
                       pill: l.friendsWantsToAdd,
                       state: RowState.warn,
-                      leading: Avatar(name: f.displayName),
+                      leading: Avatar(
+                        name: f.displayName,
+                        avatarUrl: f.avatarUrl != null
+                            ? widget.api.absolute(f.avatarUrl!)
+                            : null,
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -189,7 +194,13 @@ class FriendsPageState extends State<FriendsPage> {
                     (f) => StateRow(
                       name: f.displayName,
                       pill: l.friendsRequestSentPill,
-                      leading: Avatar(name: f.displayName, dim: true),
+                      leading: Avatar(
+                        name: f.displayName,
+                        dim: true,
+                        avatarUrl: f.avatarUrl != null
+                            ? widget.api.absolute(f.avatarUrl!)
+                            : null,
+                      ),
                     ),
                   ),
                 ],
@@ -244,7 +255,13 @@ class FriendsPageState extends State<FriendsPage> {
       name: f.displayName,
       pill: pill,
       state: f.online ? RowState.ok : RowState.idle,
-      leading: Avatar(name: f.displayName, online: f.online),
+      leading: Avatar(
+        name: f.displayName,
+        online: f.online,
+        avatarUrl: f.avatarUrl != null
+            ? widget.api.absolute(f.avatarUrl!)
+            : null,
+      ),
       expandedChild: _friendDetail(f, gameName, platform),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
