@@ -1433,5 +1433,51 @@
         "example": "500"
       }
     }
+  },
+  "crashTitle": "OpenPak ran into a problem",
+  "@crashTitle": {
+    "description": "Title of the dialog offering to send saved error (crash) reports."
+  },
+  "crashBody": "{count, plural, =1{An error report was saved on this phone.} other{{count} error reports were saved on this phone.}} It holds the error, the app version and the phone's system version and model. Send it to OpenPak to help fix the problem?",
+  "@crashBody": {
+    "description": "Body of the crash report dialog; count is how many reports are waiting.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "crashSend": "Send",
+  "@crashSend": {
+    "description": "Crash report dialog button: send the waiting reports this once."
+  },
+  "crashDontSend": "Don't send",
+  "@crashDontSend": {
+    "description": "Crash report dialog button: throw the waiting reports away without sending."
+  },
+  "crashAlways": "Always send",
+  "@crashAlways": {
+    "description": "Crash report dialog button and setting value: send reports from now on without asking."
+  },
+  "crashNever": "Never send",
+  "@crashNever": {
+    "description": "Crash report dialog button and setting value: never send reports and stop asking."
+  },
+  "crashSent": "Thank you. The report was sent.",
+  "@crashSent": {
+    "description": "Toast after crash reports were sent."
+  },
+  "crashSendFailed": "The report could not be sent. It stays on this phone and is offered again next time.",
+  "@crashSendFailed": {
+    "description": "Toast when a crash report could not be sent; it stays saved and is offered again."
+  },
+  "crashSettingTitle": "Error reports",
+  "@crashSettingTitle": {
+    "description": "Account page setting: what to do with error reports (ask, always send, never send)."
+  },
+  "crashSettingAsk": "Ask each time",
+  "@crashSettingAsk": {
+    "description": "Error reports setting value: ask each time."
   }
 }

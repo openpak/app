@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'account_details_page.dart';
 import 'api.dart';
+import 'crash_reports.dart';
 import 'l10n.dart';
 import 'theme.dart';
 import 'two_factor_page.dart';
@@ -214,6 +215,8 @@ class _AccountPageState extends State<AccountPage> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 20),
+                Panel(child: CrashConsentTile(store: CrashStore())),
                 const SizedBox(height: 28),
                 OutlinedButton.icon(
                   onPressed: _changePassword,

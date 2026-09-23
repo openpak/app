@@ -985,6 +985,19 @@ class OpenPakApi {
     await _decode(await http.Response.fromStream(await _http.send(req)));
   }
 
+  /// POST /crash-reports, multipart — `meta` (JSON) and an optional text
+  /// `attachment`. Signed in, the bearer goes along so the report names the
+  /// account; a 401 here never signs the app out.
+  Future<void> sendCrashReport(Map<String, dynamic> meta, {String? attachment}) async {
+    final req = http.MultipartRequest('POST', _uri('/crash-reports'))
+      ..headers.addAll(_headers())
+      ..fields['meta'] = jsonEncode(meta);
+    if (attachment != null && attachment.isNotEmpty) {
+      req.files.add(http.MultipartFile.fromString('attachment', attachment, filename: 'crash.txt'));
+    }
+    await _decode(await http.Response.fromStream(await _http.send(req)), signOutOn401: false);
+  }
+
   /// GET /me/chat — one entry per peer, newest message first.
   Future<List<Conversation>> conversations() async {
     final body = await _decode(await _http.get(_uri('/me/chat'), headers: _headers()));

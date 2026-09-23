@@ -315,5 +315,15 @@
   "errorWfcUnavailable": "L'association Wii / DS n'est pas disponible pour le moment.",
   "errorWrongCode": "Ce code est incorrect. Vérifiez l'heure de votre téléphone et essayez le code le plus récent.",
   "errorWrongPassword": "Ce mot de passe est incorrect, rien n'a donc été modifié.",
-  "errorGeneric": "Une erreur s'est produite ({status}). Veuillez réessayer."
+  "errorGeneric": "Une erreur s'est produite ({status}). Veuillez réessayer.",
+  "crashTitle": "OpenPak a rencontré un problème",
+  "crashBody": "{count, plural, =1{Un rapport d'erreur a été enregistré sur ce téléphone.} other{{count} rapports d'erreur ont été enregistrés sur ce téléphone.}} Il contient l'erreur, la version de l'application ainsi que la version du système et le modèle du téléphone. L'envoyer à OpenPak pour aider à corriger le problème ?",
+  "crashSend": "Envoyer",
+  "crashDontSend": "Ne pas envoyer",
+  "crashAlways": "Toujours envoyer",
+  "crashNever": "Ne jamais envoyer",
+  "crashSent": "Merci. Le rapport a été envoyé.",
+  "crashSendFailed": "Le rapport n'a pas pu être envoyé. Il reste sur ce téléphone et sera proposé à nouveau la prochaine fois.",
+  "crashSettingTitle": "Rapports d'erreur",
+  "crashSettingAsk": "Demander à chaque fois"
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'api.dart';
+import 'crash_reports.dart';
 import 'l10n.dart';
 import 'shell.dart';
 import 'theme.dart';
@@ -14,7 +15,15 @@ const baseUrl = String.fromEnvironment(
   defaultValue: 'https://openpak.org',
 );
 
-void main() => runApp(const OpenPakApp());
+/// Unhandled errors are saved from the first frame on; nothing is sent
+/// until the person agrees (see crash_reports.dart).
+final crashReporter = CrashReporter();
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  crashReporter.install();
+  runApp(const OpenPakApp());
+}
 
 class OpenPakApp extends StatefulWidget {
   const OpenPakApp({super.key});
@@ -25,7 +34,9 @@ class OpenPakApp extends StatefulWidget {
 class _OpenPakAppState extends State<OpenPakApp> {
   final _session = Session();
   final _api = OpenPakApi(baseUrl: baseUrl);
+  final _navigator = GlobalKey<NavigatorState>();
   bool _restoring = true;
+  bool _offering = false;
 
   @override
   void initState() {
@@ -37,7 +48,25 @@ class _OpenPakAppState extends State<OpenPakApp> {
       _session.clear();
       if (mounted) setState(() {});
     };
+    // A report saved while the app runs is offered right away; one saved
+    // before a crash took the app down, on the next launch (after _restore).
+    crashReporter.onReport = _offerCrashReports;
     _restore();
+  }
+
+  /// One dialog at a time; whatever arrives meanwhile is in the queue and is
+  /// offered by the next call.
+  Future<void> _offerCrashReports() async {
+    final context = _navigator.currentContext;
+    if (_offering || context == null) return;
+    _offering = true;
+    try {
+      await offerCrashReports(context, crashReporter, _api);
+    } catch (_) {
+      // The crash prompt must never become a crash of its own.
+    } finally {
+      _offering = false;
+    }
   }
 
   /// A stored token means signed in until the server says otherwise; the first
@@ -46,6 +75,7 @@ class _OpenPakAppState extends State<OpenPakApp> {
   Future<void> _restore() async {
     _api.token = await _session.read();
     if (mounted) setState(() => _restoring = false);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _offerCrashReports());
   }
 
   Future<void> _onSignedIn(String token) async {
@@ -62,6 +92,7 @@ class _OpenPakAppState extends State<OpenPakApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigator,
       title: 'OpenPak',
       // The website's tokens, so the two are visibly one product.
       theme: openPakLight(),
@@ -72,6 +103,7 @@ class _OpenPakAppState extends State<OpenPakApp> {
       // e-mails the website sends read in it too.
       builder: (context, child) {
         _api.language = Localizations.localeOf(context).toLanguageTag();
+        crashReporter.locale = _api.language;
         return child!;
       },
       home: _restoring

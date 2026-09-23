@@ -315,5 +315,15 @@
   "errorWfcUnavailable": "O vínculo de Wii / DS não está disponível no momento.",
   "errorWrongCode": "Esse código não está correto. Verifique o horário do seu celular e tente o código mais recente.",
   "errorWrongPassword": "Essa senha não está correta, então nada foi alterado.",
-  "errorGeneric": "Algo deu errado ({status}). Tente novamente."
+  "errorGeneric": "Algo deu errado ({status}). Tente novamente.",
+  "crashTitle": "O OpenPak encontrou um problema",
+  "crashBody": "{count, plural, =1{Um relatório de erro foi salvo neste celular.} other{{count} relatórios de erro foram salvos neste celular.}} Ele contém o erro, a versão do app e a versão do sistema e o modelo do celular. Enviar ao OpenPak para ajudar a corrigir o problema?",
+  "crashSend": "Enviar",
+  "crashDontSend": "Não enviar",
+  "crashAlways": "Sempre enviar",
+  "crashNever": "Nunca enviar",
+  "crashSent": "Obrigado. O relatório foi enviado.",
+  "crashSendFailed": "Não foi possível enviar o relatório. Ele fica neste celular e será oferecido de novo na próxima vez.",
+  "crashSettingTitle": "Relatórios de erro",
+  "crashSettingAsk": "Perguntar sempre"
 }

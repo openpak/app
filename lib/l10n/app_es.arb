@@ -315,5 +315,15 @@
   "errorWfcUnavailable": "La vinculación de Wii / DS no está disponible ahora mismo.",
   "errorWrongCode": "Ese código no es correcto. Revisa la hora de tu teléfono y prueba el código más reciente.",
   "errorWrongPassword": "Esa contraseña no es correcta, así que no se cambió nada.",
-  "errorGeneric": "Algo salió mal ({status}). Vuelve a intentarlo."
+  "errorGeneric": "Algo salió mal ({status}). Vuelve a intentarlo.",
+  "crashTitle": "OpenPak ha tenido un problema",
+  "crashBody": "{count, plural, =1{Se guardó un informe de error en este teléfono.} other{Se guardaron {count} informes de error en este teléfono.}} Contiene el error, la versión de la app y la versión del sistema y el modelo del teléfono. ¿Enviarlo a OpenPak para ayudar a corregir el problema?",
+  "crashSend": "Enviar",
+  "crashDontSend": "No enviar",
+  "crashAlways": "Enviar siempre",
+  "crashNever": "No enviar nunca",
+  "crashSent": "Gracias. El informe se ha enviado.",
+  "crashSendFailed": "No se pudo enviar el informe. Se queda en este teléfono y se ofrecerá de nuevo la próxima vez.",
+  "crashSettingTitle": "Informes de error",
+  "crashSettingAsk": "Preguntar cada vez"
 }

@@ -23,6 +23,11 @@ for nothing a person would notice).
 - Account: details, avatar (a built-in or your own photo), password, email
   (confirmation and change), two-factor, linked consoles (link a Wii or DS,
   unlink any), signed-in devices, and deleting the account.
+- Crash reports: an unhandled error is saved on the phone (the last five) and
+  offered on the spot or at the next launch; nothing is sent to
+  `POST /api/v1/crash-reports` until the person says Send (or chose "Always
+  send", changeable on the account page). `appVersion` in
+  `lib/crash_reports.dart` must follow pubspec's version; a test checks it.
 
 ## Toolchain
 
