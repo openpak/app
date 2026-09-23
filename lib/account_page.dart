@@ -448,15 +448,20 @@ class _ProfileCard extends StatelessWidget {
                     ),
                     // Every code this account can be added by, each in its
                     // own well with a copy button, as on the website's banner.
-                    for (final (label, code) in [
-                      if (me.openpakCode != null) (l.friendsKindOpenpak, me.openpakCode!),
-                      if (me.friendCode != null) (l.friendsKindSwitch, me.friendCode!),
-                    ])
+                    for (final c in me.friendCodes)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
-                        child: _CodeWell(label: label, code: code),
+                        child: _CodeWell(
+                          label: switch (c.kind) {
+                            'openpak' => l.friendsKindOpenpak,
+                            'switch' => l.friendsKindSwitch,
+                            '3ds' => l.friendsKind3ds,
+                            _ => c.label, // Wii U · NNID, and whatever comes next
+                          },
+                          code: c.code,
+                        ),
                       ),
-                    if (me.openpakCode == null && me.friendCode == null)
+                    if (me.friendCodes.isEmpty)
                       Text(l.accountNoFriendCode, style: TextStyle(color: t.muted, fontSize: 13)),
                   ],
                 ),

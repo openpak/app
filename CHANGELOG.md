@@ -19,8 +19,9 @@ The website's redesign (website v0.54.0), in the app: one product again.
 - **Titles** filter with chips instead of dropdowns: a row of statuses and a row of consoles (with
   their logos), the chosen one inverted.
 - A blank avatar is the site's pink-to-violet gradient; screens have 20px side margins.
-- **OpenPak codes** (website v0.55.0): the Account card lists every code you can be added by, the
-  OpenPak code (OP-XXXX-XXXX) and the Switch one, each with a copy button. **Add friend** is the
+- **Friend codes** (website v0.55.1): the Account card lists every code you can be added by, from
+  `/me`'s `friend_codes` in the site's order: OpenPak (OP-XXXX-XXXX), Switch, Wii U NNID once
+  published, 3DS; each with a copy button. An older server still shows OpenPak and Switch. **Add friend** is the
   site's dialog: pick OpenPak, Switch or 3DS, and the field shapes what you type to that code
   (`fitFriendCode`, the same rules as the site's `data-friend-form`); the request carries `kind`.
 - Invitations no longer trips a debug assertion on load (`setState` was handed a Future).

@@ -502,4 +502,19 @@ void main() {
     );
     expect(api.token, 'opk_abc');
   });
+
+  test('friend_codes is read in order; an older server falls back to the two codes', () {
+    final now = Account.fromJson({
+      'friend_codes': [
+        {'kind': 'openpak', 'console': '', 'label': 'OpenPak', 'code': 'OP-AB2C-D3E4'},
+        {'kind': 'wiiu', 'console': 'Wii U', 'label': 'Wii U · NNID', 'code': 'leia'},
+        {'kind': '3ds', 'console': '3DS', 'label': '3DS', 'code': ''},
+      ],
+    });
+    expect(now.friendCodes.map((c) => '${c.kind} ${c.label} ${c.code}'), ['openpak OpenPak OP-AB2C-D3E4', 'wiiu Wii U · NNID leia']);
+
+    final old = Account.fromJson({'openpak_code': 'OP-AB2C-D3E4', 'friend_code': 'SW-1234-5678-9012'});
+    expect(old.friendCodes.map((c) => c.kind), ['openpak', 'switch']);
+    expect(Account.fromJson({}).friendCodes, isEmpty);
+  });
 }

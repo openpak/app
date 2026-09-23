@@ -54,7 +54,7 @@ class Account {
     required this.id,
     required this.displayName,
     this.friendCode,
-    this.openpakCode,
+    this.friendCodes = const [],
     this.country = '',
     this.birthday = '',
     this.avatarUrl,
@@ -69,9 +69,10 @@ class Account {
   /// Present only once a console is linked.
   final String? friendCode;
 
-  /// OP-XXXX-XXXX: adds a friend whatever console either side has. Null from
-  /// servers older than website v0.55.0.
-  final String? openpakCode;
+  /// Every code the account can be added by, in the website banner's order
+  /// (OpenPak, Switch, Wii U NNID, 3DS). [label] is the server's English, for
+  /// kinds the app has no word of its own for.
+  final List<({String kind, String label, String code})> friendCodes;
   final String country;
   final String birthday;
 
@@ -93,7 +94,17 @@ class Account {
     id: j['account_id'] as String? ?? '',
     displayName: j['display_name'] as String? ?? '',
     friendCode: j['friend_code'] as String?,
-    openpakCode: _nonEmpty(j['openpak_code']),
+    // friend_codes is website v0.55.1; before it, the two codes it replaces.
+    friendCodes: j['friend_codes'] is List
+        ? [
+            for (final c in (j['friend_codes'] as List).whereType<Map<String, dynamic>>())
+              if (_nonEmpty(c['code']) != null)
+                (kind: c['kind'] as String? ?? '', label: c['label'] as String? ?? '', code: c['code'] as String),
+          ]
+        : [
+            if (_nonEmpty(j['openpak_code']) case final c?) (kind: 'openpak', label: 'OpenPak', code: c),
+            if (_nonEmpty(j['friend_code']) case final c?) (kind: 'switch', label: 'Switch', code: c),
+          ],
     country: j['country'] as String? ?? '',
     birthday: j['birthday'] as String? ?? '',
     avatarUrl: j['avatar_url'] as String?,
