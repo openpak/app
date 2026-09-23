@@ -29,14 +29,17 @@ class Panel extends StatelessWidget {
     final t = tokensOf(context);
     // A Material rather than a decorated box, so a ListTile inside draws its
     // ink on the card instead of under it.
-    return Material(
-      color: t.raised,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: t.line),
+    return DecoratedBox(
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(radiusCard), boxShadow: t.shadow),
+      child: Material(
+        color: t.raised,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusCard),
+          side: BorderSide(color: t.line),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: child,
       ),
-      clipBehavior: Clip.antiAlias,
-      child: child,
     );
   }
 }
@@ -59,7 +62,7 @@ class SectionLabel extends StatelessWidget {
               color: t.muted,
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
+              letterSpacing: 1.1,
             ),
           ),
           if (trailing != null) ...[
@@ -142,7 +145,8 @@ class Avatar extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: dim ? t.paper2 : t.accentWeak,
+        color: dim ? t.paper2 : null,
+        gradient: dim ? null : avatarGradient,
         shape: BoxShape.circle,
         border: Border.all(
           color: online ? t.ok : t.line,
@@ -153,7 +157,7 @@ class Avatar extends StatelessWidget {
       child: Text(
         name.isEmpty ? '?' : name.characters.first.toUpperCase(),
         style: TextStyle(
-          color: dim ? t.muted : scheme.primary,
+          color: dim ? t.muted : Colors.white,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -411,7 +415,9 @@ class AccountAvatar extends StatelessWidget {
 /// it is free to carry the fact — a player count, a title, a time — instead of
 /// repeating what the colour already said. Grey is not a fifth colour for
 /// "slightly wrong": it means nothing is being claimed.
-enum RowState { ok, warn, bad, idle }
+///
+/// [beta] is the site's indigo: it runs, so it is not "in progress" amber.
+enum RowState { ok, beta, warn, bad, idle }
 
 /// One tinted row: name on the left, pill on the right. The same shape as the
 /// website's status page and the console link pages, so the three read as one
@@ -455,6 +461,7 @@ class _StateRowState extends State<StateRow> {
     final expandable = widget.expandedChild != null;
     final (bg, border, ink) = switch (widget.state) {
       RowState.ok => (t.okWeak, t.okLine, t.ok),
+      RowState.beta => (t.accentWeak, t.accentLine, Theme.of(context).colorScheme.primary),
       RowState.warn => (t.warnWeak, t.warnLine, t.warn),
       RowState.bad => (t.badWeak, t.badLine, t.bad),
       RowState.idle => (t.raised, t.line, t.muted),
@@ -463,7 +470,7 @@ class _StateRowState extends State<StateRow> {
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusCard),
         border: Border.all(color: border),
       ),
       clipBehavior: Clip.antiAlias,
@@ -485,11 +492,16 @@ class _StateRowState extends State<StateRow> {
                     ),
                   ),
                   const SizedBox(width: 10),
+                  // Align, so the pill sits at the row's end (the site's
+                  // margin-left: auto) rather than where the name's half ends.
                   Flexible(
-                    child: _Pill(
-                      text: widget.pill,
-                      color: ink,
-                      border: widget.state == RowState.idle ? t.line2 : border,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: _Pill(
+                        text: widget.pill,
+                        color: ink,
+                        border: widget.state == RowState.idle ? t.line2 : border,
+                      ),
                     ),
                   ),
                   if (widget.trailing != null) ...[const SizedBox(width: 4), widget.trailing!],
@@ -576,7 +588,7 @@ class Notice extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: t.warnWeak,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusCard),
         border: Border.all(color: t.warnLine),
       ),
       child: Row(

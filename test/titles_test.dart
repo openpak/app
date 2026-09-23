@@ -58,7 +58,8 @@ void main() {
 
   test('statusState maps the vocab to distinct row tints', () {
     expect(statusState('live'), RowState.ok);
-    expect(statusState('beta'), RowState.warn);
+    expect(statusState('beta'), RowState.beta);
+    expect(statusState('alpha'), RowState.warn);
     expect(statusState('not-feasible'), RowState.bad);
     expect(statusState('requestable'), RowState.idle);
     expect(statusLabel(lookupAppLocalizations(const Locale('en')), 'not-feasible'), 'Not feasible');
@@ -82,7 +83,7 @@ void main() {
     await tester.pumpWidget(wrap(api));
     await tester.pumpAndSettle();
     expect(find.text('Outbound'), findsOneWidget);
-    expect(find.text('Alpha'), findsOneWidget); // alpha shows its pill
+    expect(find.text('Alpha'), findsNWidgets(2)); // alpha: its pill and its filter chip
     expect(find.text('Xenoblade'), findsNothing); // requestable: not in the list
     expect(find.text('Request a game'), findsOneWidget);
     expect(find.text('Request'), findsNothing); // no per-row button any more

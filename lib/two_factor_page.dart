@@ -79,7 +79,7 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.twoFactorTitle)),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         children: codes != null ? _done(t, codes) : _setup(t),
       ),
     );

@@ -51,65 +51,9 @@ class _AccountPageState extends State<AccountPage> {
             }
             final (me, sessions) = snap.data!;
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
               children: [
-                Panel(
-                  child: InkWell(
-                    onTap: () => _openDetails(me),
-                    child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        AccountAvatar(api: widget.api, account: me, size: 56),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                me.displayName.isEmpty ? l.accountYou : me.displayName,
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                              const SizedBox(height: 2),
-                              // The friend code exists to be handed to someone
-                              // else, so it is one tap to copy.
-                              if (me.friendCode != null)
-                                InkWell(
-                                  onTap: () => copyToClipboard(
-                                    context,
-                                    me.friendCode!,
-                                    l.commonFriendCodeCopied,
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        me.friendCode!,
-                                        style: TextStyle(color: t.ink2),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Icon(
-                                        Icons.copy_rounded,
-                                        size: 15,
-                                        color: t.muted,
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              else
-                                Text(
-                                  l.accountNoFriendCode,
-                                  style: TextStyle(color: t.muted, fontSize: 13),
-                                ),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.chevron_right, color: t.muted),
-                      ],
-                    ),
-                  ),
-                  ),
-                ),
+                _ProfileCard(api: widget.api, me: me, onTap: () => _openDetails(me)),
                 const SizedBox(height: 20),
                 SectionLabel(l.accountLinked),
                 Panel(
@@ -435,4 +379,121 @@ class _AccountPageState extends State<AccountPage> {
 
   String _when(AppLocalizations l, DateTime? d) =>
       d == null ? l.accountSession : l.accountSignedInOn(shortDate(l, d));
+}
+
+/// The website's profile card: a gradient cover, the avatar overlapping it in
+/// a ring of the card's own colour, the name, and the friend code in a well
+/// with its copy button — the code exists to be handed to someone else.
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard({required this.api, required this.me, required this.onTap});
+  final OpenPakApi api;
+  final Account me;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    final l = context.l10n;
+    return DecoratedBox(
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(radiusLg), boxShadow: t.shadow),
+      child: Material(
+        color: t.raised,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusLg),
+          side: BorderSide(color: t.line),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(height: 88, decoration: const BoxDecoration(gradient: coverGradient)),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Transform.translate(
+                          offset: const Offset(0, -32),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(color: t.raised, shape: BoxShape.circle),
+                            child: AccountAvatar(api: api, account: me, size: 80),
+                          ),
+                        ),
+                        const Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 44),
+                          child: Icon(Icons.chevron_right, color: t.muted),
+                        ),
+                      ],
+                    ),
+                    Transform.translate(
+                      offset: const Offset(0, -20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            me.displayName.isEmpty ? l.accountYou : me.displayName,
+                            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.8),
+                          ),
+                          if (me.email.isNotEmpty)
+                            Text(me.email, overflow: TextOverflow.ellipsis, style: TextStyle(color: t.muted)),
+                        ],
+                      ),
+                    ),
+                    if (me.friendCode != null)
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+                        decoration: BoxDecoration(
+                          color: t.paper2,
+                          borderRadius: BorderRadius.circular(radiusCard),
+                          border: Border.all(color: t.line),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l.commonFriendCode.toUpperCase(),
+                                    style: TextStyle(color: t.muted, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    me.friendCode!,
+                                    style: const TextStyle(
+                                      fontFamily: 'monospace',
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.7,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton.outlined(
+                              tooltip: l.commonCopy,
+                              onPressed: () => copyToClipboard(context, me.friendCode!, l.commonFriendCodeCopied),
+                              icon: const Icon(Icons.copy_rounded, size: 18),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      Text(l.accountNoFriendCode, style: TextStyle(color: t.muted, fontSize: 13)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

@@ -67,7 +67,7 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
       child: Scaffold(
         appBar: AppBar(title: Text(l.detailsTitle)),
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           children: [
             Center(
               child: Column(

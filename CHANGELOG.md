@@ -3,6 +3,23 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.12.0 — 2026-09-23
+
+The website's redesign (website v0.54.0), in the app: one product again.
+
+- **Palette** from `website/web/src/input.css`: a greyer page with white cards in light, near-black
+  with lifted cards in dark; the same indigo, green, amber and red.
+- **Beta is indigo** (`RowState.beta`), as on the site: it runs, so it is no longer amber. `open`
+  reads as amber, `active` green and `banned` red, like the site's `badgeClass`.
+- **Pill buttons**, the primary one with the site's indigo gradient; 16px cards with a soft shadow,
+  12px fields with an accent focus border, 20px dialogs and sheets, floating snackbars.
+- **Tab bar** like the site's: glass, no pill behind the active tab, accent icon and label.
+- **Account** opens with the site's profile card: gradient cover, avatar in a ring, the friend code
+  in a well with its own copy button.
+- **Titles** filter with chips instead of dropdowns: a row of statuses and a row of consoles (with
+  their logos), the chosen one inverted.
+- A blank avatar is the site's pink-to-violet gradient; screens have 20px side margins.
+
 ## v0.11.2 — 2026-09-23
 
 - Voice chat no longer crashes the moment a second person joins: the app now declares the

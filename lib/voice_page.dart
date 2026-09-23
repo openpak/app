@@ -124,7 +124,7 @@ class _VoicePageState extends State<VoicePage> {
         await _current.catchError((_) => null);
       },
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         children: [
           Text(l.voiceIntro, style: TextStyle(color: t.muted)),
           const SizedBox(height: 8),

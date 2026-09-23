@@ -43,8 +43,13 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> scrollTo(WidgetTester tester, Finder f) =>
-      tester.scrollUntilVisible(f, 200, scrollable: find.byType(Scrollable).first);
+  // A ListView builds past the screen edge, so "found" is not "on screen":
+  // ensureVisible then brings it into the viewport before a tap.
+  Future<void> scrollTo(WidgetTester tester, Finder f) async {
+    await tester.scrollUntilVisible(f, 200, scrollable: find.byType(Scrollable).first);
+    await tester.ensureVisible(f);
+    await tester.pumpAndSettle();
+  }
 
   setUp(() {
     writes = [];
@@ -53,11 +58,13 @@ void main() {
 
   testWidgets('an unconfirmed address offers the link again; an email change asks for the password', (tester) async {
     await pump(tester, api());
+    await scrollTo(tester, find.text('Change email'));
     expect(find.text('Not confirmed'), findsOneWidget);
     await tester.tap(find.text('Send the link again'));
     await tester.pumpAndSettle();
     expect(writes.last, 'POST /api/v1/me/verify/resend {}');
 
+    await scrollTo(tester, find.text('Change email')); // the reload scrolled back up
     await tester.tap(find.text('Change email'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, 'new@x.test');
@@ -69,6 +76,7 @@ void main() {
 
   testWidgets('two-factor setup warns about consoles, then shows the recovery codes once', (tester) async {
     await pump(tester, api());
+    await scrollTo(tester, find.text('Set up'));
     await tester.tap(find.text('Set up'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Switch, Wii U and 3DS'), findsOneWidget);

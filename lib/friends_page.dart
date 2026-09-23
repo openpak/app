@@ -146,7 +146,7 @@ class FriendsPageState extends State<FriendsPage> {
               return ScrollableMessage(l.friendsEmpty);
             }
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
               children: [
                 if (requests.incoming.isNotEmpty) ...[
                   SectionLabel(l.friendsIncoming),

@@ -59,7 +59,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
               return ScrollableMessage(l.invitationsEmpty);
             }
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
               children: [
                 SectionLabel(l.invitationsWaiting, trailing: '${items.length}'),
                 // Green while it can still be accepted, grey once it cannot:

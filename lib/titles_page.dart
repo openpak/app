@@ -93,7 +93,7 @@ class TitlesPageState extends State<TitlesPage> {
             final requestable = all.where((i) => i.kind == 'title' && notStarted(i.status)).toList()..sort(catalogOrder);
             final shown = filterCatalog(served, kind: _kind, search: _search, console: _console, status: _status);
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
               children: [
                 _latestNews(),
                 _onlineNow(),
@@ -319,58 +319,68 @@ class TitlesPageState extends State<TitlesPage> {
           ),
           onChanged: (v) => setState(() => _search = v),
         ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            if (_kind == 'title') ...[
-              Expanded(
-                child: _filterDropdown(
-                  hint: l.commonConsole,
-                  all: l.commonAllConsoles,
-                  value: _console,
-                  options: consoles,
-                  onChanged: (v) => setState(() => _console = v),
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-            Expanded(
-              child: _filterDropdown(
-                hint: l.titlesStatus,
-                all: l.titlesAllStatuses,
-                value: _status,
-                options: statuses,
-                onChanged: (v) => setState(() => _status = v),
-                label: (s) => statusLabel(l, s),
-              ),
-            ),
-          ],
+        const SizedBox(height: 10),
+        _chips(
+          selected: _status,
+          all: l.titlesAllStatuses,
+          options: statuses,
+          label: (s) => statusLabel(l, s),
+          onSelected: (v) => setState(() => _status = v),
         ),
+        if (_kind == 'title') ...[
+          const SizedBox(height: 8),
+          _chips(
+            selected: _console,
+            all: l.commonAllConsoles,
+            options: consoles,
+            label: (c) => c,
+            logo: true,
+            onSelected: (v) => setState(() => _console = v),
+          ),
+        ],
       ],
     );
   }
 
-  Widget _filterDropdown({
-    required String hint,
+  /// The site's filter chips: one scrolling row, "all" first, the chosen one
+  /// inverted (ink on paper) so it reads as selected without a colour.
+  Widget _chips({
+    required String? selected,
     required String all,
-    required String? value,
     required List<String> options,
-    required ValueChanged<String?> onChanged,
-    String Function(String)? label,
-  }) => DropdownButtonFormField<String?>(
-    initialValue: value,
-    isExpanded: true,
-    decoration: InputDecoration(hintText: hint, isDense: true),
-    items: [
-      DropdownMenuItem(value: null, child: Text(all)),
-      ...options.map((o) => DropdownMenuItem(
-            value: o,
-            child: Text(label?.call(o) ?? o, overflow: TextOverflow.ellipsis),
-          )),
-    ],
-    onChanged: onChanged,
-  );
+    required String Function(String) label,
+    required ValueChanged<String?> onSelected,
+    bool logo = false,
+  }) {
+    final theme = Theme.of(context);
+    Widget chip(String? value, String text) {
+      final on = selected == value;
+      return Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: ChoiceChip(
+          selected: on,
+          onSelected: (_) => onSelected(value),
+          label: Text(text),
+          labelStyle: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: on ? theme.scaffoldBackgroundColor : theme.colorScheme.onSurface,
+          ),
+          avatar: logo && value != null
+              ? SvgPicture.asset(
+                  'assets/consoles/${consoleAsset(value, theme.brightness)}.svg',
+                  width: 18,
+                  height: 18,
+                )
+              : null,
+        ),
+      );
+    }
 
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(children: [chip(null, all), for (final o in options) chip(o, label(o))]),
+    );
+  }
 
   static List<String> _distinct(Iterable<String> xs) {
     final seen = xs.where((x) => x.isNotEmpty).toSet().toList()..sort();
@@ -401,16 +411,18 @@ class _CatalogRow extends StatelessWidget {
     final state = statusState(item.status);
     final (pillBg, pillLine, pillInk) = switch (state) {
       RowState.ok => (t.okWeak, t.okLine, t.ok),
+      RowState.beta => (t.accentWeak, t.accentLine, Theme.of(context).colorScheme.primary),
       RowState.warn => (t.warnWeak, t.warnLine, t.warn),
       RowState.bad => (t.badWeak, t.badLine, t.bad),
-      RowState.idle => (t.raised, t.line, t.muted),
+      RowState.idle => (t.paper2, t.line, t.ink2),
     };
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: t.raised,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(radiusCard),
         border: Border.all(color: t.line),
+        boxShadow: t.shadow,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -591,9 +603,10 @@ int catalogOrder(CatalogItem a, CatalogItem b) {
 /// broken/infeasible end is the only red; everything mid-flight is amber; the
 /// not-yet-started (planned/requestable) makes no claim, so grey.
 RowState statusState(String status) => switch (status) {
-  'live' || 'working' => RowState.ok,
-  'beta' || 'alpha' || 'partial' || 'scaffold' => RowState.warn,
-  'not-feasible' || 'broken' => RowState.bad,
+  'live' || 'working' || 'active' => RowState.ok,
+  'beta' => RowState.beta,
+  'alpha' || 'partial' || 'scaffold' || 'open' => RowState.warn,
+  'not-feasible' || 'broken' || 'banned' => RowState.bad,
   _ => RowState.idle, // planned, requestable, anything new
 };
 

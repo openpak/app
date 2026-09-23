@@ -141,7 +141,7 @@ class SavesPageState extends State<SavesPage> {
             }
             final (data, storage, kinds) = snap.data!;
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
               children: [
                 // The website's order: what is used, the saves themselves, then where they go.
                 _head(l.savesStorageHead, storage.connected ? l.savesUsageOwn : l.savesUsageAllowance),
