@@ -8,6 +8,10 @@
          room is joined) and routing audio to the speaker or a headset. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <!-- WebRTC watches the network from the first peer connection on (the second
+         person joining); without these Android throws and the app dies there. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
 
     <application
         android:label="OpenPak"

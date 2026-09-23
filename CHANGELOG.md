@@ -3,6 +3,11 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.11.2 — 2026-09-23
+
+- Voice chat no longer crashes the moment a second person joins: the app now declares the
+  network-state permissions WebRTC needs once a peer connection exists.
+
 ## v0.11.1 — 2026-09-23
 
 - The version the app reports in crash reports is its own again (it still said 0.9.0), which
