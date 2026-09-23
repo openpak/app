@@ -24,7 +24,10 @@ class _InvitationsPageState extends State<InvitationsPage> {
     _reload();
   }
 
-  void _reload() => setState(() => _data = widget.api.invitations());
+  // A block, not an arrow: an arrow would hand setState the Future it assigns.
+  void _reload() => setState(() {
+    _data = widget.api.invitations();
+  });
 
   Future<void> _decline(Invitation inv) async {
     final l = context.l10n;

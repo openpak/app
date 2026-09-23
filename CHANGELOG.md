@@ -19,6 +19,7 @@ The website's redesign (website v0.54.0), in the app: one product again.
 - **Titles** filter with chips instead of dropdowns: a row of statuses and a row of consoles (with
   their logos), the chosen one inverted.
 - A blank avatar is the site's pink-to-violet gradient; screens have 20px side margins.
+- Invitations no longer trips a debug assertion on load (`setState` was handed a Future).
 
 ## v0.11.2 — 2026-09-23
 
