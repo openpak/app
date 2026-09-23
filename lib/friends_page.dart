@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'api.dart';
 import 'chat_page.dart';
 import 'l10n.dart';
 import 'theme.dart';
+import 'titles_page.dart' show consoleAsset;
 import 'widgets.dart';
 
 /// Friends, the requests waiting on either side, adding someone by code, and
@@ -238,22 +240,20 @@ class FriendsPageState extends State<FriendsPage> {
   }
 
   /// Online is the whole point of a friends list, so it is the tint. The pill
-  /// says what they are playing when the catalog can name it, the platform and
-  /// "in a game" when it cannot, and "Online" when there is no session at all
-  /// — never the bare title id, which would mean nothing to a person. Tapping
+  /// says what they are playing and where ([friendPresenceText]) — never the
+  /// bare title id, which would mean nothing to a person. Tapping
   /// the row opens the detail below it; the actions that used to live behind
   /// the tap and the overflow menu are icon buttons instead.
   Widget _friendRow(Friend f, Map<String, String> gameNames) {
     final l = context.l10n;
     final playing = f.titleId?.isNotEmpty ?? false;
-    final gameName = playing ? gameNames[f.titleId!.toUpperCase()] : null;
-    final platform = (f.namespace?.isEmpty ?? true) ? null : friendPlatformName(f.namespace!);
-    final pill = !f.online
-        ? l.friendsOffline
-        : gameName ?? (playing ? [if (platform != null) platform, l.friendsInAGame].join(' · ') : l.friendsOnline);
+    // The website's name first; the catalog's for an older server.
+    final gameName = f.titleName ?? (playing ? gameNames[f.titleId!.toUpperCase()] : null);
+    final ns = f.platform ?? f.namespace;
+    final platform = (ns?.isEmpty ?? true) ? null : friendPlatformName(ns!);
     return StateRow(
       name: f.displayName,
-      pill: pill,
+      pill: friendPresenceText(l, f, catalogName: gameName),
       state: f.online ? RowState.ok : RowState.idle,
       leading: Avatar(
         name: f.displayName,
@@ -262,7 +262,7 @@ class FriendsPageState extends State<FriendsPage> {
             ? widget.api.absolute(f.avatarUrl!)
             : null,
       ),
-      expandedChild: _friendDetail(f, gameName, platform),
+      expandedChild: _friendDetail(f, gameName, platform, ns),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -301,13 +301,14 @@ class FriendsPageState extends State<FriendsPage> {
   }
 
   /// What is under the disclosure: the game (art and name, or the platform
-  /// and "in a game" when the catalog has no name for it), the platform, and
-  /// when the session began. A friend's own friend code and the date the
+  /// and "in a game" when the catalog has no name for it), the platform with
+  /// a chip for the client it runs on (Ryujinx, Cemu, the console itself...),
+  /// and when the session began. A friend's own friend code and the date the
   /// friendship was made are not in this reply — GET /me/friends carries
   /// account_id, display_name, online, title_id, namespace and since, and
   /// nothing else about the relationship — so neither is shown rather than
   /// making one up.
-  Widget _friendDetail(Friend f, String? gameName, String? platform) {
+  Widget _friendDetail(Friend f, String? gameName, String? platform, String? ns) {
     final l = context.l10n;
     final t = tokensOf(context);
     if (!f.online) {
@@ -344,7 +345,22 @@ class FriendsPageState extends State<FriendsPage> {
                 : Icon(Icons.videogame_asset_outlined, color: t.muted),
             gameName ?? l.friendsInAGame,
           ),
-        if (platform != null) row(Icon(Icons.devices_outlined, color: t.muted, size: 20), platform),
+        if (f.label != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                const SizedBox(width: 36),
+                if (platform != null) ...[
+                  Flexible(child: Text(platform, style: TextStyle(color: t.ink2, fontSize: 13))),
+                  const SizedBox(width: 8),
+                ],
+                FriendClientChip(label: f.label!, platform: ns),
+              ],
+            ),
+          )
+        else if (platform != null)
+          row(Icon(Icons.devices_outlined, color: t.muted, size: 20), platform),
         if (f.since != null)
           row(Icon(Icons.schedule_outlined, color: t.muted, size: 20), l.friendsOnlineSince(shortDateTime(l, f.since!))),
       ],
@@ -352,7 +368,71 @@ class FriendsPageState extends State<FriendsPage> {
   }
 }
 
+/// The client a friend is on, as a small outlined chip with the console's
+/// mark: "Ryujinx", "Cemu", "Switch"... The mark is the same file the Titles
+/// tab draws; an unknown platform gets the generic one.
+class FriendClientChip extends StatelessWidget {
+  const FriendClientChip({super.key, required this.label, this.platform});
+  final String label;
+  final String? platform;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: t.line2),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            'assets/consoles/${consoleAsset(friendConsole(platform), Theme.of(context).brightness)}.svg',
+            width: 21,
+            height: 14,
+            excludeFromSemantics: true,
+          ),
+          const SizedBox(width: 6),
+          Text(label, style: TextStyle(color: t.ink2, fontSize: 12, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+}
+
 // ── Pure helpers, unit-tested ────────────────────────────────────────────────
+
+/// A friend row's pill. Offline is just that. Online, with a label from the
+/// website (v0.50+): "{game} on {label}", "Playing on {label}" when the game
+/// has no name, "Online on {label}" outside a game. Without one (an older
+/// server) it is what the app always showed: the game's name, else the
+/// platform and "In a game", else "Online". [catalogName] is the game's name
+/// from wherever the caller found it.
+String friendPresenceText(AppLocalizations l, Friend f, {String? catalogName}) {
+  if (!f.online) return l.friendsOffline;
+  final playing = (f.titleId?.isNotEmpty ?? false) || f.titleName != null;
+  final game = f.titleName ?? catalogName;
+  final label = f.label;
+  if (label != null) {
+    if (!playing) return l.friendsOnlineOn(label);
+    return game != null ? l.friendsPlayingGameOn(game, label) : l.friendsPlayingOn(label);
+  }
+  if (game != null) return game;
+  if (!playing) return l.friendsOnline;
+  final ns = f.platform ?? f.namespace;
+  return [if (ns != null && ns.isNotEmpty) friendPlatformName(ns), l.friendsInAGame].join(' · ');
+}
+
+/// The website presence platform, as the catalog's console name that
+/// [consoleAsset] draws.
+String friendConsole(String? platform) => switch (platform) {
+  'switch' => 'Switch',
+  'wiiu' => 'Wii U',
+  '3ds' => '3DS',
+  _ => '',
+};
 
 /// A friend's session platform, in the app's own words rather than the
 /// account core's wire namespace. Unlike widgets.dart's `platformNames` (built

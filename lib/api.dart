@@ -224,6 +224,10 @@ class Friend {
     this.namespace,
     this.since,
     this.avatarUrl,
+    this.platform,
+    this.client,
+    this.label,
+    this.titleName,
   });
   final String accountId;
   final String displayName;
@@ -242,6 +246,18 @@ class Friend {
   /// Null when the account has never chosen one.
   final String? avatarUrl;
 
+  /// Where the session is, from website presence (v0.50+): the console family
+  /// ("switch", "wiiu", "3ds"), the client on it ("ryujinx", "eden",
+  /// "citron", "cemu", "azahar", or the console itself), and the name to
+  /// show for that ("Ryujinx", "Wii U", ...). Null from an older server, and
+  /// when empty, so a caller only ever checks for null.
+  final String? platform;
+  final String? client;
+  final String? label;
+
+  /// The game's name as the website knows it; null when it does not.
+  final String? titleName;
+
   factory Friend.fromJson(Map<String, dynamic> j) => Friend(
     accountId: j['account_id'] as String? ?? '',
     displayName: j['display_name'] as String? ?? '',
@@ -250,8 +266,16 @@ class Friend {
     namespace: j['namespace'] as String?,
     since: j['since'] == null ? null : DateTime.tryParse(j['since'] as String),
     avatarUrl: j['avatar_url'] as String?,
+    platform: _nonEmpty(j['platform']),
+    client: _nonEmpty(j['client']),
+    label: _nonEmpty(j['label']),
+    titleName: _nonEmpty(j['title_name']),
   );
 }
+
+/// A string field that may be absent, null, not a string, or empty: the
+/// value, or null.
+String? _nonEmpty(Object? v) => v is String && v.isNotEmpty ? v : null;
 
 class Invitation {
   Invitation({

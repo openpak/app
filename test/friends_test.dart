@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:openpak/api.dart';
 import 'package:openpak/friends_page.dart';
+import 'package:openpak/l10n.dart';
 import 'package:openpak/theme.dart';
 
 import 'localized.dart';
@@ -203,7 +204,7 @@ void main() {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',
       token: 't',
-      client: MockClient((_) async => json({
+      client: MockClient((_) async => _json({
             'friends': [
               {
                 'account_id': 'f1',
@@ -219,5 +220,145 @@ void main() {
     expect(friends, hasLength(2));
     expect(friends[0].avatarUrl, '/media/avatars/f1/256');
     expect(friends[1].avatarUrl, isNull);
+  });
+
+  test('friends parse where they play; absent or empty fields are null', () async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((_) async => _json({
+            'friends': [
+              {
+                'account_id': 'f1',
+                'display_name': 'Leia',
+                'online': true,
+                'title_id': '0100ABCD00001000',
+                'namespace': 'switch',
+                'since': '2026-09-20T10:00:00Z',
+                'platform': 'switch',
+                'client': 'ryujinx',
+                'label': 'Ryujinx',
+                'title_name': 'Mario Kart 8 Deluxe',
+              },
+              {
+                'account_id': 'f2',
+                'display_name': 'Han',
+                'online': true,
+                'platform': 'wiiu',
+                'client': '',
+                'label': 'Wii U',
+                'title_name': '',
+              },
+              {'account_id': 'f3', 'display_name': 'Luke', 'online': true, 'title_id': 'x', 'namespace': '3ds'},
+            ]
+          })),
+    );
+    final friends = await api.friends();
+    expect(friends[0].platform, 'switch');
+    expect(friends[0].client, 'ryujinx');
+    expect(friends[0].label, 'Ryujinx');
+    expect(friends[0].titleName, 'Mario Kart 8 Deluxe');
+    expect(friends[1].client, isNull);
+    expect(friends[1].label, 'Wii U');
+    expect(friends[1].titleName, isNull);
+    expect(friends[2].platform, isNull);
+    expect(friends[2].client, isNull);
+    expect(friends[2].label, isNull);
+    expect(friends[2].titleName, isNull);
+  });
+
+  group('friendPresenceText', () {
+    final en = lookupAppLocalizations(const Locale('en'));
+    Friend f({
+      bool online = true,
+      String? titleId,
+      String? namespace,
+      String? label,
+      String? titleName,
+      String? platform,
+    }) =>
+        Friend(
+          accountId: 'a',
+          displayName: 'A',
+          online: online,
+          titleId: titleId,
+          namespace: namespace,
+          label: label,
+          titleName: titleName,
+          platform: platform,
+        );
+
+    test('offline is unchanged, label or not', () {
+      expect(friendPresenceText(en, f(online: false, label: 'Ryujinx')), 'Offline');
+      expect(friendPresenceText(en, f(online: false)), 'Offline');
+    });
+
+    test('with a label: the game and where, or where alone', () {
+      expect(
+        friendPresenceText(en, f(titleId: '0100', label: 'Ryujinx', titleName: 'Mario Kart 8 Deluxe')),
+        'Mario Kart 8 Deluxe on Ryujinx',
+      );
+      // The website has no name for it, the catalog does.
+      expect(
+        friendPresenceText(en, f(titleId: '0100', label: 'Eden'), catalogName: 'ARMS'),
+        'ARMS on Eden',
+      );
+      expect(friendPresenceText(en, f(titleId: '0005', label: 'Cemu')), 'Playing on Cemu');
+      expect(friendPresenceText(en, f(label: 'Switch')), 'Online on Switch');
+      expect(friendPresenceText(en, f(titleId: '', label: '3DS')), 'Online on 3DS');
+    });
+
+    test('without a label (an older server) it is what the app always showed', () {
+      expect(friendPresenceText(en, f(titleId: '0100', namespace: 'switch'), catalogName: 'ARMS'), 'ARMS');
+      expect(friendPresenceText(en, f(titleId: '0100', namespace: 'wiiu')), 'Wii U · In a game');
+      expect(friendPresenceText(en, f(titleId: '0100')), 'In a game');
+      expect(friendPresenceText(en, f()), 'Online');
+    });
+
+    test('other languages word it too; the label is never translated', () {
+      final de = lookupAppLocalizations(const Locale('de'));
+      expect(friendPresenceText(de, f(label: 'Citron')), 'Online auf Citron');
+      expect(friendPresenceText(de, f(titleId: '1', label: 'Azahar')), 'Spielt auf Azahar');
+    });
+  });
+
+  testWidgets('a friend on an emulator: the pill says the game and the client; the detail has its chip', (tester) async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((req) async => switch (req.url.path) {
+            '/api/v1/me/friends' => _json({
+              'friends': [
+                {
+                  'account_id': 'f1',
+                  'display_name': 'Leia',
+                  'online': true,
+                  'title_id': '0100ABCD00001000',
+                  'namespace': 'switch',
+                  'since': '2026-09-20T10:00:00Z',
+                  'platform': 'switch',
+                  'client': 'ryujinx',
+                  'label': 'Ryujinx',
+                  'title_name': 'Mario Kart 8 Deluxe',
+                },
+                {'account_id': 'f2', 'display_name': 'Han', 'online': true, 'platform': 'wiiu', 'client': 'cemu', 'label': 'Cemu'},
+              ],
+            }),
+            '/api/v1/me/friends/requests' => _json({'incoming': [], 'outgoing': []}),
+            _ => _json({}),
+          }),
+    );
+    await tester.pumpWidget(localizedApp(theme: openPakLight(), home: FriendsPage(api: api)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mario Kart 8 Deluxe on Ryujinx'), findsOneWidget);
+    expect(find.text('Online on Cemu'), findsOneWidget);
+    expect(find.byType(FriendClientChip), findsNothing);
+
+    await tester.tap(find.text('Leia'));
+    await tester.pumpAndSettle();
+    expect(find.byType(FriendClientChip), findsOneWidget);
+    expect(find.text('Ryujinx'), findsOneWidget);
+    expect(find.text('Nintendo Switch'), findsOneWidget);
   });
 }

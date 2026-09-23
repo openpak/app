@@ -370,6 +370,28 @@
   "@friendsInAGame": {
     "description": "Shown for a friend who is online in a game the catalog has no name for. Paired with the platform name, e.g. 'Nintendo Switch · In a game'."
   },
+  "friendsPlayingGameOn": "{game} on {label}",
+  "@friendsPlayingGameOn": {
+    "description": "Pill on a friend who is in a game: the game's name and where they play it, e.g. 'Mario Kart 8 Deluxe on Ryujinx'. The label is a product name (Switch, Ryujinx, Eden, Citron, Wii U, 3DS, Cemu, Azahar), never translated.",
+    "placeholders": {
+      "game": {"type": "String", "example": "Mario Kart 8 Deluxe"},
+      "label": {"type": "String", "example": "Ryujinx"}
+    }
+  },
+  "friendsPlayingOn": "Playing on {label}",
+  "@friendsPlayingOn": {
+    "description": "Pill on a friend who is in a game whose name is not known, e.g. 'Playing on Cemu'.",
+    "placeholders": {
+      "label": {"type": "String", "example": "Cemu"}
+    }
+  },
+  "friendsOnlineOn": "Online on {label}",
+  "@friendsOnlineOn": {
+    "description": "Pill on a friend who is online but not in a game, e.g. 'Online on Switch'.",
+    "placeholders": {
+      "label": {"type": "String", "example": "Switch"}
+    }
+  },
   "friendsOnlineSince": "Online since {time}",
   "@friendsOnlineSince": {
     "description": "In a friend row's expanded detail: when their current session began.",
