@@ -3,6 +3,20 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.9.0 — 2026-09-23
+
+Friends say where each friend is playing (website presence `platform`, `client`,
+`label`, `title_name`):
+
+- The pill reads "Mario Kart 8 Deluxe on Ryujinx", "Playing on Cemu" when the game
+  has no name, and "Online on Switch" outside a game; offline is unchanged.
+- The friend's detail shows the platform with a chip for the client (the console's
+  mark and "Ryujinx", "Eden", "Citron", "Cemu", "Azahar", "Switch", "Wii U", "3DS").
+- The game's name comes from the website first, then the catalog.
+- An older server without those fields: the pill is what it was (the game, the
+  platform and "In a game", or "Online").
+- Friends show their profile pictures.
+
 ## v0.8.0 — 2026-09-19
 
 The app speaks German, French, Brazilian Portuguese, Italian and Spanish, like website
