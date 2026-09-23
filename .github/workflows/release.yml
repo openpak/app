@@ -58,7 +58,9 @@ jobs:
           keyPassword=$KEY_PASSWORD
           EOF
 
-      - run: flutter build apk --release --split-per-abi
+      # One APK per ABI: armeabi-v7a (ARM 32-bit), arm64-v8a (ARM 64-bit), x86_64. Named so a
+      # change in Flutter's defaults can't drop one. 32-bit x86 has no release engine.
+      - run: flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
 
       # The runner is a persistent machine: the keystore must not outlive the job.
       - name: Remove signing material
@@ -75,5 +77,6 @@ jobs:
 
             Sideload APKs, signed with the OpenPak release key (updates install
             cleanly over previous OpenPak-signed versions).
-            Install the one for your device, e.g.:
+            Install the one for your device: arm64-v8a (most phones),
+            armeabi-v7a (older 32-bit ARM phones), x86_64 (emulators, Chromebooks), e.g.:
               adb install app-arm64-v8a-release.apk
