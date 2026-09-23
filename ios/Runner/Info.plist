@@ -66,6 +66,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Talk with the other players in your game's voice chat.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Pick a photo for your avatar.</string>
 </dict>

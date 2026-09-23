@@ -48,7 +48,15 @@ Toolchain is all under `$HOME` (no passwordless sudo on the workstation): Flutte
 `~/development/jdk-21.0.12.1+1` — required**, because the system JDK is 26 and the Android
 Gradle plugin's jlink step fails on it. `apt full-upgrade` will not change that; Ubuntu 24.04
 ships podman 4.9 and this box ships JDK 26. Out: game data, mods, cloud saves,
-chat, voice, store pipelines beyond a signed build, anything console-facing.
+chat, store pipelines beyond a signed build, anything console-facing.
+
+**Voice chat is in scope since 2026-09-23** (APP-08 below). It was out because it looked
+console-facing; it is not. Nintendo's own voice chat never ran on the console: a Switch game
+opened the Lobby applet (`web-<env>.znc.srv.nintendo.net/lobby/?app_id=…`), the page told the
+player to open the phone app, and the phone carried the audio (the saved page,
+`tmp/p2/lobby.html`, now the retired "Online Lounge", says as much: voice chat during Private
+and League Battles, a room made with voice chat on, the voice in the smartphone app). OpenPak
+does the same with this app.
 
 ## 6. Independent implementation rules (apply verbatim)
 
@@ -82,6 +90,17 @@ chat, voice, store pipelines beyond a signed build, anything console-facing.
   Events-driven worker in the website; apps never touch the core).
 - APP-06 Offline tolerant: cached last state, clear error states, no crash without network.
 - APP-07 Privacy: no analytics SDKs; crash reporting opt-in only.
+- APP-08 Voice chat (added 2026-09-23). A player in a game room opens the app → Voice chat and
+  talks with the other players in that same room. The room is found by itself: the website
+  asks the title server which matchmaking gathering the account is in (switch-nex
+  `GET /internal/voice/gathering`, joined to accounts by the proven NEX login) and names the
+  room by a six-character code, which the console's lobby page also shows on the TV. A code
+  room is for friends outside a game. Audio is WebRTC with `flutter_webrtc`, full mesh, eight
+  phones a room (the ceiling is in website `internal/voice`); signaling is a WebSocket on the
+  website (`/api/v1/me/voice/ws`, the same bearer); NAT traversal is the production coturn
+  with time-limited TURN REST credentials the website mints from its shared secret. Mute,
+  loudspeaker, speaking indicators; microphone permission on both platforms; every string
+  localized.
 
 ## 8. Architecture and ownership
 
@@ -117,6 +136,11 @@ Repos `app-android`, `app-ios` (native, AGPL-3.0). Server side stays in `website
   from a Citron session appears on the phone within 10 s; decline removes it on both ends.
 - A2 iOS parity with A1.
 - A3 Accept-to-join (after CR-A3).
+- A4 Voice chat (APP-08). **Built 2026-09-23** (app v0.11.0, website v0.53.0, switch-nex
+  v0.3.1). Gate: two phones in the same Splatoon 2 private battle hear each other with the
+  console showing the room code. Open: talking with the app in the background (Android needs a
+  microphone foreground service), NPLN titles (their sessions are not asked yet), and the
+  Wii U/3DS titles on `servers/nex`.
 
 ## 11. Risks
 

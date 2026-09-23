@@ -1479,5 +1479,156 @@
   "crashSettingAsk": "Ask each time",
   "@crashSettingAsk": {
     "description": "Error reports setting value: ask each time."
+  },
+  "voiceTitle": "Voice chat",
+  "@voiceTitle": {
+    "description": "Title of the voice chat page, and the tooltip of the button that opens it."
+  },
+  "voiceIntro": "Talk with the other players in your game. Your phone carries the voice; the console never does.",
+  "@voiceIntro": {
+    "description": "Short explanation at the top of the voice chat page."
+  },
+  "voiceYourGame": "Your game",
+  "@voiceYourGame": {
+    "description": "Section label above the room of the game the player is in."
+  },
+  "voiceNoGame": "You're not in a game room right now. Create or join a room in the game (in Splatoon 2, a Private Battle or League Battle), then pull down to check again.",
+  "@voiceNoGame": {
+    "description": "Shown when the player is not in a game room the server knows of."
+  },
+  "voiceGameRoom": "{game} · room {code}",
+  "@voiceGameRoom": {
+    "description": "The game room's headline: the game's name and the room code.",
+    "placeholders": {
+      "game": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceCodeRoom": "Room {code}",
+  "@voiceCodeRoom": {
+    "description": "The headline of a room joined by code.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceJoin": "Join voice chat",
+  "@voiceJoin": {
+    "description": "Button that joins the voice chat of the player's game room."
+  },
+  "voiceInVoice": "In voice chat",
+  "@voiceInVoice": {
+    "description": "Under a member of the game room who is connected to its voice chat."
+  },
+  "voiceNotInVoice": "Not in voice chat",
+  "@voiceNotInVoice": {
+    "description": "Under a member of the game room who is not connected to its voice chat."
+  },
+  "voiceByCode": "Room code",
+  "@voiceByCode": {
+    "description": "Section label above the field where a room code is typed."
+  },
+  "voiceCodeHelp": "Talk outside a game, or join from the code shown on the TV. Codes are six letters and numbers.",
+  "@voiceCodeHelp": {
+    "description": "Help text under the room code field."
+  },
+  "voiceJoinCode": "Join",
+  "@voiceJoinCode": {
+    "description": "Button next to the room code field."
+  },
+  "voiceCreate": "Create a room",
+  "@voiceCreate": {
+    "description": "Button that makes a new room to share by its code."
+  },
+  "voiceCodeCopied": "Room code copied",
+  "@voiceCodeCopied": {
+    "description": "Toast after the room code was copied."
+  },
+  "voiceCopyCode": "Copy the room code",
+  "@voiceCopyCode": {
+    "description": "Tooltip of the button that copies the room code."
+  },
+  "voiceYou": "{name} (you)",
+  "@voiceYou": {
+    "description": "The player's own row in the room.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceConnecting": "Connecting…",
+  "@voiceConnecting": {
+    "description": "Under a member whose audio link is still being set up."
+  },
+  "voiceSpeaking": "Speaking",
+  "@voiceSpeaking": {
+    "description": "Under a member who is talking right now."
+  },
+  "voiceMuted": "Muted",
+  "@voiceMuted": {
+    "description": "Under a member who muted their microphone."
+  },
+  "voiceMute": "Mute",
+  "@voiceMute": {
+    "description": "Button that mutes the player's microphone."
+  },
+  "voiceUnmute": "Unmute",
+  "@voiceUnmute": {
+    "description": "Button that turns the player's microphone back on."
+  },
+  "voiceSpeaker": "Loudspeaker",
+  "@voiceSpeaker": {
+    "description": "Tooltip of the button that switches between the loudspeaker and the earpiece."
+  },
+  "voiceLeave": "Leave",
+  "@voiceLeave": {
+    "description": "Button that leaves the voice chat."
+  },
+  "voiceAlone": "Nobody else is here yet. Share the code {code}.",
+  "@voiceAlone": {
+    "description": "Shown in a room where nobody else is connected yet.",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceCount": "{count} of {max} connected",
+  "@voiceCount": {
+    "description": "How many are connected to the room, out of how many it holds.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "voiceFailedMicrophone": "Voice chat needs the microphone. Allow OpenPak to use it in your phone's settings, then try again.",
+  "@voiceFailedMicrophone": {
+    "description": "Shown when the microphone could not be opened."
+  },
+  "voiceFailedDisconnected": "The connection to voice chat was lost.",
+  "@voiceFailedDisconnected": {
+    "description": "Shown when the connection to the voice chat server was lost."
+  },
+  "voiceRejoin": "Join again",
+  "@voiceRejoin": {
+    "description": "Button that joins the same room again after a failure."
+  },
+  "errorVoiceRoomUnknown": "No voice room has that code. Check it on the TV, or ask whoever made the room.",
+  "@errorVoiceRoomUnknown": {
+    "description": "Error shown when the server answers with the error code 'voice_room_unknown'."
+  },
+  "errorVoiceRoomFull": "This voice room is full: eight people are already talking.",
+  "@errorVoiceRoomFull": {
+    "description": "Error shown when the server answers with the error code 'voice_room_full'."
   }
 }

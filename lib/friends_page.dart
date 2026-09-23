@@ -6,6 +6,7 @@ import 'chat_page.dart';
 import 'l10n.dart';
 import 'theme.dart';
 import 'titles_page.dart' show consoleAsset;
+import 'voice_page.dart';
 import 'widgets.dart';
 
 /// Friends, the requests waiting on either side, adding someone by code, and
@@ -98,6 +99,13 @@ class FriendsPageState extends State<FriendsPage> {
       appBar: AppBar(
         title: Text(l.friendsTitle),
         actions: [
+          IconButton(
+            tooltip: l.voiceTitle,
+            icon: const Icon(Icons.headset_mic_outlined),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => VoicePage(api: widget.api),
+            )),
+          ),
           IconButton(
             tooltip: l.friendsMessagesTooltip,
             icon: const Icon(Icons.chat_bubble_outline),

@@ -4,6 +4,10 @@
          server has to declare it here, or release builds cannot open a socket
          and every request fails as if the network were down. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Voice chat: the microphone (asked for at runtime the first time a
+         room is joined) and routing audio to the speaker or a headset. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
 
     <application
         android:label="OpenPak"

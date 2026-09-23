@@ -16,4 +16,14 @@ void main() {
       reason: 'release builds cannot reach the network without it',
     );
   });
+
+  // Voice chat asks for the microphone at runtime, and Android only shows that
+  // prompt for a permission the manifest declares; iOS kills the app outright
+  // if it opens the microphone without a usage string.
+  test('the microphone is declared on both platforms', () {
+    final manifest = File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+    expect(manifest.contains('android.permission.RECORD_AUDIO'), isTrue);
+    final plist = File('ios/Runner/Info.plist').readAsStringSync();
+    expect(plist.contains('NSMicrophoneUsageDescription'), isTrue);
+  });
 }

@@ -3,6 +3,24 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.11.0 — 2026-09-23
+
+Voice chat, the way Nintendo's worked: the game's lobby screen on the TV sends you to
+the phone, and the phone carries the voice (website v0.53.0).
+
+- Friends → the headset button opens **Voice chat**. It finds the room of the game you
+  are in by itself (the matchmaking room, e.g. a Splatoon 2 Private or League Battle)
+  and lists who is in it and who is already talking; or join a room by its six-character
+  code (shown on the TV, or made here with "Create a room") to talk outside a game.
+- In the call: everyone connected, a green ring on whoever is speaking, mute, loudspeaker
+  and leave. Audio is WebRTC phone to phone (full mesh, eight to a room), relayed through
+  OpenPak's TURN server when two phones cannot reach each other.
+- Microphone permission on Android (`RECORD_AUDIO`, asked the first time you join) and
+  iOS (`NSMicrophoneUsageDescription`). New dependency `flutter_webrtc`.
+- Talking needs the app open: Android stops giving the microphone to an app in the
+  background, and there is no foreground service yet.
+- All new strings in every language the app speaks.
+
 ## v0.9.0 — 2026-09-23
 
 Friends say where each friend is playing (website presence `platform`, `client`,

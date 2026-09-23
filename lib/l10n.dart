@@ -51,6 +51,8 @@ String apiErrorText(AppLocalizations l, ApiException e) {
     'two_factor_locked' => l.errorTwoFactorLocked,
     'two_factor_required' => l.errorTwoFactorRequired,
     'unauthorized' => l.errorUnauthorized,
+    'voice_room_full' => l.errorVoiceRoomFull,
+    'voice_room_unknown' => l.errorVoiceRoomUnknown,
     'wfc_not_found' => l.errorWfcNotFound,
     'wfc_unavailable' => l.errorWfcUnavailable,
     'wrong_code' => l.errorWrongCode,

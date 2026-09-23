@@ -566,6 +566,46 @@ class StorageConfig {
   };
 }
 
+/// Someone in a voice room: in the game with you, and maybe talking.
+class VoiceMember {
+  VoiceMember({required this.accountId, required this.displayName, this.inVoice = false});
+  final String accountId;
+  final String displayName;
+
+  /// Connected to the room's voice chat right now.
+  final bool inVoice;
+
+  factory VoiceMember.fromJson(Map<String, dynamic> j) => VoiceMember(
+    accountId: j['account_id'] as String? ?? '',
+    displayName: j['display_name'] as String? ?? '',
+    inVoice: j['in_voice'] == true,
+  );
+}
+
+/// A voice room: the game you are in ([isGame]), or one made to be joined by
+/// its six-character [code].
+class VoiceRoom {
+  VoiceRoom({required this.code, required this.kind, this.title = '', this.maxMembers = 8, this.members = const []});
+  final String code;
+  final String kind;
+
+  /// The title server's name for the game (splatoon-2); empty for a code room.
+  final String title;
+  final int maxMembers;
+  final List<VoiceMember> members;
+  bool get isGame => kind == 'game';
+
+  factory VoiceRoom.fromJson(Map<String, dynamic> j) => VoiceRoom(
+    code: j['code'] as String? ?? '',
+    kind: j['kind'] as String? ?? 'code',
+    title: j['title'] as String? ?? '',
+    maxMembers: (j['max_members'] as num?)?.toInt() ?? 8,
+    members: ((j['members'] as List?) ?? const [])
+        .map((e) => VoiceMember.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false),
+  );
+}
+
 class OpenPakApi {
   OpenPakApi({required this.baseUrl, http.Client? client, this.token})
     : _http = client ?? http.Client();
@@ -1029,6 +1069,39 @@ class OpenPakApi {
     ));
     return ChatMessage.fromJson(body['message'] as Map<String, dynamic>? ?? const {});
   }
+
+  /// GET /me/voice — the room of the game you are playing, or null.
+  Future<VoiceRoom?> voiceCurrent() async {
+    final body = await _decode(await _http.get(_uri('/me/voice'), headers: _headers()));
+    final room = body['room'];
+    return room is Map<String, dynamic> ? VoiceRoom.fromJson(room) : null;
+  }
+
+  /// POST /me/voice/rooms — a new room to share by its code.
+  Future<VoiceRoom> createVoiceRoom() async {
+    final body = await _decode(await _http.post(_uri('/me/voice/rooms'), headers: _headers()));
+    return VoiceRoom.fromJson(body['room'] as Map<String, dynamic>? ?? const {});
+  }
+
+  /// GET /me/voice/rooms/{code} — checks a typed code before connecting.
+  Future<VoiceRoom> voiceRoom(String code) async {
+    final body = await _decode(await _http.get(
+      _uri('/me/voice/rooms/${Uri.encodeComponent(code)}'),
+      headers: _headers(),
+    ));
+    return VoiceRoom.fromJson(body['room'] as Map<String, dynamic>? ?? const {});
+  }
+
+  /// GET /me/voice/ws — the signaling socket's address; [voiceHeaders] carry the bearer.
+  Uri voiceSocketUri(String code) {
+    final u = _uri('/me/voice/ws');
+    return u.replace(
+      scheme: u.scheme == 'https' ? 'wss' : 'ws',
+      queryParameters: {'code': code},
+    );
+  }
+
+  Map<String, String> get voiceHeaders => _headers();
 
   /// GET /me/sessions
   Future<List<WebSession>> sessions() async {

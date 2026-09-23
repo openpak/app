@@ -1,7 +1,7 @@
 name: openpak
 description: OpenPak companion app — your account, friends and invitations.
 publish_to: none
-version: 0.9.0+21
+version: 0.11.0+22
 
 environment:
   sdk: ^3.9.0
@@ -27,6 +27,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
+  # Voice chat: WebRTC audio phone to phone (the server only relays signaling).
+  # The signaling socket is dart:io's own WebSocket, so no socket package.
+  flutter_webrtc: ^1.6.2+hotfix.3
 
 dev_dependencies:
   flutter_test:
