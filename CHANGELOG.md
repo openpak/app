@@ -3,6 +3,11 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.11.1 — 2026-09-23
+
+- The version the app reports in crash reports is its own again (it still said 0.9.0), which
+  also unblocks the release build v0.11.0 failed on.
+
 ## v0.11.0 — 2026-09-23
 
 Voice chat, the way Nintendo's worked: the game's lobby screen on the TV sends you to
