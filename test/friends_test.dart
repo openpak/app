@@ -361,4 +361,43 @@ void main() {
     expect(find.text('Ryujinx'), findsOneWidget);
     expect(find.text('Nintendo Switch'), findsOneWidget);
   });
+
+  test('a typed code is fitted to its kind, as the website does', () {
+    expect(fitFriendCode('openpak', 'op-ab2c-d3e4'), 'OP-AB2C-D3E4');
+    expect(fitFriendCode('openpak', 'o1l2'), 'OP-2'); // 0/1/I/L/O/U are never in a code; the o is the prefix
+    expect(fitFriendCode('switch', 'sw12345678abcd'), 'SW-1234-5678-ABCD');
+    expect(fitFriendCode('switch', '1234-5678-9abc-def0-99'), 'SW-1234-5678-9ABC-DEF0');
+    expect(fitFriendCode('3ds', '123456789012345'), '1234-5678-9012');
+    expect(fitFriendCode('3ds', 'x'), '');
+  });
+
+  testWidgets('Add friend sends the code with its kind', (tester) async {
+    final posts = <String>[];
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((req) async {
+        if (req.method == 'POST') posts.add('${req.url.path} ${req.body}');
+        return switch (req.url.path) {
+          '/api/v1/me/friends' => _json({'friends': []}),
+          '/api/v1/me/friends/requests' => _json({'incoming': [], 'outgoing': []}),
+          _ => _json({}),
+        };
+      }),
+    );
+    await tester.pumpWidget(localizedApp(theme: openPakLight(), home: FriendsPage(api: api)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Add by friend code'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OpenPak code'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('3DS friend code').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '1111 2222 3333');
+    await tester.pumpAndSettle();
+    expect(find.text('1111-2222-3333'), findsOneWidget);
+    await tester.tap(find.text('Send'));
+    await tester.pumpAndSettle();
+    expect(posts.last, '/api/v1/me/friends/requests {"friend_code":"1111-2222-3333","kind":"3ds"}');
+  });
 }

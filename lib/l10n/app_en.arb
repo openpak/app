@@ -276,9 +276,25 @@
   "@friendsAddTitle": {
     "description": "Title of the dialog that asks for a friend code."
   },
-  "friendsAddHelp": "Their friend code, from their console or their account page.",
+  "friendsAddHelp": "Pick the kind of code they gave you, then type it. Dashes are optional.",
   "@friendsAddHelp": {
     "description": "Help text in the add-a-friend dialog."
+  },
+  "friendsAddKind": "Code type",
+  "@friendsAddKind": {
+    "description": "Label of the dropdown choosing which kind of code is typed in the add-a-friend dialog."
+  },
+  "friendsKindOpenpak": "OpenPak code",
+  "@friendsKindOpenpak": {
+    "description": "An OpenPak code (OP-XXXX-XXXX): adds a friend whatever console they have."
+  },
+  "friendsKindSwitch": "Switch friend code",
+  "@friendsKindSwitch": {
+    "description": "A Switch friend code (SW-XXXX-XXXX-XXXX)."
+  },
+  "friendsKind3ds": "3DS friend code",
+  "@friendsKind3ds": {
+    "description": "A 3DS friend code (1234-5678-9012)."
   },
   "friendsRequestSent": "Request sent.",
   "@friendsRequestSent": {
@@ -374,22 +390,34 @@
   "@friendsPlayingGameOn": {
     "description": "Pill on a friend who is in a game: the game's name and where they play it, e.g. 'Mario Kart 8 Deluxe on Ryujinx'. The label is a product name (Switch, Ryujinx, Eden, Citron, Wii U, 3DS, Cemu, Azahar), never translated.",
     "placeholders": {
-      "game": {"type": "String", "example": "Mario Kart 8 Deluxe"},
-      "label": {"type": "String", "example": "Ryujinx"}
+      "game": {
+        "type": "String",
+        "example": "Mario Kart 8 Deluxe"
+      },
+      "label": {
+        "type": "String",
+        "example": "Ryujinx"
+      }
     }
   },
   "friendsPlayingOn": "Playing on {label}",
   "@friendsPlayingOn": {
     "description": "Pill on a friend who is in a game whose name is not known, e.g. 'Playing on Cemu'.",
     "placeholders": {
-      "label": {"type": "String", "example": "Cemu"}
+      "label": {
+        "type": "String",
+        "example": "Cemu"
+      }
     }
   },
   "friendsOnlineOn": "Online on {label}",
   "@friendsOnlineOn": {
     "description": "Pill on a friend who is online but not in a game, e.g. 'Online on Switch'.",
     "placeholders": {
-      "label": {"type": "String", "example": "Switch"}
+      "label": {
+        "type": "String",
+        "example": "Switch"
+      }
     }
   },
   "friendsOnlineSince": "Online since {time}",

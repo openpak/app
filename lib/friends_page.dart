@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'api.dart';
@@ -79,16 +80,14 @@ class FriendsPageState extends State<FriendsPage> {
     reload();
   }
 
+  /// The website's Add friend dialog: the kind of code, then the code, typed
+  /// into a field that shapes itself to that kind.
   Future<void> _addByCode() async {
     final l = context.l10n;
-    final code = await promptForText(
-      context,
-      title: l.friendsAddTitle,
-      hint: 'SW-0000-0000-0000',
-      help: l.friendsAddHelp,
-    );
-    if (code == null || code.trim().isEmpty) return;
-    await _act(() => widget.api.addFriend(code.trim()), l.friendsRequestSent);
+    final picked = await showDialog<(String, String)>(context: context, builder: (_) => const _AddFriendDialog());
+    if (picked == null) return;
+    final (kind, code) = picked;
+    await _act(() => widget.api.addFriend(code, kind: kind), l.friendsRequestSent);
   }
 
   @override
@@ -459,3 +458,100 @@ String friendPlatformName(String namespace) => switch (namespace) {
 /// website checks before it calls out to nlib.
 final _switchTitleId = RegExp(r'^[0-9A-Fa-f]{16}$');
 bool looksLikeSwitchTitleId(String id) => _switchTitleId.hasMatch(id);
+
+/// A code's shape per kind: the prefix, the group sizes, the characters kept
+/// and the placeholder. The same table as website/web/static/site.js
+/// (data-friend-form); OpenPak codes skip 0, 1, I, L, O and U.
+const friendCodeShapes = {
+  'openpak': (prefix: 'OP-', groups: [4, 4], drop: r'[^2-9A-HJKMNP-TV-Z]', hint: 'OP-XXXX-XXXX'),
+  'switch': (prefix: 'SW-', groups: [4, 4, 4, 4], drop: r'[^0-9A-F]', hint: 'SW-XXXX-XXXX-XXXX'),
+  '3ds': (prefix: '', groups: [4, 4, 4], drop: r'[^0-9]', hint: '1234-5678-9012'),
+};
+
+/// Whatever was typed, fitted to [kind]'s shape: upper-cased, the prefix
+/// taken off and put back, stray characters dropped, dashes between groups.
+String fitFriendCode(String kind, String typed) {
+  final sh = friendCodeShapes[kind] ?? friendCodeShapes['openpak']!;
+  var raw = typed.toUpperCase();
+  if (sh.prefix.isNotEmpty && raw.startsWith(sh.prefix.substring(0, 2))) raw = raw.substring(2);
+  raw = raw.replaceAll(RegExp(sh.drop), '');
+  final parts = <String>[];
+  var at = 0;
+  for (final n in sh.groups) {
+    if (at < raw.length) parts.add(raw.substring(at, (at + n).clamp(0, raw.length)));
+    at += n;
+  }
+  return parts.isEmpty ? '' : sh.prefix + parts.join('-');
+}
+
+class _AddFriendDialog extends StatefulWidget {
+  const _AddFriendDialog();
+
+  @override
+  State<_AddFriendDialog> createState() => _AddFriendDialogState();
+}
+
+class _AddFriendDialogState extends State<_AddFriendDialog> {
+  String _kind = 'openpak';
+  final _code = TextEditingController();
+
+  void _refit() {
+    final v = fitFriendCode(_kind, _code.text);
+    _code.value = TextEditingValue(text: v, selection: TextSelection.collapsed(offset: v.length));
+  }
+
+  void _send() {
+    if (_code.text.isNotEmpty) Navigator.pop(context, (_kind, _code.text));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return AlertDialog(
+      title: Text(l.friendsAddTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DropdownButtonFormField<String>(
+            initialValue: _kind,
+            decoration: InputDecoration(labelText: l.friendsAddKind),
+            items: [
+              DropdownMenuItem(value: 'openpak', child: Text(l.friendsKindOpenpak)),
+              DropdownMenuItem(value: 'switch', child: Text(l.friendsKindSwitch)),
+              DropdownMenuItem(value: '3ds', child: Text(l.friendsKind3ds)),
+            ],
+            onChanged: (v) => setState(() {
+              _kind = v!;
+              _refit();
+            }),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _code,
+            autofocus: true,
+            autocorrect: false,
+            textCapitalization: TextCapitalization.characters,
+            keyboardType: _kind == '3ds' ? TextInputType.number : TextInputType.text,
+            style: const TextStyle(fontFamily: 'monospace', letterSpacing: 0.6),
+            decoration: InputDecoration(hintText: friendCodeShapes[_kind]!.hint),
+            inputFormatters: [
+              TextInputFormatter.withFunction((_, next) {
+                final v = fitFriendCode(_kind, next.text);
+                return TextEditingValue(text: v, selection: TextSelection.collapsed(offset: v.length));
+              }),
+            ],
+            onChanged: (_) => setState(() {}),
+            onSubmitted: (_) => _send(),
+          ),
+          const SizedBox(height: 12),
+          Text(l.friendsAddHelp, style: TextStyle(color: tokensOf(context).muted, fontSize: 13)),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l.commonCancel)),
+        FilledButton(onPressed: _code.text.isEmpty ? null : _send, child: Text(l.commonSend)),
+      ],
+    );
+  }
+}

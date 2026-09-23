@@ -410,7 +410,7 @@ class _ProfileCard extends StatelessWidget {
             children: [
               Container(height: 88, decoration: const BoxDecoration(gradient: coverGradient)),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -446,46 +446,17 @@ class _ProfileCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (me.friendCode != null)
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-                        decoration: BoxDecoration(
-                          color: t.paper2,
-                          borderRadius: BorderRadius.circular(radiusCard),
-                          border: Border.all(color: t.line),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    l.commonFriendCode.toUpperCase(),
-                                    style: TextStyle(color: t.muted, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    me.friendCode!,
-                                    style: const TextStyle(
-                                      fontFamily: 'monospace',
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.7,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton.outlined(
-                              tooltip: l.commonCopy,
-                              onPressed: () => copyToClipboard(context, me.friendCode!, l.commonFriendCodeCopied),
-                              icon: const Icon(Icons.copy_rounded, size: 18),
-                            ),
-                          ],
-                        ),
-                      )
-                    else
+                    // Every code this account can be added by, each in its
+                    // own well with a copy button, as on the website's banner.
+                    for (final (label, code) in [
+                      if (me.openpakCode != null) (l.friendsKindOpenpak, me.openpakCode!),
+                      if (me.friendCode != null) (l.friendsKindSwitch, me.friendCode!),
+                    ])
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _CodeWell(label: label, code: code),
+                      ),
+                    if (me.openpakCode == null && me.friendCode == null)
                       Text(l.accountNoFriendCode, style: TextStyle(color: t.muted, fontSize: 13)),
                   ],
                 ),
@@ -493,6 +464,53 @@ class _ProfileCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// One code in a well: its kind as an eyebrow, the code in monospace, a copy
+/// button — the code exists to be handed to someone else.
+class _CodeWell extends StatelessWidget {
+  const _CodeWell({required this.label, required this.code});
+  final String label;
+  final String code;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    final l = context.l10n;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+      decoration: BoxDecoration(
+        color: t.paper2,
+        borderRadius: BorderRadius.circular(radiusCard),
+        border: Border.all(color: t.line),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label.toUpperCase(),
+                  style: TextStyle(color: t.muted, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  code,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 18, fontWeight: FontWeight.w600, letterSpacing: 0.7),
+                ),
+              ],
+            ),
+          ),
+          IconButton.outlined(
+            tooltip: l.commonCopy,
+            onPressed: () => copyToClipboard(context, code, l.commonFriendCodeCopied),
+            icon: const Icon(Icons.copy_rounded, size: 18),
+          ),
+        ],
       ),
     );
   }

@@ -54,6 +54,7 @@ class Account {
     required this.id,
     required this.displayName,
     this.friendCode,
+    this.openpakCode,
     this.country = '',
     this.birthday = '',
     this.avatarUrl,
@@ -67,6 +68,10 @@ class Account {
 
   /// Present only once a console is linked.
   final String? friendCode;
+
+  /// OP-XXXX-XXXX: adds a friend whatever console either side has. Null from
+  /// servers older than website v0.55.0.
+  final String? openpakCode;
   final String country;
   final String birthday;
 
@@ -88,6 +93,7 @@ class Account {
     id: j['account_id'] as String? ?? '',
     displayName: j['display_name'] as String? ?? '',
     friendCode: j['friend_code'] as String?,
+    openpakCode: _nonEmpty(j['openpak_code']),
     country: j['country'] as String? ?? '',
     birthday: j['birthday'] as String? ?? '',
     avatarUrl: j['avatar_url'] as String?,
@@ -939,10 +945,12 @@ class OpenPakApi {
     return FriendRequests(incoming: read('incoming'), outgoing: read('outgoing'));
   }
 
-  /// POST /me/friends/requests — add by friend code, in either the display
-  /// form (SW-xxxx-xxxx-xxxx) or bare.
-  Future<void> addFriend(String friendCode) => _post('/me/friends/requests', {
+  /// POST /me/friends/requests — add by code. [kind] is openpak, switch or
+  /// 3ds; left out, the server reads an OP- code as OpenPak and anything else
+  /// as Switch.
+  Future<void> addFriend(String friendCode, {String? kind}) => _post('/me/friends/requests', {
     'friend_code': friendCode,
+    'kind': ?kind,
   });
 
   /// POST /me/friends/requests/accept
