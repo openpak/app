@@ -1,6 +1,8 @@
 /// Small shared pieces, so the three screens look like one app.
 library;
 
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -175,7 +177,7 @@ class ScrollableMessage extends StatelessWidget {
   Widget build(BuildContext context) => ListView(
     children: [
       Padding(
-        padding: const EdgeInsets.fromLTRB(24, 72, 24, 24),
+        padding: EdgeInsets.fromLTRB(24, 72 + glassTop(context), 24, 24),
         child: Text(
           text,
           textAlign: TextAlign.center,
@@ -212,7 +214,7 @@ class LoadFailure extends StatelessWidget {
     return ListView(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 72, 24, 24),
+          padding: EdgeInsets.fromLTRB(24, 72 + glassTop(context), 24, 24),
           child: Column(
             children: [
               Text(
@@ -606,6 +608,169 @@ class Notice extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(child: Text(text, style: const TextStyle(fontSize: 13.5, height: 1.4))),
         ],
+      ),
+    );
+  }
+}
+
+/// A state's pill on its own, outside a row: the Verified badge, a legend.
+class StatePill extends StatelessWidget {
+  const StatePill({super.key, required this.text, required this.state});
+  final String text;
+  final RowState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final (bg, border, ink) = stateColors(context, state);
+    return Container(
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
+      child: _Pill(text: text, color: ink, border: border),
+    );
+  }
+}
+
+/// A state's (background, border, ink), as the site's badge classes.
+(Color, Color, Color) stateColors(BuildContext context, RowState state) {
+  final t = tokensOf(context);
+  return switch (state) {
+    RowState.ok => (t.okWeak, t.okLine, t.ok),
+    RowState.beta => (t.accentWeak, t.accentLine, Theme.of(context).colorScheme.primary),
+    RowState.warn => (t.warnWeak, t.warnLine, t.warn),
+    RowState.bad => (t.badWeak, t.badLine, t.bad),
+    RowState.idle => (t.paper2, t.line, t.ink2),
+  };
+}
+
+/// Decline and Accept under a friend request: an outline pill and the
+/// primary one, as on the site.
+class RequestActions extends StatelessWidget {
+  const RequestActions({super.key, required this.onDecline, required this.onAccept});
+  final VoidCallback onDecline;
+  final VoidCallback onAccept;
+
+  @override
+  Widget build(BuildContext context) {
+    const compact = Size(0, 40);
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          OutlinedButton(
+            onPressed: onDecline,
+            style: OutlinedButton.styleFrom(minimumSize: compact),
+            child: Text(context.l10n.commonDecline),
+          ),
+          const SizedBox(width: 8),
+          FilledButton(
+            onPressed: onAccept,
+            style: FilledButton.styleFrom(minimumSize: compact),
+            child: Text(context.l10n.friendsAccept),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A page list's padding: 20 at the sides, and room for the glass header
+/// and tab bar the page scrolls under (their size arrives as MediaQuery
+/// padding, which an explicit padding would otherwise ignore).
+EdgeInsets pagePadding(BuildContext context, {double top = 8, double bottom = 24}) {
+  final mq = MediaQuery.paddingOf(context);
+  return EdgeInsets.fromLTRB(20, top + mq.top, 20, bottom + mq.bottom);
+}
+
+/// The site's glass: what scrolls under it shows through, blurred.
+Widget glass(Widget child) => ClipRect(
+  child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14), child: child),
+);
+
+/// The site's sticky header: the page tint over a blur, a hairline under it.
+/// Pair it with extendBodyBehindAppBar and [pagePadding].
+AppBar glassAppBar({Widget? title, List<Widget>? actions}) => AppBar(
+  title: title,
+  actions: actions,
+  flexibleSpace: glass(const SizedBox.expand()),
+);
+
+/// How far down a page's content starts under the glass header: where a
+/// pull-to-refresh spinner should appear from.
+double glassTop(BuildContext context) => MediaQuery.paddingOf(context).top;
+
+/// The site's live dot: 8px in the state's colour; online ones wear a halo
+/// that pulses outward, unless the system asks for less motion.
+class LiveDot extends StatefulWidget {
+  const LiveDot({super.key, required this.live});
+  final bool live;
+
+  @override
+  State<LiveDot> createState() => _LiveDotState();
+}
+
+class _LiveDotState extends State<LiveDot> with SingleTickerProviderStateMixin {
+  late final _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 2400));
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    final still = !widget.live || MediaQuery.disableAnimationsOf(context);
+    if (still) {
+      _pulse.stop();
+    } else if (!_pulse.isAnimating) {
+      _pulse.repeat();
+    }
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (context, _) {
+        // 0 → 70% of the cycle the ring grows and fades; the rest it rests.
+        final p = still ? 0.0 : (_pulse.value / 0.7).clamp(0.0, 1.0);
+        return Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: widget.live ? t.ok : t.muted,
+            shape: BoxShape.circle,
+            boxShadow: [
+              if (widget.live) BoxShadow(color: t.okWeak, spreadRadius: 3),
+              if (!still) BoxShadow(color: t.ok.withValues(alpha: 0.45 * (1 - p)), spreadRadius: 8 * p),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// The site's usage meter: 4px, a sunk track, the indigo-to-violet fill
+/// (amber when [warn]).
+class UsageBar extends StatelessWidget {
+  const UsageBar({super.key, required this.value, this.warn = false});
+  final double value;
+  final bool warn;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    return Container(
+      height: 4,
+      decoration: BoxDecoration(color: t.sunk, borderRadius: BorderRadius.circular(999)),
+      alignment: Alignment.centerLeft,
+      child: FractionallySizedBox(
+        widthFactor: value.clamp(0.0, 1.0),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            color: warn ? t.warn : null,
+            gradient: warn ? null : const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFFA855F7)]),
+          ),
+        ),
       ),
     );
   }

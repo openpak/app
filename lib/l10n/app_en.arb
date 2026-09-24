@@ -552,6 +552,14 @@
   "@accountLinked": {
     "description": "Section label above the linked consoles."
   },
+  "accountOverview": "Overview",
+  "@accountOverview": {
+    "description": "Account section nav: the profile card at the top of the page."
+  },
+  "accountRequests": "Requests",
+  "@accountRequests": {
+    "description": "Account stat card: friend requests waiting on you."
+  },
   "accountNothingLinked": "Nothing linked yet. Link a console from its own settings, or a Wii or DS below.",
   "@accountNothingLinked": {
     "description": "Shown when no console is linked. Wii and DS are product names."

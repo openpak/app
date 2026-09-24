@@ -6,7 +6,9 @@ import 'friends_page.dart';
 import 'invitations_page.dart';
 import 'l10n.dart';
 import 'saves_page.dart';
+import 'theme.dart';
 import 'titles_page.dart';
+import 'widgets.dart';
 
 /// The signed-in app: three destinations, each owning its own loading and
 /// refresh. Pages are kept alive so switching tabs does not refetch.
@@ -33,8 +35,12 @@ class _ShellState extends State<Shell> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return Scaffold(
+      // The pages scroll under the tab bar, which blurs them, as the site's does.
+      extendBody: true,
       body: IndexedStack(index: _index, children: _pages),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: glass(DecoratedBox(
+        decoration: BoxDecoration(border: Border(top: BorderSide(color: tokensOf(context).line))),
+        child: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: [
@@ -64,7 +70,7 @@ class _ShellState extends State<Shell> {
             label: l.navAccount,
           ),
         ],
-      ),
+      ))),
     );
   }
 }

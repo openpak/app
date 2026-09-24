@@ -75,8 +75,10 @@ class TitlesPageState extends State<TitlesPage> {
     final isTitle = _kind == 'title';
     final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(l.titlesTitle)),
+      extendBodyBehindAppBar: true,
+      appBar: glassAppBar(title: Text(l.titlesTitle)),
       body: RefreshIndicator(
+        edgeOffset: glassTop(context),
         onRefresh: () async => reload(),
         child: FutureBuilder<List<CatalogItem>>(
           future: _data,
@@ -93,14 +95,21 @@ class TitlesPageState extends State<TitlesPage> {
             final requestable = all.where((i) => i.kind == 'title' && notStarted(i.status)).toList()..sort(catalogOrder);
             final shown = filterCatalog(served, kind: _kind, search: _search, console: _console, status: _status);
             return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              padding: pagePadding(context, top: 12),
               children: [
                 _latestNews(),
                 _onlineNow(),
                 _segmented(),
                 const SizedBox(height: 12),
                 _controls(served),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 8),
+                  child: Text(
+                    l.savesShowing(shown.length, served.where((i) => i.kind == _kind).length),
+                    style: TextStyle(color: tokensOf(context).muted, fontSize: 13),
+                  ),
+                ),
                 if (shown.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 48),
@@ -275,12 +284,30 @@ class TitlesPageState extends State<TitlesPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SectionLabel(context.l10n.titlesOnlineNow, trailing: online(s.playersOnline)),
-                for (final e in s.networks.entries)
-                  StateRow(
-                    name: platformNames[e.key] ?? e.key,
-                    pill: online(e.value),
-                    state: e.value > 0 ? RowState.ok : RowState.idle,
+                // One card of live rows, as the site's "right now" panel: a
+                // dot that pulses while anyone is on, the count in its pill.
+                Panel(
+                  child: Column(
+                    children: [
+                      for (final (i, e) in s.networks.entries.indexed) ...[
+                        if (i > 0) const Divider(height: 1),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(
+                            children: [
+                              LiveDot(live: e.value > 0),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(platformNames[e.key] ?? e.key, style: const TextStyle(fontWeight: FontWeight.w600)),
+                              ),
+                              StatePill(text: online(e.value), state: e.value > 0 ? RowState.ok : RowState.idle),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
+                ),
               ],
             ),
           );
@@ -325,6 +352,7 @@ class TitlesPageState extends State<TitlesPage> {
           all: l.titlesAllStatuses,
           options: statuses,
           label: (s) => statusLabel(l, s),
+          dot: statusState,
           onSelected: (v) => setState(() => _status = v),
         ),
         if (_kind == 'title') ...[
@@ -351,6 +379,7 @@ class TitlesPageState extends State<TitlesPage> {
     required String Function(String) label,
     required ValueChanged<String?> onSelected,
     bool logo = false,
+    RowState Function(String)? dot,
   }) {
     final theme = Theme.of(context);
     Widget chip(String? value, String text) {
@@ -365,13 +394,29 @@ class TitlesPageState extends State<TitlesPage> {
             fontWeight: FontWeight.w600,
             color: on ? theme.scaffoldBackgroundColor : theme.colorScheme.onSurface,
           ),
-          avatar: logo && value != null
-              ? SvgPicture.asset(
-                  'assets/consoles/${consoleAsset(value, theme.brightness)}.svg',
-                  width: 18,
-                  height: 18,
-                )
-              : null,
+          // A console's logo, or a status's colour as the site's badge dot:
+          // the chips double as the legend for the pills below.
+          avatar: value == null
+              ? null
+              : logo
+                  ? SvgPicture.asset(
+                      'assets/consoles/${consoleAsset(value, theme.brightness)}.svg',
+                      width: 18,
+                      height: 18,
+                    )
+                  : dot == null
+                      ? null
+                      : Center(
+                          widthFactor: 1,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: stateColors(context, dot(value)).$3,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
         ),
       );
     }
@@ -409,13 +454,7 @@ class _CatalogRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = tokensOf(context);
     final state = statusState(item.status);
-    final (pillBg, pillLine, pillInk) = switch (state) {
-      RowState.ok => (t.okWeak, t.okLine, t.ok),
-      RowState.beta => (t.accentWeak, t.accentLine, Theme.of(context).colorScheme.primary),
-      RowState.warn => (t.warnWeak, t.warnLine, t.warn),
-      RowState.bad => (t.badWeak, t.badLine, t.bad),
-      RowState.idle => (t.paper2, t.line, t.ink2),
-    };
+    final (pillBg, pillLine, pillInk) = stateColors(context, state);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(

@@ -44,8 +44,10 @@ class _ConversationsPageState extends State<ConversationsPage> {
     final t = tokensOf(context);
     final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(l.chatTitle)),
+      extendBodyBehindAppBar: true,
+      appBar: glassAppBar(title: Text(l.chatTitle)),
       body: RefreshIndicator(
+        edgeOffset: glassTop(context),
         onRefresh: () async => _reload(),
         child: FutureBuilder(
           future: _data,
@@ -59,7 +61,7 @@ class _ConversationsPageState extends State<ConversationsPage> {
               return ScrollableMessage(l.chatNoConversations);
             }
             return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              padding: pagePadding(context),
               children: [
                 // One card of rows, as the Account sections are.
                 Panel(

@@ -115,6 +115,8 @@
   "accountYou": "Você",
   "accountNoFriendCode": "Sem código de amigo até que um console seja vinculado.",
   "accountLinked": "Vinculados",
+  "accountOverview": "Visão geral",
+  "accountRequests": "Pedidos",
   "accountNothingLinked": "Nada vinculado ainda. Vincule um console pelas configurações dele, ou um Wii ou DS abaixo.",
   "accountUnlink": "Desvincular",
   "accountUnlinkConfirm": "Desvincular seu {console}?",

@@ -95,7 +95,8 @@ class FriendsPageState extends State<FriendsPage> {
     final t = tokensOf(context);
     final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(
+      extendBodyBehindAppBar: true,
+      appBar: glassAppBar(
         title: Text(l.friendsTitle),
         actions: [
           IconButton(
@@ -120,6 +121,7 @@ class FriendsPageState extends State<FriendsPage> {
         ],
       ),
       body: RefreshIndicator(
+        edgeOffset: glassTop(context),
         onRefresh: () async => reload(),
         child: FutureBuilder<(List<Friend>, FriendRequests, List<BlockedAccount>, List<CatalogItem>)>(
           future: _data,
@@ -145,7 +147,7 @@ class FriendsPageState extends State<FriendsPage> {
               return ScrollableMessage(l.friendsEmpty);
             }
             return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              padding: pagePadding(context),
               children: [
                 if (requests.incoming.isNotEmpty) ...[
                   SectionLabel(l.friendsIncoming),
@@ -160,24 +162,9 @@ class FriendsPageState extends State<FriendsPage> {
                             ? widget.api.absolute(f.avatarUrl!)
                             : null,
                       ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextButton(
-                            onPressed: () => _act(
-                              () => widget.api.declineFriend(f.accountId),
-                              l.commonDeclined,
-                            ),
-                            child: Text(l.commonDecline, style: TextStyle(color: t.muted)),
-                          ),
-                          TextButton(
-                            onPressed: () => _act(
-                              () => widget.api.acceptFriend(f.accountId),
-                              l.friendsAccepted(f.displayName),
-                            ),
-                            child: Text(l.friendsAccept),
-                          ),
-                        ],
+                      trailing: RequestActions(
+                        onDecline: () => _act(() => widget.api.declineFriend(f.accountId), l.commonDeclined),
+                        onAccept: () => _act(() => widget.api.acceptFriend(f.accountId), l.friendsAccepted(f.displayName)),
                       ),
                     ),
                   ),

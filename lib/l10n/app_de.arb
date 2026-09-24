@@ -115,6 +115,8 @@
   "accountYou": "Du",
   "accountNoFriendCode": "Kein Freundescode, bis eine Konsole verknüpft ist.",
   "accountLinked": "Verknüpft",
+  "accountOverview": "Übersicht",
+  "accountRequests": "Anfragen",
   "accountNothingLinked": "Noch nichts verknüpft. Verknüpfe eine Konsole über ihre eigenen Einstellungen oder unten eine Wii oder einen DS.",
   "accountUnlink": "Verknüpfung aufheben",
   "accountUnlinkConfirm": "Verknüpfung mit {console} aufheben?",

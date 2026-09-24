@@ -3,6 +3,23 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.13.0 — 2026-09-24
+
+The last of the website's redesign: what the approved mockup has that the app did not.
+
+- **Account** has the site's dashboard shapes: three stat cards under the profile (friends and how
+  many are online, consoles linked, requests), a **Confirmed** badge beside the address, incoming
+  friend requests in their own card with Decline and Accept, and a section nav under the header
+  (Overview, Requests, Linked, Security, Signed in) that scrolls to each.
+- **Glass**, as the site's header and tab bar: pages scroll under both, blurred; the tab bar has
+  the site's hairline on top.
+- **Titles**: the status chips carry each state's colour dot (so they double as the legend) and the
+  list says how many it shows. **Online now** is one card of live rows, a dot that pulses while
+  anyone is on (still when the system asks for less motion).
+- **Saves**: the allowance meter is the site's, 4px indigo-to-violet (amber near full).
+- Friend requests on Friends use the same outline Decline and primary Accept.
+- The voice call's Mute button is red again when muted; the primary gradient had painted over it.
+
 ## v0.12.1 — 2026-09-24
 
 The rest of the redesign, checked screen by screen.

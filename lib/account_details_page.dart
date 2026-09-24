@@ -65,9 +65,10 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
         if (!didPop) Navigator.pop(context, _dirty);
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(l.detailsTitle)),
-        body: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        extendBodyBehindAppBar: true,
+        appBar: glassAppBar(title: Text(l.detailsTitle)),
+        body: Builder(builder: (context) => ListView(
+          padding: pagePadding(context, top: 16, bottom: 32),
           children: [
             Center(
               child: Column(
@@ -158,7 +159,7 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
               ),
             ),
           ],
-        ),
+        )),
       ),
     );
   }

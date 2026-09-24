@@ -77,10 +77,13 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
     final t = tokensOf(context);
     final codes = _recoveryCodes;
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.twoFactorTitle)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        children: codes != null ? _done(t, codes) : _setup(t),
+      extendBodyBehindAppBar: true,
+      appBar: glassAppBar(title: Text(context.l10n.twoFactorTitle)),
+      body: Builder(
+        builder: (context) => ListView(
+          padding: pagePadding(context, top: 16, bottom: 32),
+          children: codes != null ? _done(t, codes) : _setup(t),
+        ),
       ),
     );
   }

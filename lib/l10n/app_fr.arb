@@ -115,6 +115,8 @@
   "accountYou": "Vous",
   "accountNoFriendCode": "Pas de code ami tant qu'aucune console n'est associée.",
   "accountLinked": "Consoles associées",
+  "accountOverview": "Vue d'ensemble",
+  "accountRequests": "Demandes",
   "accountNothingLinked": "Rien n'est encore associé. Associez une console depuis ses propres paramètres, ou une Wii ou une DS ci-dessous.",
   "accountUnlink": "Dissocier",
   "accountUnlinkConfirm": "Dissocier votre {console} ?",

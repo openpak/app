@@ -56,8 +56,10 @@ class _InvitationsPageState extends State<InvitationsPage> {
     final t = tokensOf(context);
     final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(l.invitationsTitle)),
+      extendBodyBehindAppBar: true,
+      appBar: glassAppBar(title: Text(l.invitationsTitle)),
       body: RefreshIndicator(
+        edgeOffset: glassTop(context),
         onRefresh: () async => _reload(),
         child: FutureBuilder<(List<Invitation>, Map<String, String>)>(
           future: _data,
@@ -73,7 +75,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
               return ScrollableMessage(l.invitationsEmpty);
             }
             return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              padding: pagePadding(context),
               children: [
                 SectionLabel(l.invitationsWaiting, trailing: '${items.length}'),
                 // Green while it can still be accepted, grey once it cannot:

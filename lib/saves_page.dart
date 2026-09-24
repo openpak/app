@@ -127,8 +127,10 @@ class SavesPageState extends State<SavesPage> {
     final t = tokensOf(context);
     final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(l.savesTitle)),
+      extendBodyBehindAppBar: true,
+      appBar: glassAppBar(title: Text(l.savesTitle)),
       body: RefreshIndicator(
+        edgeOffset: glassTop(context),
         onRefresh: () async => reload(),
         child: FutureBuilder<(CloudSaves, SavesStorage, Map<String, bool>)>(
           future: _data,
@@ -141,7 +143,7 @@ class SavesPageState extends State<SavesPage> {
             }
             final (data, storage, kinds) = snap.data!;
             return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              padding: pagePadding(context, top: 16),
               children: [
                 // The website's order: what is used, the saves themselves, then where they go.
                 _head(l.savesStorageHead, storage.connected ? l.savesUsageOwn : l.savesUsageAllowance),
@@ -189,7 +191,6 @@ class SavesPageState extends State<SavesPage> {
     }
     final pct = usage.allowance > 0 ? usage.allowanceUsed * 100 ~/ usage.allowance : 0;
     final warn = pct >= 90;
-    final t = tokensOf(context);
     return Column(
       children: [
         StateRow(
@@ -197,15 +198,7 @@ class SavesPageState extends State<SavesPage> {
           pill: NumberFormat.percentPattern(context.l10n.localeName).format(pct / 100),
           state: warn ? RowState.warn : RowState.ok,
         ),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: LinearProgressIndicator(
-            value: pct / 100,
-            minHeight: 6,
-            color: warn ? t.warn : t.ok,
-            backgroundColor: t.paper2,
-          ),
-        ),
+        UsageBar(value: pct / 100, warn: warn),
       ],
     );
   }

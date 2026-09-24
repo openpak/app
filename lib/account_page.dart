@@ -19,7 +19,11 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  late Future<(Account, List<WebSession>)> _data;
+  late Future<_AccountData> _data;
+
+  // One key per section, so the section nav can scroll to it.
+  final _overview = GlobalKey(), _requests = GlobalKey(), _linked = GlobalKey();
+  final _security = GlobalKey(), _signedIn = GlobalKey();
 
   @override
   void initState() {
@@ -28,8 +32,19 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   void _reload() => setState(() {
-    _data = Future.wait([widget.api.me(), widget.api.sessions()])
-        .then((r) => (r[0] as Account, r[1] as List<WebSession>));
+    // Friends and requests only feed the stat cards and the requests card:
+    // unreachable, the page shows zeros rather than failing.
+    _data = Future.wait([
+      widget.api.me(),
+      widget.api.sessions(),
+      widget.api.friends().catchError((_) => <Friend>[]),
+      widget.api.friendRequests().catchError((_) => FriendRequests(incoming: [], outgoing: [])),
+    ]).then((r) => (
+      r[0] as Account,
+      r[1] as List<WebSession>,
+      r[2] as List<Friend>,
+      r[3] as FriendRequests,
+    ));
   });
 
   @override
@@ -40,7 +55,7 @@ class _AccountPageState extends State<AccountPage> {
       appBar: AppBar(title: Text(l.accountTitle)),
       body: RefreshIndicator(
         onRefresh: () async => _reload(),
-        child: FutureBuilder<(Account, List<WebSession>)>(
+        child: FutureBuilder<_AccountData>(
           future: _data,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
@@ -49,13 +64,61 @@ class _AccountPageState extends State<AccountPage> {
             if (snap.hasError) {
               return LoadFailure(snap.error);
             }
-            final (me, sessions) = snap.data!;
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            final (me, sessions, friends, requests) = snap.data!;
+            final incoming = requests.incoming;
+            // A Column rather than a ListView: the section nav scrolls to a
+            // section by its key, and a lazy list has not built the far ones.
+            return Column(
               children: [
-                _ProfileCard(api: widget.api, me: me, onTap: () => _openDetails(me)),
+                _SectionNav(sections: [
+                  (Icons.home_outlined, l.accountOverview, _overview),
+                  if (incoming.isNotEmpty) (Icons.person_add_alt, l.accountRequests, _requests),
+                  (Icons.videogame_asset_outlined, l.accountLinked, _linked),
+                  (Icons.shield_outlined, l.accountSecurity, _security),
+                  (Icons.devices_outlined, l.accountSignedIn, _signedIn),
+                ]),
+                Expanded(
+                  child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: pagePadding(context, top: 16),
+              child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _ProfileCard(key: _overview, api: widget.api, me: me, onTap: () => _openDetails(me)),
+                const SizedBox(height: 12),
+                // IntrinsicHeight: the three cards match, sub line or not.
+                IntrinsicHeight(
+                  child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _Stat(value: friends.length, label: l.navFriends, sub: l.titlesOnlineCount(friends.where((f) => f.online).length)),
+                    const SizedBox(width: 10),
+                    _Stat(value: me.linkedPlatforms.length, label: l.accountLinked),
+                    const SizedBox(width: 10),
+                    _Stat(value: incoming.length, label: l.accountRequests),
+                  ],
+                  ),
+                ),
+                if (incoming.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  SectionLabel(l.friendsIncoming, key: _requests, trailing: '${incoming.length}'),
+                  for (final f in incoming)
+                    StateRow(
+                      name: f.displayName,
+                      pill: l.friendsWantsToAdd,
+                      state: RowState.warn,
+                      leading: Avatar(
+                        name: f.displayName,
+                        avatarUrl: f.avatarUrl == null ? null : widget.api.absolute(f.avatarUrl!),
+                      ),
+                      trailing: RequestActions(
+                        onDecline: () => _act(() => widget.api.declineFriend(f.accountId), l.commonDeclined),
+                        onAccept: () => _act(() => widget.api.acceptFriend(f.accountId), l.friendsAccepted(f.displayName)),
+                      ),
+                    ),
+                ],
                 const SizedBox(height: 20),
-                SectionLabel(l.accountLinked),
+                SectionLabel(l.accountLinked, key: _linked),
                 Panel(
                   child: Column(
                     children: [
@@ -88,7 +151,7 @@ class _AccountPageState extends State<AccountPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                SectionLabel(l.accountSecurity),
+                SectionLabel(l.accountSecurity, key: _security),
                 Panel(
                   child: Column(
                     children: [
@@ -135,7 +198,7 @@ class _AccountPageState extends State<AccountPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                SectionLabel(l.accountSignedIn, trailing: '${sessions.length}'),
+                SectionLabel(l.accountSignedIn, key: _signedIn, trailing: '${sessions.length}'),
                 Panel(
                   child: Column(
                     children: [
@@ -190,6 +253,10 @@ class _AccountPageState extends State<AccountPage> {
                   style: TextButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
                     foregroundColor: t.bad,
+                  ),
+                ),
+              ],
+              ),
                   ),
                 ),
               ],
@@ -385,7 +452,7 @@ class _AccountPageState extends State<AccountPage> {
 /// a ring of the card's own colour, the name, and the friend code in a well
 /// with its copy button — the code exists to be handed to someone else.
 class _ProfileCard extends StatelessWidget {
-  const _ProfileCard({required this.api, required this.me, required this.onTap});
+  const _ProfileCard({super.key, required this.api, required this.me, required this.onTap});
   final OpenPakApi api;
   final Account me;
   final VoidCallback onTap;
@@ -442,7 +509,17 @@ class _ProfileCard extends StatelessWidget {
                             style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.8),
                           ),
                           if (me.email.isNotEmpty)
-                            Text(me.email, overflow: TextOverflow.ellipsis, style: TextStyle(color: t.muted)),
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(me.email, overflow: TextOverflow.ellipsis, style: TextStyle(color: t.muted)),
+                                ),
+                                if (me.emailVerified) ...[
+                                  const SizedBox(width: 8),
+                                  StatePill(text: l.accountEmailConfirmed, state: RowState.ok),
+                                ],
+                              ],
+                            ),
                         ],
                       ),
                     ),
@@ -516,6 +593,84 @@ class _CodeWell extends StatelessWidget {
             icon: const Icon(Icons.copy_rounded, size: 18),
           ),
         ],
+      ),
+    );
+  }
+}
+
+typedef _AccountData = (Account, List<WebSession>, List<Friend>, FriendRequests);
+
+/// The site's section nav on a phone: a row of pill links that stays put
+/// under the header and scrolls sideways; a tap brings the section into view.
+class _SectionNav extends StatelessWidget {
+  const _SectionNav({required this.sections});
+  final List<(IconData, String, GlobalKey)> sections;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    return Container(
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: t.line))),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(20, 10, 12, 10),
+        child: Row(
+          children: [
+            for (final (icon, label, key) in sections)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ActionChip(
+                  avatar: Icon(icon, size: 18, color: t.ink2),
+                  label: Text(label),
+                  onPressed: () {
+                    final c = key.currentContext;
+                    if (c != null) {
+                      Scrollable.ensureVisible(c, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+                    }
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One of the three mini stat cards under the profile: a big number, its
+/// label, and an optional line under it.
+class _Stat extends StatelessWidget {
+  const _Stat({required this.value, required this.label, this.sub});
+  final int value;
+  final String label;
+  final String? sub;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    return Expanded(
+      child: Panel(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$value',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.6,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: t.ink2, fontSize: 13)),
+              if (sub != null)
+                Text(sub!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: t.muted, fontSize: 12)),
+            ],
+          ),
+        ),
       ),
     );
   }

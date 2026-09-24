@@ -25,6 +25,12 @@ void main() {
           return switch (req.url.path) {
             '/api/v1/me' when req.method == 'GET' => _json(me),
             '/api/v1/me/sessions' => _json({'sessions': []}),
+            '/api/v1/me/friends' => _json({'friends': [
+                {'account_id': 'f1', 'display_name': 'Han', 'online': true},
+                {'account_id': 'f2', 'display_name': 'Chewie', 'online': false},
+              ]}),
+            '/api/v1/me/friends/requests' when req.method == 'GET' =>
+              _json({'incoming': [{'account_id': 'r1', 'display_name': 'Rey'}], 'outgoing': []}),
             '/api/v1/me/2fa/setup' => _json({
               'secret': 'JBSWY3DPEHPK3PXP',
               'otpauth_uri': 'otpauth://totp/OpenPak:a?secret=JBSWY3DPEHPK3PXP&issuer=OpenPak',
@@ -46,7 +52,9 @@ void main() {
   // A ListView builds past the screen edge, so "found" is not "on screen":
   // ensureVisible then brings it into the viewport before a tap.
   Future<void> scrollTo(WidgetTester tester, Finder f) async {
-    await tester.scrollUntilVisible(f, 200, scrollable: find.byType(Scrollable).first);
+    // The page's own scroll, not the section nav's sideways one.
+    final page = find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down).first;
+    await tester.scrollUntilVisible(f, 200, scrollable: page);
     await tester.ensureVisible(f);
     await tester.pumpAndSettle();
   }
@@ -58,7 +66,7 @@ void main() {
 
   testWidgets('an unconfirmed address offers the link again; an email change asks for the password', (tester) async {
     await pump(tester, api());
-    await scrollTo(tester, find.text('Change email'));
+    await scrollTo(tester, find.text('Send the link again'));
     expect(find.text('Not confirmed'), findsOneWidget);
     await tester.tap(find.text('Send the link again'));
     await tester.pumpAndSettle();
@@ -125,5 +133,26 @@ void main() {
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(writes, isEmpty);
+  });
+
+  testWidgets('the stat cards count friends and requests; a request is accepted from Account', (tester) async {
+    await pump(tester, api());
+    expect(find.text('1 online'), findsOneWidget); // two friends, one on
+    expect(find.text('Requests'), findsWidgets); // the stat card and the section nav
+    await scrollTo(tester, find.text('Accept'));
+    expect(find.text('Rey'), findsOneWidget);
+    await tester.tap(find.text('Accept'));
+    await tester.pumpAndSettle();
+    expect(writes.last, 'POST /api/v1/me/friends/requests/accept {"account_id":"r1"}');
+  });
+
+  testWidgets('the section nav scrolls to its section', (tester) async {
+    await pump(tester, api());
+    final page = find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down).first;
+    double offset() => tester.state<ScrollableState>(page).position.pixels;
+    expect(offset(), 0);
+    await tester.tap(find.widgetWithText(ActionChip, 'Security'));
+    await tester.pumpAndSettle();
+    expect(offset(), greaterThan(0));
   });
 }

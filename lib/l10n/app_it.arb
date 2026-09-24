@@ -115,6 +115,8 @@
   "accountYou": "Tu",
   "accountNoFriendCode": "Nessun codice amico finché non colleghi una console.",
   "accountLinked": "Collegati",
+  "accountOverview": "Panoramica",
+  "accountRequests": "Richieste",
   "accountNothingLinked": "Ancora nessun collegamento. Collega una console dalle sue impostazioni, oppure un Wii o un DS qui sotto.",
   "accountUnlink": "Scollega",
   "accountUnlinkConfirm": "Scollegare {console}?",

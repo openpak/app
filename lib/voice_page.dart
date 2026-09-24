@@ -109,8 +109,10 @@ class _VoicePageState extends State<VoicePage> {
         if (didPop) _session?.leave();
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(l.voiceTitle)),
-        body: s == null ? _lobby(context) : _call(context, s),
+        extendBodyBehindAppBar: true,
+        appBar: glassAppBar(title: Text(l.voiceTitle)),
+        // A Builder, so the body's context sees the header it scrolls under.
+        body: Builder(builder: (context) => s == null ? _lobby(context) : _call(context, s)),
       ),
     );
   }
@@ -119,12 +121,13 @@ class _VoicePageState extends State<VoicePage> {
     final t = tokensOf(context);
     final l = context.l10n;
     return RefreshIndicator(
+      edgeOffset: glassTop(context),
       onRefresh: () async {
         _reload();
         await _current.catchError((_) => null);
       },
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        padding: pagePadding(context),
         children: [
           Text(l.voiceIntro, style: TextStyle(color: t.muted)),
           const SizedBox(height: 8),
@@ -241,7 +244,7 @@ class _VoicePageState extends State<VoicePage> {
         _ => l.voiceFailedDisconnected,
       };
       return ListView(
-        padding: const EdgeInsets.fromLTRB(24, 72, 24, 24),
+        padding: EdgeInsets.fromLTRB(24, 72 + glassTop(context), 24, 24),
         children: [
           Text(
             why,
@@ -275,7 +278,10 @@ class _VoicePageState extends State<VoicePage> {
     final peers = s.roster.peers.values.toList()..sort((a, b) => a.name.compareTo(b.name));
     final me = VoicePeer(id: s.roster.self ?? '', name: s.roster.selfName, muted: s.muted, speaking: s.speaking)
       ..linked = true;
-    return Column(
+    return Padding(
+      // Clear of the glass header; the call does not scroll under it.
+      padding: EdgeInsets.only(top: glassTop(context)),
+      child: Column(
       children: [
         ListTile(
           title: Text(room.isGame ? l.voiceGameRoom(gameName(room.title), room.code) : l.voiceCodeRoom(room.code)),
@@ -321,7 +327,10 @@ class _VoicePageState extends State<VoicePage> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton.icon(
-                    style: s.muted ? FilledButton.styleFrom(backgroundColor: t.bad) : null,
+                    // A plain backgroundBuilder, or the theme's gradient paints over the red.
+                    style: s.muted
+                        ? FilledButton.styleFrom(backgroundColor: t.bad).copyWith(backgroundBuilder: (_, _, child) => child!)
+                        : null,
                     icon: Icon(s.muted ? Icons.mic_off : Icons.mic),
                     label: Text(s.muted ? l.voiceUnmute : l.voiceMute),
                     onPressed: s.toggleMute,
@@ -334,6 +343,7 @@ class _VoicePageState extends State<VoicePage> {
           ),
         ),
       ],
+      ),
     );
   }
 }

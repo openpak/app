@@ -25,7 +25,7 @@ import 'widgets.dart';
 
 /// The app's version, as in pubspec.yaml (without the build number).
 /// test/crash_reports_test.dart fails when the two differ.
-const appVersion = '0.12.1';
+const appVersion = '0.13.0';
 
 /// One error, as saved on the phone.
 class CrashReport {
