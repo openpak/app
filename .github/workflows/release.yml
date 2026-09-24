@@ -15,14 +15,16 @@ jobs:
   apk:
     # The OpenPak self-hosted runner: GitHub-hosted minutes are not used for private repositories.
     runs-on: [self-hosted, linux, podman]
-    # Scratch inside the workspace, not the machine's /tmp: /tmp is a RAM disk
-    # shared with every other build on the runner, and when it filled, the test
-    # compiler died and `flutter test` hung for hours instead of failing.
-    env:
-      TMPDIR: ${{ github.workspace }}/.tmp
     steps:
       - uses: actions/checkout@v4
-      - run: mkdir -p "$TMPDIR"
+      # Scratch in the runner's own temp, not the machine's /tmp: /tmp is a RAM
+      # disk shared with every other build, and when it filled, the test compiler
+      # died and `flutter test` hung for hours instead of failing. Not inside the
+      # checkout either: an image build would take it into its context.
+      - name: Scratch in the runner's temp, not the machine's shared /tmp
+        run: |
+          mkdir -p "$RUNNER_TEMP/scratch"
+          echo "TMPDIR=$RUNNER_TEMP/scratch" >> "$GITHUB_ENV"
 
       - uses: actions/setup-java@v4
         with:
@@ -76,7 +78,7 @@ jobs:
       # Whatever the build left in its scratch goes with the job.
       - name: Clear scratch
         if: always()
-        run: rm -rf "$TMPDIR"
+        run: rm -rf "$RUNNER_TEMP/scratch"
 
       - name: GitHub Release
         uses: softprops/action-gh-release@v2
