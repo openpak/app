@@ -58,13 +58,17 @@ class SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
       child: Row(
         children: [
-          Text(
-            text.toUpperCase(),
-            style: TextStyle(
-              color: t.muted,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.1,
+          // Flexible: a long heading ("Möchte mit dir befreundet sein") at
+          // large text wraps rather than pushing its count off the screen.
+          Flexible(
+            child: Text(
+              text.toUpperCase(),
+              style: TextStyle(
+                color: t.muted,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.1,
+              ),
             ),
           ),
           if (trailing != null) ...[
@@ -653,15 +657,17 @@ class RequestActions extends StatelessWidget {
     const compact = Size(0, 40);
     return Padding(
       padding: const EdgeInsets.only(top: 10),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      // A Wrap: with a long label or large text the two go onto two lines.
+      child: Wrap(
+        alignment: WrapAlignment.end,
+        spacing: 8,
+        runSpacing: 8,
         children: [
           OutlinedButton(
             onPressed: onDecline,
             style: OutlinedButton.styleFrom(minimumSize: compact),
             child: Text(context.l10n.commonDecline),
           ),
-          const SizedBox(width: 8),
           FilledButton(
             onPressed: onAccept,
             style: FilledButton.styleFrom(minimumSize: compact),
@@ -775,3 +781,13 @@ class UsageBar extends StatelessWidget {
     );
   }
 }
+
+/// A ListTile's trailing action, capped at 40% of the screen: with large
+/// accessibility text a button's label wraps instead of taking the whole
+/// row, which ListTile refuses (and the page goes blank). Null stays null.
+Widget? tileAction(BuildContext context, Widget? action) => action == null
+    ? null
+    : ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.4),
+        child: action,
+      );

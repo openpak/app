@@ -40,7 +40,11 @@ class _ShellState extends State<Shell> {
       body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: glass(DecoratedBox(
         decoration: BoxDecoration(border: Border(top: BorderSide(color: tokensOf(context).line))),
-        child: NavigationBar(
+        // Five labels in 390px: past 1.15× "Einladungen" breaks mid-word, so
+        // the bar stops growing there, as system tab bars do.
+        child: MediaQuery.withClampedTextScaling(
+          maxScaleFactor: 1.15,
+          child: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: [
@@ -70,7 +74,7 @@ class _ShellState extends State<Shell> {
             label: l.navAccount,
           ),
         ],
-      ))),
+      )))),
     );
   }
 }

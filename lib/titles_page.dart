@@ -316,8 +316,9 @@ class TitlesPageState extends State<TitlesPage> {
 
   Widget _segmented() => SegmentedButton<String>(
     segments: [
-      ButtonSegment(value: 'title', label: Text(context.l10n.titlesTitle), icon: const Icon(Icons.sports_esports_outlined)),
-      ButtonSegment(value: 'feature', label: Text(context.l10n.titlesNetwork), icon: const Icon(Icons.lan_outlined)),
+      // No icons, as the site's toggle: they cost the labels room at large text.
+      ButtonSegment(value: 'title', label: Text(context.l10n.titlesTitle)),
+      ButtonSegment(value: 'feature', label: Text(context.l10n.titlesNetwork)),
     ],
     selected: {_kind},
     showSelectedIcon: false,
@@ -406,14 +407,17 @@ class TitlesPageState extends State<TitlesPage> {
                     )
                   : dot == null
                       ? null
-                      : Center(
-                          widthFactor: 1,
-                          child: Container(
+                      // The logo's 18px box: a chip lays its avatar out at icon size.
+                      : SizedBox.square(
+                          dimension: 18,
+                          child: Center(
+                            child: Container(
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
                               color: stateColors(context, dot(value)).$3,
                               shape: BoxShape.circle,
+                            ),
                             ),
                           ),
                         ),

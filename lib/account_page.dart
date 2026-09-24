@@ -134,10 +134,10 @@ class _AccountPageState extends State<AccountPage> {
                         ListTile(
                           leading: const Icon(Icons.videogame_asset_outlined),
                           title: Text(platformNames[ns] ?? ns),
-                          trailing: TextButton(
+                          trailing: tileAction(context, TextButton(
                             onPressed: () => _unlink(ns),
                             child: Text(l.accountUnlink, style: TextStyle(color: t.bad)),
-                          ),
+                          )),
                         ),
                         const Divider(height: 1),
                       ],
@@ -162,7 +162,7 @@ class _AccountPageState extends State<AccountPage> {
                           me.emailVerified ? l.accountEmailConfirmed : l.accountEmailNotConfirmed,
                           style: TextStyle(color: me.emailVerified ? t.ok : t.warn),
                         ),
-                        trailing: me.emailVerified
+                        trailing: tileAction(context, me.emailVerified
                             ? null
                             : TextButton(
                                 onPressed: () => _act(
@@ -170,7 +170,7 @@ class _AccountPageState extends State<AccountPage> {
                                   l.accountVerifySent,
                                 ),
                                 child: Text(l.accountVerifyResend),
-                              ),
+                              )),
                       ),
                       const Divider(height: 1),
                       ListTile(
@@ -184,7 +184,7 @@ class _AccountPageState extends State<AccountPage> {
                         leading: const Icon(Icons.shield_outlined),
                         title: Text(l.twoFactorTitle),
                         subtitle: Text(me.twoFactorEnabled ? l.accountTwoFactorOn : l.accountTwoFactorOff),
-                        trailing: me.twoFactorEnabled
+                        trailing: tileAction(context, me.twoFactorEnabled
                             ? TextButton(
                                 onPressed: _disableTwoFactor,
                                 child: Text(l.accountTurnOff, style: TextStyle(color: t.bad)),
@@ -192,7 +192,7 @@ class _AccountPageState extends State<AccountPage> {
                             : TextButton(
                                 onPressed: _setUpTwoFactor,
                                 child: Text(l.accountSetUp),
-                              ),
+                              )),
                       ),
                     ],
                   ),
@@ -210,13 +210,13 @@ class _AccountPageState extends State<AccountPage> {
                           subtitle: sessions[i].expiresAt == null
                               ? null
                               : Text(l.accountSessionExpires(shortDate(l, sessions[i].expiresAt!))),
-                          trailing: TextButton(
+                          trailing: tileAction(context, TextButton(
                             onPressed: () => _revoke(sessions[i]),
                             child: Text(
                               l.accountRevoke,
                               style: TextStyle(color: t.bad),
                             ),
-                          ),
+                          )),
                         ),
                       ],
                     ],
@@ -580,9 +580,16 @@ class _CodeWell extends StatelessWidget {
                   style: TextStyle(color: t.muted, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  code,
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: 18, fontWeight: FontWeight.w600, letterSpacing: 0.7),
+                // One line, shrunk if it must: a code split across lines
+                // gets copied down wrong.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    code,
+                    maxLines: 1,
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 18, fontWeight: FontWeight.w600, letterSpacing: 0.7),
+                  ),
                 ),
               ],
             ),

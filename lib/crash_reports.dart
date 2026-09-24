@@ -25,7 +25,7 @@ import 'widgets.dart';
 
 /// The app's version, as in pubspec.yaml (without the build number).
 /// test/crash_reports_test.dart fails when the two differ.
-const appVersion = '0.13.0';
+const appVersion = '0.13.1';
 
 /// One error, as saved on the phone.
 class CrashReport {
@@ -418,10 +418,11 @@ class _CrashConsentTileState extends State<CrashConsentTile> {
     return ListTile(
       leading: const Icon(Icons.bug_report_outlined),
       title: Text(l.crashSettingTitle),
-      trailing: _value == null
+      trailing: tileAction(context, _value == null
           ? null
           : DropdownButton<CrashConsent>(
               value: _value,
+              isExpanded: true,
               underline: const SizedBox.shrink(),
               onChanged: (c) async {
                 if (c == null) return;
@@ -433,7 +434,7 @@ class _CrashConsentTileState extends State<CrashConsentTile> {
                 DropdownMenuItem(value: CrashConsent.always, child: Text(l.crashAlways)),
                 DropdownMenuItem(value: CrashConsent.never, child: Text(l.crashNever)),
               ],
-            ),
+            )),
     );
   }
 }

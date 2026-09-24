@@ -502,6 +502,7 @@ class _AddFriendDialogState extends State<_AddFriendDialog> {
         children: [
           DropdownButtonFormField<String>(
             initialValue: _kind,
+            isExpanded: true,
             decoration: InputDecoration(labelText: l.friendsAddKind),
             items: [
               DropdownMenuItem(value: 'openpak', child: Text(l.friendsKindOpenpak)),

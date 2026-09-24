@@ -3,6 +3,21 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.13.1 — 2026-09-24
+
+German, French and large accessibility text, checked on every screen at 100, 130 and 200%.
+
+- **Account no longer goes blank with large text.** A row's button (Send the link again, Revoke,
+  Turn off, the crash-report choice) could take the whole row, which a list tile refuses; they
+  are capped at 40% of the width now and their labels wrap.
+- **Tab bar** labels stop growing at 1.15× so "Einladungen" and "Sauvegardes" no longer break
+  mid-word; the rest of the app scales in full.
+- **Decline and Accept** go onto two lines when they do not fit side by side.
+- **Section headings** wrap instead of pushing their count off screen; friend codes stay on one
+  line and shrink rather than splitting; the country and code-type dropdowns ellipsize.
+- **Titles**: the Titles/Network toggle drops its icons, as the site's; a status dot sits in an
+  icon-sized box, as a chip expects.
+
 ## v0.13.0 — 2026-09-24
 
 The last of the website's redesign: what the approved mockup has that the app did not.

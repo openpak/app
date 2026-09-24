@@ -130,6 +130,7 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       initialValue: _me.country.isEmpty ? null : _me.country,
                       hint: Text(l.detailsNotSet),
                       items: [
