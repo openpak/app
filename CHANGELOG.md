@@ -3,6 +3,11 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.14.1 — 2026-09-24
+
+- v0.14.0 with the crash reports' version constant bumped too; v0.14.0's release stopped at that
+  test and published nothing.
+
 ## v0.14.0 — 2026-09-24
 
 - **Add a friend by Wii U NNID or by email.** The add-friend dialog lists both, typed as they are
