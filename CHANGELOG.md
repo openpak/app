@@ -3,8 +3,12 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
-## Unreleased
+## v0.14.0 — 2026-09-24
 
+- **Add a friend by Wii U NNID or by email.** The add-friend dialog lists both, typed as they are
+  (no code formatting). By email the answer never says whether the address has an account
+  (website v0.57.0).
+- **Your email is among your friend codes** on the Account tab, with a copy button.
 - **Console logos from Wikimedia Commons**, the website's (v0.56.2) byte for byte: Switch, 3DS,
   DS, Wii, Wii U, PS3, PSP, Vita and Xbox 360, each with a dark copy that lightens what is too
   dark and a light copy that darkens what is too faint. A test fails if they drift from the
