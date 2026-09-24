@@ -117,6 +117,13 @@ the phone, and the phone carries the voice (website v0.53.0).
   background, and there is no foreground service yet.
 - All new strings in every language the app speaks.
 
+## v0.10.0 — 2026-09-23
+
+- **Crash reports, sent only with consent.** Unhandled errors are kept (the last five) and
+  offered in a dialog: Send, Don't send, Always send, Never send; the answer can be changed on
+  the Account page. Reports go to `POST /api/v1/crash-reports`; a failed send stays for next
+  time. No new dependency.
+
 ## v0.9.0 — 2026-09-23
 
 Friends say where each friend is playing (website presence `platform`, `client`,
@@ -130,6 +137,10 @@ Friends say where each friend is playing (website presence `platform`, `client`,
 - An older server without those fields: the pill is what it was (the game, the
   platform and "In a game", or "Online").
 - Friends show their profile pictures.
+
+## v0.8.1 — 2026-09-20
+
+- Friends: the game's name, and a row that opens.
 
 ## v0.8.0 — 2026-09-19
 
@@ -179,6 +190,10 @@ Parity with the website (v0.46.0):
   conflict badge, search and console filter, then your own storage
 - WD-0: linked consoles render as platform names [fdc7f7b]
 
+
+## v0.6.14 — 2026-09-11
+
+- Titles: tests follow the Request-a-game sheet; plain empty state inside the list.
 
 ## v0.6.13 — 2026-09-11
 
