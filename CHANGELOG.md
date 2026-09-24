@@ -3,6 +3,16 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## Unreleased
+
+- **Console logos from Wikimedia Commons**, the website's (v0.56.2) byte for byte: Switch, 3DS,
+  DS, Wii, Wii U, PS3, PSP, Vita and Xbox 360, each with a dark copy that lightens what is too
+  dark and a light copy that darkens what is too faint. A test fails if they drift from the
+  website's.
+- The marks are 3:2 wordmarks, so they are drawn wider: 42x28 on title rows, 30x20 on the
+  friend's platform pill, 44x29 in the saves card, and inside the label of the console filter
+  chips (the chip's avatar box is square and trips Flutter's layout when widened).
+
 ## v0.13.1 — 2026-09-24
 
 German, French and large accessibility text, checked on every screen at 100, 130 and 200%.

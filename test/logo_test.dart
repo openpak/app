@@ -22,6 +22,19 @@ void main() {
     );
   });
 
+  // The console marks are copies too (website/web/static/consoles/CREDITS.md).
+  test('the bundled console marks match the website', () {
+    final upstream = Directory('../website/web/static/consoles');
+    if (!upstream.existsSync()) return;
+    for (final f in upstream.listSync().whereType<File>().where((f) => f.path.endsWith('.svg'))) {
+      final name = f.uri.pathSegments.last;
+      final ours = File('assets/consoles/$name');
+      expect(ours.existsSync(), isTrue, reason: 'assets/consoles/$name is missing');
+      expect(ours.readAsBytesSync(), equals(f.readAsBytesSync()),
+          reason: '$name has changed on the website; cp ../website/web/static/consoles/*.svg assets/consoles/');
+    }
+  });
+
   test('the launcher icons exist at every density', () {
     for (final d in ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']) {
       expect(

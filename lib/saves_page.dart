@@ -425,7 +425,7 @@ class _SaveRow extends StatelessWidget {
       height: 48,
       alignment: Alignment.center,
       decoration: BoxDecoration(color: t.paper2, borderRadius: BorderRadius.circular(8)),
-      child: mark(36, 24),
+      child: mark(44, 29),
     );
     return Padding(
       padding: const EdgeInsets.all(14),

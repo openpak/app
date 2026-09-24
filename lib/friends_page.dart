@@ -384,8 +384,8 @@ class FriendClientChip extends StatelessWidget {
         children: [
           SvgPicture.asset(
             'assets/consoles/${consoleAsset(friendConsole(platform), Theme.of(context).brightness)}.svg',
-            width: 21,
-            height: 14,
+            width: 30,
+            height: 20,
             excludeFromSemantics: true,
           ),
           const SizedBox(width: 6),
