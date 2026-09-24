@@ -104,7 +104,7 @@ class TitlesPageState extends State<TitlesPage> {
                 if (shown.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 48),
-                    child: Text(l.titlesNothingMatches, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+                    child: Text(l.titlesNothingMatches, textAlign: TextAlign.center, style: TextStyle(color: tokensOf(context).muted)),
                   )
                 else
                   ...shown.map((i) => _CatalogRow(
@@ -121,7 +121,7 @@ class TitlesPageState extends State<TitlesPage> {
                     label: Text(l.titlesRequestGame),
                   ),
                   const SizedBox(height: 6),
-                  Text(l.titlesRequestHint, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(l.titlesRequestHint, style: TextStyle(fontSize: 12, color: tokensOf(context).muted)),
                 ],
               ],
             );
@@ -164,7 +164,7 @@ class TitlesPageState extends State<TitlesPage> {
               ),
               const SizedBox(height: 16),
               if (!signedIn)
-                Text(l.titlesSignInToRequest, style: const TextStyle(color: Colors.grey))
+                Text(l.titlesSignInToRequest, style: TextStyle(color: tokensOf(context).muted))
               else
                 FilledButton(
                   onPressed: picked == null

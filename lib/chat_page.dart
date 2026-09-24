@@ -61,23 +61,32 @@ class _ConversationsPageState extends State<ConversationsPage> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
               children: [
-                for (final c in convs)
-                  ListTile(
-                    leading: Avatar(name: names[c.peer] ?? c.peer),
-                    title: Text(names[c.peer] ?? c.peer),
-                    subtitle: Text(
-                      c.newest.from == c.peer ? chatLine(l, c.newest) : l.chatFromYou(chatLine(l, c.newest)),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: t.muted),
-                    ),
-                    onTap: () async {
-                      await Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => ChatPage(api: widget.api, peer: c.peer, name: names[c.peer] ?? c.peer),
-                      ));
-                      _reload();
-                    },
+                // One card of rows, as the Account sections are.
+                Panel(
+                  child: Column(
+                    children: [
+                      for (final (i, c) in convs.indexed) ...[
+                        if (i > 0) const Divider(height: 1),
+                        ListTile(
+                          leading: Avatar(name: names[c.peer] ?? c.peer),
+                          title: Text(names[c.peer] ?? c.peer),
+                          subtitle: Text(
+                            c.newest.from == c.peer ? chatLine(l, c.newest) : l.chatFromYou(chatLine(l, c.newest)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: t.muted),
+                          ),
+                          onTap: () async {
+                            await Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => ChatPage(api: widget.api, peer: c.peer, name: names[c.peer] ?? c.peer),
+                            ));
+                            _reload();
+                          },
+                        ),
+                      ],
+                    ],
                   ),
+                ),
               ],
             );
           },

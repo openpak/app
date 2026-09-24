@@ -443,7 +443,7 @@ class StateRow extends StatefulWidget {
   final RowState state;
   final Widget? leading;
 
-  /// An action that belongs to this row, after the pill.
+  /// Actions that belong to this row; they sit on a line of their own under it.
   final Widget? trailing;
   final VoidCallback? onTap;
   final Widget? expandedChild;
@@ -466,6 +466,17 @@ class _StateRowState extends State<StateRow> {
       RowState.bad => (t.badWeak, t.badLine, t.bad),
       RowState.idle => (t.raised, t.line, t.muted),
     };
+    final hasActions = widget.trailing != null;
+    final name = Text(
+      widget.name,
+      style: const TextStyle(fontWeight: FontWeight.w600),
+      overflow: TextOverflow.ellipsis,
+    );
+    final pill = _Pill(
+      text: widget.pill,
+      color: ink,
+      border: widget.state == RowState.idle ? t.line2 : border,
+    );
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -484,27 +495,21 @@ class _StateRowState extends State<StateRow> {
               Row(
                 children: [
                   if (widget.leading != null) ...[widget.leading!, const SizedBox(width: 12)],
-                  Expanded(
-                    child: Text(
-                      widget.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // Align, so the pill sits at the row's end (the site's
-                  // margin-left: auto) rather than where the name's half ends.
-                  Flexible(
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: _Pill(
-                        text: widget.pill,
-                        color: ink,
-                        border: widget.state == RowState.idle ? t.line2 : border,
+                  if (!hasActions) ...[
+                    Expanded(child: name),
+                    const SizedBox(width: 10),
+                    // Align, so the pill sits at the row's end (the site's
+                    // margin-left: auto) rather than where the name's half ends.
+                    Flexible(child: Align(alignment: Alignment.centerRight, child: pill)),
+                  ] else
+                    // With actions beside them, a name and a pill in one line
+                    // leave each a sliver at 390px; stacked, both read whole.
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [name, const SizedBox(height: 6), pill],
                       ),
                     ),
-                  ),
-                  if (widget.trailing != null) ...[const SizedBox(width: 4), widget.trailing!],
                   if (expandable) ...[
                     const SizedBox(width: 4),
                     AnimatedRotation(
@@ -515,6 +520,9 @@ class _StateRowState extends State<StateRow> {
                   ],
                 ],
               ),
+              // Actions wrap under the row, right-aligned, as the site's do.
+              if (hasActions)
+                Align(alignment: Alignment.centerRight, child: widget.trailing!),
               if (expandable)
                 // AnimatedSize rather than AnimatedCrossFade: the latter lays
                 // out both children at all times to interpolate between them,

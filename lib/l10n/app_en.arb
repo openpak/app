@@ -828,14 +828,6 @@
   "@detailsBirthdaySaved": {
     "description": "Snackbar after the date of birth was saved."
   },
-  "detailsNoConsole": "No console linked yet",
-  "@detailsNoConsole": {
-    "description": "Shown in place of the friend code when no console is linked."
-  },
-  "detailsTapToCopy": "Tap to copy",
-  "@detailsTapToCopy": {
-    "description": "Under the friend code: tapping it copies it."
-  },
   "countryIe": "Ireland",
   "@countryIe": {
     "description": "Country name in the country dropdown (ISO code IE)."

@@ -3,6 +3,18 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.12.1 — 2026-09-24
+
+The rest of the redesign, checked screen by screen.
+
+- **Rows with actions** (friends, requests, blocked, invitations) put the name over its pill and the
+  buttons on a line of their own, as the site's rows do; at phone width a friend's name and game
+  were cut to a few letters.
+- **Invitations** name the game from the catalog, as Friends does, instead of showing its title id.
+- **Chats** sit in one card, like every other list.
+- **Account details** drops its friend-code panel: the Account card above it lists every code.
+- The last hard-coded greys on Titles use the palette's muted colour.
+
 ## v0.12.0 — 2026-09-23
 
 The website's redesign (website v0.54.0), in the app: one product again.

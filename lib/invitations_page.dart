@@ -16,7 +16,7 @@ class InvitationsPage extends StatefulWidget {
 }
 
 class _InvitationsPageState extends State<InvitationsPage> {
-  late Future<List<Invitation>> _data;
+  late Future<(List<Invitation>, Map<String, String>)> _data;
 
   @override
   void initState() {
@@ -26,7 +26,18 @@ class _InvitationsPageState extends State<InvitationsPage> {
 
   // A block, not an arrow: an arrow would hand setState the Future it assigns.
   void _reload() => setState(() {
-    _data = widget.api.invitations();
+    // The catalog only turns a title id into a game's name, as on Friends:
+    // unreachable, the row keeps the id rather than losing the page.
+    _data = Future.wait([
+      widget.api.invitations(),
+      widget.api.requests().catchError((_) => <CatalogItem>[]),
+    ]).then((r) => (
+      r[0] as List<Invitation>,
+      {
+        for (final c in r[1] as List<CatalogItem>)
+          if (c.isTitle && c.titleId.isNotEmpty) c.titleId.toUpperCase(): c.name,
+      },
+    ));
   });
 
   Future<void> _decline(Invitation inv) async {
@@ -48,7 +59,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
       appBar: AppBar(title: Text(l.invitationsTitle)),
       body: RefreshIndicator(
         onRefresh: () async => _reload(),
-        child: FutureBuilder<List<Invitation>>(
+        child: FutureBuilder<(List<Invitation>, Map<String, String>)>(
           future: _data,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
@@ -57,7 +68,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
             if (snap.hasError) {
               return LoadFailure(snap.error);
             }
-            final items = snap.data ?? const <Invitation>[];
+            final (items, names) = snap.data ?? (const <Invitation>[], const <String, String>{});
             if (items.isEmpty) {
               return ScrollableMessage(l.invitationsEmpty);
             }
@@ -70,7 +81,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
                 ...items.map(
                   (inv) => StateRow(
                     name: l.invitationsFrom(inv.from),
-                    pill: inv.expired ? l.invitationsExpired : inv.titleId,
+                    pill: inv.expired ? l.invitationsExpired : names[inv.titleId.toUpperCase()] ?? inv.titleId,
                     state: inv.expired ? RowState.idle : RowState.ok,
                     leading: Avatar(name: inv.from, dim: inv.expired),
                     trailing: TextButton(

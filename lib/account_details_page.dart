@@ -157,26 +157,6 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
                 onTap: _pickBirthday,
               ),
             ),
-            const SizedBox(height: 20),
-            SectionLabel(l.commonFriendCode),
-            Panel(
-              child: ListTile(
-                title: Text(_me.friendCode ?? l.detailsNoConsole),
-                subtitle: _me.friendCode == null
-                    ? null
-                    : Text(l.detailsTapToCopy),
-                trailing: _me.friendCode == null
-                    ? null
-                    : const Icon(Icons.copy_rounded, size: 18),
-                onTap: _me.friendCode == null
-                    ? null
-                    : () => copyToClipboard(
-                        context,
-                        _me.friendCode!,
-                        l.commonFriendCodeCopied,
-                      ),
-              ),
-            ),
           ],
         ),
       ),
