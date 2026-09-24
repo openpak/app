@@ -956,8 +956,8 @@ class OpenPakApi {
     return FriendRequests(incoming: read('incoming'), outgoing: read('outgoing'));
   }
 
-  /// POST /me/friends/requests — add by code. [kind] is openpak, switch or
-  /// 3ds; left out, the server reads an OP- code as OpenPak and anything else
+  /// POST /me/friends/requests — add by code. [kind] is openpak, switch,
+  /// 3ds, wiiu or email (website v0.57.0); left out, the server reads an OP- code as OpenPak and anything else
   /// as Switch.
   Future<void> addFriend(String friendCode, {String? kind}) => _post('/me/friends/requests', {
     'friend_code': friendCode,

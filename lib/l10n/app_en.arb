@@ -296,6 +296,18 @@
   "@friendsKind3ds": {
     "description": "A 3DS friend code (1234-5678-9012)."
   },
+  "friendsKindWiiu": "Wii U Nintendo Network ID",
+  "@friendsKindWiiu": {
+    "description": "A Wii U Nintendo Network ID, the name a Wii U friend is added by."
+  },
+  "friendsKindEmail": "Email address",
+  "@friendsKindEmail": {
+    "description": "Add a friend by the email address they sign in with."
+  },
+  "friendsRequestSentEmail": "If that address has an OpenPak account, your request was sent.",
+  "@friendsRequestSentEmail": {
+    "description": "Shown after adding a friend by email; the server never says whether the address has an account."
+  },
   "friendsRequestSent": "Request sent.",
   "@friendsRequestSent": {
     "description": "Snackbar after a friend request was sent."

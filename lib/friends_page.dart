@@ -87,7 +87,10 @@ class FriendsPageState extends State<FriendsPage> {
     final picked = await showDialog<(String, String)>(context: context, builder: (_) => const _AddFriendDialog());
     if (picked == null) return;
     final (kind, code) = picked;
-    await _act(() => widget.api.addFriend(code, kind: kind), l.friendsRequestSent);
+    // By email the server answers the same whether or not the address has an
+    // account, so the message cannot claim a request went out.
+    await _act(() => widget.api.addFriend(code, kind: kind),
+        kind == 'email' ? l.friendsRequestSentEmail : l.friendsRequestSent);
   }
 
   @override
@@ -455,9 +458,14 @@ const friendCodeShapes = {
   '3ds': (prefix: '', groups: [4, 4, 4], drop: r'[^0-9]', hint: '1234-5678-9012'),
 };
 
+/// Kinds typed as they are, with no shape to fit: a Nintendo Network ID is a
+/// name, and an email address is an address.
+const freeFriendCodeHints = {'wiiu': 'NNID', 'email': 'name@example.com'};
+
 /// Whatever was typed, fitted to [kind]'s shape: upper-cased, the prefix
 /// taken off and put back, stray characters dropped, dashes between groups.
 String fitFriendCode(String kind, String typed) {
+  if (freeFriendCodeHints.containsKey(kind)) return typed;
   final sh = friendCodeShapes[kind] ?? friendCodeShapes['openpak']!;
   var raw = typed.toUpperCase();
   if (sh.prefix.isNotEmpty && raw.startsWith(sh.prefix.substring(0, 2))) raw = raw.substring(2);
@@ -508,6 +516,8 @@ class _AddFriendDialogState extends State<_AddFriendDialog> {
               DropdownMenuItem(value: 'openpak', child: Text(l.friendsKindOpenpak)),
               DropdownMenuItem(value: 'switch', child: Text(l.friendsKindSwitch)),
               DropdownMenuItem(value: '3ds', child: Text(l.friendsKind3ds)),
+              DropdownMenuItem(value: 'wiiu', child: Text(l.friendsKindWiiu)),
+              DropdownMenuItem(value: 'email', child: Text(l.friendsKindEmail)),
             ],
             onChanged: (v) => setState(() {
               _kind = v!;
@@ -519,10 +529,15 @@ class _AddFriendDialogState extends State<_AddFriendDialog> {
             controller: _code,
             autofocus: true,
             autocorrect: false,
-            textCapitalization: TextCapitalization.characters,
-            keyboardType: _kind == '3ds' ? TextInputType.number : TextInputType.text,
+            textCapitalization:
+                freeFriendCodeHints.containsKey(_kind) ? TextCapitalization.none : TextCapitalization.characters,
+            keyboardType: switch (_kind) {
+              '3ds' => TextInputType.number,
+              'email' => TextInputType.emailAddress,
+              _ => TextInputType.text,
+            },
             style: const TextStyle(fontFamily: 'monospace', letterSpacing: 0.6),
-            decoration: InputDecoration(hintText: friendCodeShapes[_kind]!.hint),
+            decoration: InputDecoration(hintText: freeFriendCodeHints[_kind] ?? friendCodeShapes[_kind]!.hint),
             inputFormatters: [
               TextInputFormatter.withFunction((_, next) {
                 final v = fitFriendCode(_kind, next.text);

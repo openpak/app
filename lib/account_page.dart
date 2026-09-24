@@ -533,6 +533,7 @@ class _ProfileCard extends StatelessWidget {
                             'openpak' => l.friendsKindOpenpak,
                             'switch' => l.friendsKindSwitch,
                             '3ds' => l.friendsKind3ds,
+                            'email' => l.friendsKindEmail,
                             _ => c.label, // Wii U · NNID, and whatever comes next
                           },
                           code: c.code,
