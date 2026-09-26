@@ -4,6 +4,7 @@ import 'account_details_page.dart';
 import 'api.dart';
 import 'crash_reports.dart';
 import 'l10n.dart';
+import 'parental_controls_page.dart';
 import 'theme.dart';
 import 'two_factor_page.dart';
 import 'widgets.dart';
@@ -178,6 +179,20 @@ class _AccountPageState extends State<AccountPage> {
                         title: Text(l.accountChangeEmail),
                         trailing: Icon(Icons.chevron_right, color: t.muted),
                         onTap: _changeEmail,
+                      ),
+                      const Divider(height: 1),
+                      // Parental controls sit with the account rather than in
+                      // the tab bar: it is something you set up once for a
+                      // console, not somewhere you go every day.
+                      ListTile(
+                        leading: const Icon(Icons.family_restroom),
+                        title: Text(l.parentalTitle),
+                        trailing: Icon(Icons.chevron_right, color: t.muted),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ParentalControlsPage(api: widget.api),
+                          ),
+                        ),
                       ),
                       const Divider(height: 1),
                       ListTile(

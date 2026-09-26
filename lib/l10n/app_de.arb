@@ -362,5 +362,18 @@
   "voiceFailedDisconnected": "Die Verbindung zum Sprachchat ist abgebrochen.",
   "voiceRejoin": "Erneut beitreten",
   "errorVoiceRoomUnknown": "Kein Sprachraum hat diesen Code. Prüfe ihn am Fernseher oder frag, wer den Raum erstellt hat.",
-  "errorVoiceRoomFull": "Dieser Sprachraum ist voll: Es sprechen bereits acht Personen."
+  "errorVoiceRoomFull": "Dieser Sprachraum ist voll: Es sprechen bereits acht Personen.",
+  "parentalTitle": "Altersbeschränkungen",
+  "parentalHowTo": "Öffne auf der Konsole die Systemeinstellungen → Altersbeschränkungen → Smartphone-App verwenden und gib dann den Code unten ein.",
+  "parentalCodeLabel": "Code für die Konsole",
+  "parentalCodeValid": "15 Minuten gültig",
+  "parentalCodeCopy": "Code kopieren",
+  "parentalCodeCopied": "Code kopiert",
+  "parentalConsoles": "Konsolen",
+  "parentalConsole": "Konsole",
+  "parentalNoConsoles": "Noch keine Konsole verbunden.",
+  "parentalManaged": "Limits gesetzt",
+  "parentalNoLimits": "Keine Limits",
+  "parentalPairConsole": "Konsole verbinden",
+  "parentalOnConsoleNote": "PIN und Limits setzt die Konsole selbst um, sie gelten also auch offline."
 }

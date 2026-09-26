@@ -362,5 +362,18 @@
   "voiceFailedDisconnected": "A conexão com o chat de voz caiu.",
   "voiceRejoin": "Entrar de novo",
   "errorVoiceRoomUnknown": "Nenhuma sala de voz tem esse código. Confira na TV ou pergunte a quem criou a sala.",
-  "errorVoiceRoomFull": "Esta sala de voz está cheia: oito pessoas já estão conversando."
+  "errorVoiceRoomFull": "Esta sala de voz está cheia: oito pessoas já estão conversando.",
+  "parentalTitle": "Controlo parental",
+  "parentalHowTo": "Na consola, abre Definições da consola → Controlo parental → Utilizar aplicação para smartphone e introduz o código abaixo.",
+  "parentalCodeLabel": "Código para introduzir na consola",
+  "parentalCodeValid": "Válido durante 15 minutos",
+  "parentalCodeCopy": "Copiar código",
+  "parentalCodeCopied": "Código copiado",
+  "parentalConsoles": "Consolas",
+  "parentalConsole": "Consola",
+  "parentalNoConsoles": "Ainda não há nenhuma consola associada.",
+  "parentalManaged": "Limites definidos",
+  "parentalNoLimits": "Sem limites",
+  "parentalPairConsole": "Associar uma consola",
+  "parentalOnConsoleNote": "O PIN e os limites são aplicados pela própria consola, por isso continuam a funcionar offline."
 }

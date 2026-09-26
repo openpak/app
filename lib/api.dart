@@ -294,6 +294,38 @@ class Friend {
 /// value, or null.
 String? _nonEmpty(Object? v) => v is String && v.isNotEmpty ? v : null;
 
+/// One console under parental controls, as the app lists it. The pairing code is
+/// there only while it is still live: the server drops a dead one rather than let
+/// a screen show a code someone would type.
+class ParentalDevice {
+  ParentalDevice({
+    required this.moonId,
+    required this.paired,
+    required this.pairingCode,
+    required this.expiresAt,
+    required this.hasSetting,
+  });
+  final String moonId;
+  final bool paired;
+  final String pairingCode;
+  final DateTime? expiresAt;
+  final bool hasSetting;
+
+  bool get waiting => !paired && pairingCode.isNotEmpty;
+
+  factory ParentalDevice.fromJson(Map<String, dynamic> j) => ParentalDevice(
+    moonId: j['moon_id'] as String? ?? '',
+    paired: j['paired'] as bool? ?? false,
+    pairingCode: j['pairing_code'] as String? ?? '',
+    expiresAt: _unix(j['expires_at']),
+    hasSetting: j['has_setting'] as bool? ?? false,
+  );
+
+  static DateTime? _unix(Object? v) => v is num && v > 0
+      ? DateTime.fromMillisecondsSinceEpoch(v.toInt() * 1000)
+      : null;
+}
+
 class Invitation {
   Invitation({
     required this.id,
@@ -1140,6 +1172,26 @@ class OpenPakApi {
         headers: _headers(),
       ),
     );
+  }
+
+  /// GET /me/parental-controls — the consoles this account manages.
+  Future<List<ParentalDevice>> parentalDevices() async {
+    final body = await _decode(
+      await _http.get(_uri('/me/parental-controls'), headers: _headers()),
+    );
+    return (((body['devices'] as List?) ?? const [])
+        .map((e) => ParentalDevice.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false));
+  }
+
+  /// POST /me/parental-controls/pairing — a fresh code to type on the console.
+  /// Asking again is how someone who walked away from the console gets one that
+  /// is still alive, so this is not idempotent and is not meant to be.
+  Future<ParentalDevice> parentalPair() async {
+    final body = await _decode(
+      await _http.post(_uri('/me/parental-controls/pairing'), headers: _headers(json: true)),
+    );
+    return ParentalDevice.fromJson({...body, 'paired': false, 'has_setting': false});
   }
 
   Future<void> _post(String path, Map<String, dynamic> body) async {

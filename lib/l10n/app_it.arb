@@ -362,5 +362,18 @@
   "voiceFailedDisconnected": "La connessione alla chat vocale si è interrotta.",
   "voiceRejoin": "Entra di nuovo",
   "errorVoiceRoomUnknown": "Nessuna stanza vocale ha quel codice. Controllalo sulla TV o chiedi a chi ha creato la stanza.",
-  "errorVoiceRoomFull": "Questa stanza vocale è piena: ci sono già otto persone che parlano."
+  "errorVoiceRoomFull": "Questa stanza vocale è piena: ci sono già otto persone che parlano.",
+  "parentalTitle": "Filtro famiglia",
+  "parentalHowTo": "Sulla console apri Impostazioni della console → Filtro famiglia → Usa l'app per smartphone, poi inserisci il codice qui sotto.",
+  "parentalCodeLabel": "Codice da inserire sulla console",
+  "parentalCodeValid": "Valido per 15 minuti",
+  "parentalCodeCopy": "Copia codice",
+  "parentalCodeCopied": "Codice copiato",
+  "parentalConsoles": "Console",
+  "parentalConsole": "Console",
+  "parentalNoConsoles": "Nessuna console ancora associata.",
+  "parentalManaged": "Limiti impostati",
+  "parentalNoLimits": "Nessun limite",
+  "parentalPairConsole": "Associa una console",
+  "parentalOnConsoleNote": "PIN e limiti vengono applicati dalla console stessa, quindi restano attivi anche offline."
 }

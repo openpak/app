@@ -1670,5 +1670,57 @@
   "errorVoiceRoomFull": "This voice room is full: eight people are already talking.",
   "@errorVoiceRoomFull": {
     "description": "Error shown when the server answers with the error code 'voice_room_full'."
+  },
+  "parentalTitle": "Parental controls",
+  "@parentalTitle": {
+    "description": "Title of the parental-controls screen, reached from Account."
+  },
+  "parentalHowTo": "On the console, open System Settings → Parental Controls → Use smartphone app, then enter the code below.",
+  "@parentalHowTo": {
+    "description": "How to start pairing, shown above the code."
+  },
+  "parentalCodeLabel": "Code to enter on the console",
+  "@parentalCodeLabel": {
+    "description": "Section label above a live pairing code."
+  },
+  "parentalCodeValid": "Valid for 15 minutes",
+  "@parentalCodeValid": {
+    "description": "How long a pairing code lasts."
+  },
+  "parentalCodeCopy": "Copy code",
+  "@parentalCodeCopy": {
+    "description": "Tooltip on the copy-code button."
+  },
+  "parentalCodeCopied": "Code copied",
+  "@parentalCodeCopied": {
+    "description": "Toast after copying the code."
+  },
+  "parentalConsoles": "Consoles",
+  "@parentalConsoles": {
+    "description": "Section label above the paired consoles."
+  },
+  "parentalConsole": "Console",
+  "@parentalConsole": {
+    "description": "Row name for one paired console."
+  },
+  "parentalNoConsoles": "No console is paired yet.",
+  "@parentalNoConsoles": {
+    "description": "Empty state when nothing is paired."
+  },
+  "parentalManaged": "Limits set",
+  "@parentalManaged": {
+    "description": "Pill on a console that has restriction settings stored."
+  },
+  "parentalNoLimits": "No limits",
+  "@parentalNoLimits": {
+    "description": "Pill on a paired console with no restrictions stored yet."
+  },
+  "parentalPairConsole": "Pair a console",
+  "@parentalPairConsole": {
+    "description": "Button that mints a pairing code."
+  },
+  "parentalOnConsoleNote": "The PIN and the limits are applied by the console itself, so they keep working while it is offline.",
+  "@parentalOnConsoleNote": {
+    "description": "Footnote: the console enforces the limits itself, so they work offline."
   }
 }

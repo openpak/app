@@ -362,5 +362,18 @@
   "voiceFailedDisconnected": "La connexion au chat vocal a été perdue.",
   "voiceRejoin": "Rejoindre à nouveau",
   "errorVoiceRoomUnknown": "Aucun salon vocal n'a ce code. Vérifie-le sur la télé ou demande à la personne qui a créé le salon.",
-  "errorVoiceRoomFull": "Ce salon vocal est plein : huit personnes parlent déjà."
+  "errorVoiceRoomFull": "Ce salon vocal est plein : huit personnes parlent déjà.",
+  "parentalTitle": "Contrôle parental",
+  "parentalHowTo": "Sur la console, ouvre Paramètres de la console → Contrôle parental → Utiliser l'application smartphone, puis saisis le code ci-dessous.",
+  "parentalCodeLabel": "Code à saisir sur la console",
+  "parentalCodeValid": "Valable 15 minutes",
+  "parentalCodeCopy": "Copier le code",
+  "parentalCodeCopied": "Code copié",
+  "parentalConsoles": "Consoles",
+  "parentalConsole": "Console",
+  "parentalNoConsoles": "Aucune console n'est encore associée.",
+  "parentalManaged": "Limites définies",
+  "parentalNoLimits": "Aucune limite",
+  "parentalPairConsole": "Associer une console",
+  "parentalOnConsoleNote": "Le code PIN et les limites sont appliqués par la console elle-même : ils fonctionnent donc hors ligne."
 }

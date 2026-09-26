@@ -517,4 +517,49 @@ void main() {
     expect(old.friendCodes.map((c) => c.kind), ['openpak', 'switch']);
     expect(Account.fromJson({}).friendCodes, isEmpty);
   });
+
+  test('a parental-controls list separates a live code from a paired console', () async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((req) async {
+        expect(req.url.path, '/api/v1/me/parental-controls');
+        return json({
+          'devices': [
+            {'moon_id': '00000000000000ff', 'paired': false, 'pairing_code': 'ABC234', 'expires_at': 1790000000, 'has_setting': false},
+            {'moon_id': '00000000000000aa', 'paired': true, 'has_setting': true},
+          ],
+        });
+      }),
+    );
+
+    final devices = await api.parentalDevices();
+    expect(devices.map((d) => d.waiting), [true, false]);
+    // A record with no live code carries none: the server drops an expired one
+    // rather than let a screen show a code someone would type.
+    expect(devices[1].pairingCode, '');
+    expect(devices[0].expiresAt, DateTime.fromMillisecondsSinceEpoch(1790000000 * 1000));
+    expect(devices[1].expiresAt, isNull);
+    expect(devices[1].hasSetting, isTrue);
+  });
+
+  test('pairing posts and returns a code that is not yet paired', () async {
+    var posts = 0;
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((req) async {
+        posts++;
+        expect(req.method, 'POST');
+        expect(req.url.path, '/api/v1/me/parental-controls/pairing');
+        return json({'moon_id': '00000000000000ff', 'pairing_code': 'ABC234', 'expires_at': 1790000000}, status: 201);
+      }),
+    );
+
+    final d = await api.parentalPair();
+    expect(posts, 1);
+    expect(d.pairingCode, 'ABC234');
+    expect(d.paired, isFalse);
+    expect(d.waiting, isTrue);
+  });
 }
