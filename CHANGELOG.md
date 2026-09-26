@@ -3,6 +3,22 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.15.0 — 2026-09-26
+
+- **Parental controls**, on the Account tab. Nintendo's parent surface is a separate smartphone
+  app talking to the console's own API; this is ours. It mints the code to type in the console's
+  *System Settings → Parental Controls → Use smartphone app*, shows it large enough to read off a
+  phone while typing on a console, copies it on a tap, and lists the consoles this account
+  manages. In all seven languages.
+- It needs the server side to pair: nx-baas v0.34.0 holds the device records and the website
+  route that reaches them is not deployed yet, so until both are live the screen answers "not
+  available on this deployment". Nothing on a console changes either way — the PIN and the limits
+  are applied by the console itself and keep working offline.
+- No restriction editor yet: the console-facing sync is still being brought up, and an editor
+  whose changes reached no console would lie about what it had done.
+- CI gained a dispatch-only `check` job (`pub get`, `analyze`, `test`), so the app can be compiled
+  without tagging and publishing a release.
+
 ## v0.14.1 — 2026-09-24
 
 - v0.14.0 with the crash reports' version constant bumped too; v0.14.0's release stopped at that
