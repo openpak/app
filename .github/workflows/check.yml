@@ -1,0 +1,41 @@
+# Compile and test the app without shipping anything: `gh workflow run check.yml`.
+# release.yml is the only other trigger and it tags, signs and publishes APKs, so
+# dispatching that one just to see whether the Dart compiles would create a
+# GitHub Release named after the branch. This job builds no APK and needs no
+# keystore, no Java and no Android SDK — `flutter analyze` and `flutter test` are
+# pure Dart.
+name: check
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    # The OpenPak self-hosted runner, as release.yml uses: GitHub-hosted minutes
+    # are not spent on private repositories.
+    runs-on: [self-hosted, linux, podman]
+    steps:
+      - uses: actions/checkout@v5
+
+      # Scratch in the runner's own temp: /tmp is a RAM disk shared with every
+      # other build here, and a full one hangs the test compiler instead of
+      # failing it (see release.yml).
+      - name: Scratch in the runner's temp, not the machine's shared /tmp
+        run: |
+          mkdir -p "$RUNNER_TEMP/scratch"
+          echo "TMPDIR=$RUNNER_TEMP/scratch" >> "$GITHUB_ENV"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      # Analyze before test: a missing l10n getter or a typo'd widget shows up
+      # here with a file and a line, rather than as a test-runner compile dump.
+      - run: flutter analyze
+      - run: flutter test
+
+      - name: Clear scratch
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/scratch"
