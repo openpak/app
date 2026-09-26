@@ -16,7 +16,7 @@ jobs:
     # The OpenPak self-hosted runner: GitHub-hosted minutes are not used for private repositories.
     runs-on: [self-hosted, linux, podman]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Scratch in the runner's own temp, not the machine's /tmp: /tmp is a RAM
       # disk shared with every other build, and when it filled, the test compiler
       # died and `flutter test` hung for hours instead of failing. Not inside the
