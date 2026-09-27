@@ -1722,5 +1722,218 @@
   "parentalOnConsoleNote": "The PIN and the limits are applied by the console itself, so they keep working while it is offline.",
   "@parentalOnConsoleNote": {
     "description": "Footnote: the console enforces the limits itself, so they work offline."
+  },
+  "parentalUpToDate": "Up to date",
+  "@parentalUpToDate": {
+    "description": "Pill on a console that holds the current settings."
+  },
+  "parentalWaitingForConsole": "Waiting for the console",
+  "@parentalWaitingForConsole": {
+    "description": "Pill on a console that has not yet fetched the current settings."
+  },
+  "parentalLastSynced": "Last synced {time}",
+  "@parentalLastSynced": {
+    "description": "When the console last synced its settings.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "parentalNotSynced": "Not synced yet",
+  "@parentalNotSynced": {
+    "description": "The console has never synced."
+  },
+  "parentalRestrictions": "Restrictions",
+  "@parentalRestrictions": {
+    "description": "Section label above the console's restrictions."
+  },
+  "parentalLevel": "Restriction level",
+  "@parentalLevel": {
+    "description": "Label: the console's restriction level."
+  },
+  "parentalLevelNone": "None",
+  "@parentalLevelNone": {
+    "description": "Restriction level NONE."
+  },
+  "parentalLevelChildren": "Children",
+  "@parentalLevelChildren": {
+    "description": "Restriction level CHILDREN."
+  },
+  "parentalLevelYoungTeens": "Young teens",
+  "@parentalLevelYoungTeens": {
+    "description": "Restriction level YOUNG_TEENS."
+  },
+  "parentalLevelOlderTeens": "Older teens",
+  "@parentalLevelOlderTeens": {
+    "description": "Restriction level OLDER_TEENS."
+  },
+  "parentalLevelCustom": "Custom",
+  "@parentalLevelCustom": {
+    "description": "Restriction level CUSTOM."
+  },
+  "parentalAgeLimit": "Age limit",
+  "@parentalAgeLimit": {
+    "description": "Label: the age rating limit."
+  },
+  "parentalAgeUpTo": "Up to age {age}",
+  "@parentalAgeUpTo": {
+    "description": "Games rated up to this age may be played.",
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "parentalNoAgeLimit": "No age limit",
+  "@parentalNoAgeLimit": {
+    "description": "No age rating limit."
+  },
+  "parentalRatingSystem": "Rating system",
+  "@parentalRatingSystem": {
+    "description": "Label: which age rating organisation the console follows."
+  },
+  "parentalCommunication": "Communicating with others",
+  "@parentalCommunication": {
+    "description": "Label: whether games may communicate with other players."
+  },
+  "parentalGamesSetIndividually": "{count, plural, =1{1 game set individually} other{{count} games set individually}}",
+  "@parentalGamesSetIndividually": {
+    "description": "How many games have their own communication setting.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "parentalSocialPosting": "Posting to social media",
+  "@parentalSocialPosting": {
+    "description": "Label: whether screenshots may be posted to social media."
+  },
+  "parentalVr": "VR mode",
+  "@parentalVr": {
+    "description": "Label: whether VR mode may be used."
+  },
+  "parentalRestricted": "Restricted",
+  "@parentalRestricted": {
+    "description": "A restriction is on."
+  },
+  "parentalAllowed": "Allowed",
+  "@parentalAllowed": {
+    "description": "A restriction is off."
+  },
+  "parentalNotSet": "Not set",
+  "@parentalNotSet": {
+    "description": "A restriction the console has not set."
+  },
+  "parentalPlayTime": "Play time",
+  "@parentalPlayTime": {
+    "description": "Label: the daily play-time limit."
+  },
+  "parentalMinutesADay": "{minutes, plural, =1{1 minute a day} other{{minutes} minutes a day}}",
+  "@parentalMinutesADay": {
+    "description": "A daily play-time limit.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "parentalNoLimit": "No limit",
+  "@parentalNoLimit": {
+    "description": "No play-time limit."
+  },
+  "parentalBedtime": "Bedtime",
+  "@parentalBedtime": {
+    "description": "Label: the bedtime alarm."
+  },
+  "parentalBedtimeFrom": "From {start}",
+  "@parentalBedtimeFrom": {
+    "description": "Bedtime with a start time only.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "parentalBedtimeRange": "{start} to {end}",
+  "@parentalBedtimeRange": {
+    "description": "Bedtime with a start and an end time.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "parentalWhenTimeIsUp": "When time is up",
+  "@parentalWhenTimeIsUp": {
+    "description": "Label: what the console does when play time runs out."
+  },
+  "parentalAlarmOnly": "Alarm only",
+  "@parentalAlarmOnly": {
+    "description": "The console only sounds an alarm."
+  },
+  "parentalSuspendGame": "Suspend the game",
+  "@parentalSuspendGame": {
+    "description": "The console suspends the game."
+  },
+  "parentalPlayers": "Players",
+  "@parentalPlayers": {
+    "description": "Section label above the console's users."
+  },
+  "parentalNoPlayers": "No players reported yet.",
+  "@parentalNoPlayers": {
+    "description": "The console has not uploaded its users."
+  },
+  "parentalPinLabel": "Console PIN",
+  "@parentalPinLabel": {
+    "description": "Section label above the console's PIN."
+  },
+  "parentalShowPin": "Show PIN",
+  "@parentalShowPin": {
+    "description": "Button that reveals the console's PIN."
+  },
+  "parentalHidePin": "Hide PIN",
+  "@parentalHidePin": {
+    "description": "Button that hides the console's PIN again."
+  },
+  "parentalPinHelp": "This is the PIN the console asks for. Change it on the console.",
+  "@parentalPinHelp": {
+    "description": "Under the PIN: what it is and where to change it."
+  },
+  "parentalPinNone": "The console has not reported its PIN yet.",
+  "@parentalPinNone": {
+    "description": "Shown instead of the PIN when the server has none."
+  },
+  "parentalConsoleGone": "This console is no longer paired.",
+  "@parentalConsoleGone": {
+    "description": "Toast when an open console turns out to be unlinked."
+  },
+  "parentalWrongPin": "Wrong PIN entered",
+  "@parentalWrongPin": {
+    "description": "Section label above the times a wrong PIN was typed on the console."
+  },
+  "parentalLockReason": "Unlock to open parental controls",
+  "@parentalLockReason": {
+    "description": "Shown in the phone's own unlock prompt."
+  },
+  "parentalLocked": "Parental controls are locked. Unlock them with this phone's fingerprint, face or screen lock.",
+  "@parentalLocked": {
+    "description": "The parental screens are waiting for the phone's unlock."
+  },
+  "parentalNoScreenLock": "This phone has no screen lock, so parental controls cannot open: anyone holding it could read your console's PIN. Set a PIN, pattern or password in the phone's security settings, then try again.",
+  "@parentalNoScreenLock": {
+    "description": "The phone has no screen lock, so the parental screens will not open."
+  },
+  "parentalPasswordLock": "This device cannot ask for its own unlock, so parental controls ask for your OpenPak password instead.",
+  "@parentalPasswordLock": {
+    "description": "Where the device cannot ask for its own unlock, the account password is asked instead."
+  },
+  "parentalUnlock": "Unlock",
+  "@parentalUnlock": {
+    "description": "Button that asks for the unlock again."
   }
 }

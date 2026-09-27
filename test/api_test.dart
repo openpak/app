@@ -543,6 +543,51 @@ void main() {
     expect(devices[1].hasSetting, isTrue);
   });
 
+  test('a console reads its phase A fields, and an older server leaves them empty', () {
+    final d = ParentalDevice.fromJson({
+      'moon_id': '00000000000000aa',
+      'paired': true,
+      'has_setting': true,
+      'nickname': 'Living room',
+      'setting': {'functionalRestrictionLevel': 'CUSTOM'},
+      'players': [
+        {'id': 'p1', 'nickname': 'Leia'},
+        {'nickname': 'no id, dropped'},
+      ],
+      'synced_at': 1790000000,
+      'synced': true,
+      'wrong_pin_attempts': [1790000300, 1790000100],
+    });
+    expect(d.nickname, 'Living room');
+    expect(d.setting['functionalRestrictionLevel'], 'CUSTOM');
+    expect(d.players.map((p) => '${p.id} ${p.nickname}'), ['p1 Leia']);
+    expect(d.syncedAt, DateTime.fromMillisecondsSinceEpoch(1790000000 * 1000));
+    expect(d.synced, isTrue);
+    expect(d.wrongPinAttempts.first, DateTime.fromMillisecondsSinceEpoch(1790000300 * 1000));
+
+    final old = ParentalDevice.fromJson({'moon_id': '00000000000000aa', 'paired': true, 'has_setting': true, 'setting': 'junk'});
+    expect(old.nickname, '');
+    expect(old.setting, isEmpty);
+    expect(old.players, isEmpty);
+    expect(old.syncedAt, isNull);
+    // Unsaid, not false: the list keeps its older pill rather than claim
+    // the console is behind.
+    expect(old.synced, isNull);
+    expect(old.wrongPinAttempts, isEmpty);
+  });
+
+  test('a console with no PIN on record answers null, not an error', () async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((req) async {
+        expect(req.url.path, '/api/v1/me/parental-controls/00000000000000aa/pin');
+        return json({'error': 'not found'}, status: 404);
+      }),
+    );
+    expect(await api.parentalPin('00000000000000aa'), isNull);
+  });
+
   test('pairing posts and returns a code that is not yet paired', () async {
     var posts = 0;
     final api = OpenPakApi(

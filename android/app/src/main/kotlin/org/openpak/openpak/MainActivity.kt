@@ -1,5 +1,6 @@
 package org.openpak.openpak
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// A FragmentActivity: local_auth's biometric prompt is a fragment.
+class MainActivity : FlutterFragmentActivity()

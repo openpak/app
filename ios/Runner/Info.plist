@@ -66,6 +66,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Parental controls open only after Face ID confirms it is you.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Talk with the other players in your game's voice chat.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

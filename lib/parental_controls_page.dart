@@ -3,22 +3,35 @@ import 'package:flutter/services.dart';
 
 import 'api.dart';
 import 'l10n.dart';
+import 'parental_console_page.dart';
+import 'parental_lock.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
 /// Parental controls, parent side. Nintendo's own parent surface is a separate
 /// smartphone app; ours is this screen. The console's half is local to it — the
 /// PIN, the limits and the alarm all live on the console — so what happens here
-/// is pairing and, later, the settings a paired console syncs.
-class ParentalControlsPage extends StatefulWidget {
-  const ParentalControlsPage({super.key, required this.api});
+/// is pairing and reading what a paired console holds. It opens only behind the
+/// phone's own unlock (parental_lock.dart).
+class ParentalControlsPage extends StatelessWidget {
+  const ParentalControlsPage({super.key, required this.api, this.lock});
+  final OpenPakApi api;
+  final ParentalLock? lock;
+
+  @override
+  Widget build(BuildContext context) =>
+      ParentalLockGate(api: api, lock: lock, child: _ConsoleList(api: api));
+}
+
+class _ConsoleList extends StatefulWidget {
+  const _ConsoleList({required this.api});
   final OpenPakApi api;
 
   @override
-  State<ParentalControlsPage> createState() => _ParentalControlsPageState();
+  State<_ConsoleList> createState() => _ConsoleListState();
 }
 
-class _ParentalControlsPageState extends State<ParentalControlsPage> {
+class _ConsoleListState extends State<_ConsoleList> {
   late Future<List<ParentalDevice>> _devices;
   bool _pairing = false;
 
@@ -49,6 +62,14 @@ class _ParentalControlsPageState extends State<ParentalControlsPage> {
   void _copy(String code) {
     Clipboard.setData(ClipboardData(text: code));
     showToast(context, context.l10n.parentalCodeCopied);
+  }
+
+  // Reloaded on the way back: the console may have synced, or unlinked.
+  Future<void> _open(ParentalDevice d) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ParentalConsolePage(api: widget.api, device: d)),
+    );
+    if (mounted) _reload();
   }
 
   @override
@@ -117,15 +138,26 @@ class _ParentalControlsPageState extends State<ParentalControlsPage> {
                       child: Text(l.parentalNoConsoles, style: TextStyle(color: t.muted)),
                     ),
                   ),
-                // A console that has claimed a code. Its restriction settings
-                // are not editable yet: the console-facing sync is still being
-                // brought up, and an editor that changed nothing would lie.
+                // A console that has claimed a code; its row opens what it
+                // holds. Read-only: an editor waits until a console is shown
+                // to apply a served setting (PRD questions Q1 and Q3).
                 ...paired.map(
                   (d) => StateRow(
-                    name: l.parentalConsole,
-                    pill: d.hasSetting ? l.parentalManaged : l.parentalNoLimits,
-                    state: d.hasSetting ? RowState.ok : RowState.idle,
+                    name: d.nickname.isEmpty ? l.parentalConsole : d.nickname,
+                    // A server that does not say whether the console is up to
+                    // date gets the older pill rather than a guess.
+                    pill: switch (d.synced) {
+                      true => l.parentalUpToDate,
+                      false => l.parentalWaitingForConsole,
+                      null => d.hasSetting ? l.parentalManaged : l.parentalNoLimits,
+                    },
+                    state: switch (d.synced) {
+                      true => RowState.ok,
+                      false => RowState.warn,
+                      null => d.hasSetting ? RowState.ok : RowState.idle,
+                    },
                     leading: const Icon(Icons.videogame_asset_outlined, size: 28),
+                    onTap: () => _open(d),
                   ),
                 ),
                 const SizedBox(height: 16),

@@ -3,6 +3,28 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.16.0 — 2026-09-27
+
+- **A console's own screen**, opened from its row: its name, whether it holds the current settings
+  and when it last synced, its restrictions as the console is served them (the level; under
+  Custom the age limit and rating system, communication, social posting and VR; the play timer
+  when set), its players with the pictures the console uploaded, and the times a wrong PIN was
+  typed on it. Read-only: nothing here changes a console yet. The row itself names the console and
+  says "Up to date" or "Waiting for the console".
+- **The console's PIN**, behind Show PIN. Fetched only then, never written to the phone, and gone
+  again the moment the app leaves the foreground or the screen is closed.
+- **Parental controls open behind the phone's own unlock**: fingerprint or face, falling back to
+  its PIN, pattern or passcode (`local_auth`, the one new dependency). Back after more than 60
+  seconds in the background, the parental screens close and ask again. A phone with no screen lock
+  cannot open them and says how to set one. Where a device has no unlock of its own to ask, the
+  OpenPak password stands in (`POST /me/parental-controls/unlock`).
+- A console that unlinks drops off the list; one that does so while its screen is open closes it
+  with a short message.
+- Android: the activity is a `FlutterFragmentActivity` and the themes AppCompat, as the biometric
+  prompt needs; `USE_BIOMETRIC`. iOS: `NSFaceIDUsageDescription`.
+- Needs the website's phase A fields on `/me/parental-controls`; from an older website the rows
+  keep their v0.15.0 pill and a console's screen shows only what was sent.
+
 ## v0.15.0 — 2026-09-26
 
 - **Parental controls**, on the Account tab. Nintendo's parent surface is a separate smartphone

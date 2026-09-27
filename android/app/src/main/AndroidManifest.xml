@@ -12,6 +12,8 @@
          person joining); without these Android throws and the app dies there. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
+    <!-- Parental controls open behind the phone's own unlock (local_auth). -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
 
     <application
         android:label="OpenPak"

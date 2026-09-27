@@ -296,7 +296,8 @@ String? _nonEmpty(Object? v) => v is String && v.isNotEmpty ? v : null;
 
 /// One console under parental controls, as the app lists it. The pairing code is
 /// there only while it is still live: the server drops a dead one rather than let
-/// a screen show a code someone would type.
+/// a screen show a code someone would type. The PIN is not here: it is fetched
+/// on its own, only when a parent asks to see it.
 class ParentalDevice {
   ParentalDevice({
     required this.moonId,
@@ -304,12 +305,37 @@ class ParentalDevice {
     required this.pairingCode,
     required this.expiresAt,
     required this.hasSetting,
+    this.nickname = '',
+    this.setting = const {},
+    this.players = const [],
+    this.syncedAt,
+    this.synced,
+    this.wrongPinAttempts = const [],
   });
   final String moonId;
   final bool paired;
   final String pairingCode;
   final DateTime? expiresAt;
   final bool hasSetting;
+
+  /// The console's own name; empty when it has not said.
+  final String nickname;
+
+  /// The setting document as the console is served it, in the console's own
+  /// shape (study §5b). Kept whole rather than modelled, so nothing in it is
+  /// lost on the way through.
+  final Map<String, dynamic> setting;
+  final List<({String id, String nickname})> players;
+
+  /// The console's last sync receipt; null when it has never synced.
+  final DateTime? syncedAt;
+
+  /// Whether the console holds the current document; null from a server that
+  /// does not say.
+  final bool? synced;
+
+  /// Wrong PINs typed on the console, newest first.
+  final List<DateTime> wrongPinAttempts;
 
   bool get waiting => !paired && pairingCode.isNotEmpty;
 
@@ -319,6 +345,18 @@ class ParentalDevice {
     pairingCode: j['pairing_code'] as String? ?? '',
     expiresAt: _unix(j['expires_at']),
     hasSetting: j['has_setting'] as bool? ?? false,
+    nickname: j['nickname'] as String? ?? '',
+    setting: j['setting'] is Map<String, dynamic> ? j['setting'] as Map<String, dynamic> : const {},
+    players: [
+      for (final p in (j['players'] as List? ?? const []).whereType<Map<String, dynamic>>())
+        if (_nonEmpty(p['id']) case final id?) (id: id, nickname: p['nickname'] as String? ?? ''),
+    ],
+    syncedAt: _unix(j['synced_at']),
+    synced: j['synced'] as bool?,
+    wrongPinAttempts: [
+      for (final t in j['wrong_pin_attempts'] as List? ?? const [])
+        if (_unix(t) case final d?) d,
+    ],
   );
 
   static DateTime? _unix(Object? v) => v is num && v > 0
@@ -1193,6 +1231,34 @@ class OpenPakApi {
     );
     return ParentalDevice.fromJson({...body, 'paired': false, 'has_setting': false});
   }
+
+  /// GET /me/parental-controls/{moon_id}/pin — the console's PIN, or null when
+  /// the server holds none. The caller keeps it on screen only.
+  Future<String?> parentalPin(String moonId) async {
+    final r = await _http.get(
+      _uri('/me/parental-controls/${Uri.encodeComponent(moonId)}/pin'),
+      headers: _headers(),
+    );
+    if (r.statusCode == 404) return null;
+    return _nonEmpty((await _decode(r))['unlock_code']);
+  }
+
+  /// GET /me/parental-controls/{moon_id}/players/{player_id}/image — the
+  /// picture the console uploaded, or null when it sent none. Fetched rather
+  /// than handed to Image.network, which would not carry the bearer.
+  Future<Uint8List?> parentalPlayerImage(String moonId, String playerId) async {
+    final r = await _http.get(
+      _uri('/me/parental-controls/${Uri.encodeComponent(moonId)}/players/${Uri.encodeComponent(playerId)}/image'),
+      headers: _headers(),
+    );
+    if (r.statusCode == 404) return null;
+    await _decode(r.statusCode < 300 ? http.Response('', r.statusCode) : r); // throws on failure
+    return r.bodyBytes;
+  }
+
+  /// POST /me/parental-controls/unlock — the account password again, where the
+  /// phone has no lock of its own to ask. 204 when right, 403 when not.
+  Future<void> parentalUnlock(String password) => _post('/me/parental-controls/unlock', {'password': password});
 
   Future<void> _post(String path, Map<String, dynamic> body) async {
     await _decode(

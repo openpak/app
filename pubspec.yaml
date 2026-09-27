@@ -1,7 +1,7 @@
 name: openpak
 description: OpenPak companion app — your account, friends and invitations.
 publish_to: none
-version: 0.15.0+31
+version: 0.16.0+32
 
 environment:
   sdk: ^3.9.0
@@ -30,6 +30,9 @@ dependencies:
   # Voice chat: WebRTC audio phone to phone (the server only relays signaling).
   # The signaling socket is dart:io's own WebSocket, so no socket package.
   flutter_webrtc: ^1.6.2+hotfix.3
+  # Parental controls open behind the phone's own unlock (fingerprint, face,
+  # PIN, pattern), the platform prompt rather than a PIN of the app's own.
+  local_auth: ^3.0.2
 
 dev_dependencies:
   flutter_test:
