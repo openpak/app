@@ -11,7 +11,8 @@ import 'widgets.dart';
 /// Parental controls, parent side. Nintendo's own parent surface is a separate
 /// smartphone app; ours is this screen. The console's half is local to it — the
 /// PIN, the limits and the alarm all live on the console — so what happens here
-/// is pairing and reading what a paired console holds. It opens only behind the
+/// is pairing, reading what a paired console holds and setting what it will
+/// fetch next. It opens only behind the
 /// phone's own unlock (parental_lock.dart).
 class ParentalControlsPage extends StatelessWidget {
   const ParentalControlsPage({super.key, required this.api, this.lock});
@@ -20,12 +21,13 @@ class ParentalControlsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      ParentalLockGate(api: api, lock: lock, child: _ConsoleList(api: api));
+      ParentalLockGate(api: api, lock: lock, child: _ConsoleList(api: api, lock: lock));
 }
 
 class _ConsoleList extends StatefulWidget {
-  const _ConsoleList({required this.api});
+  const _ConsoleList({required this.api, this.lock});
   final OpenPakApi api;
+  final ParentalLock? lock;
 
   @override
   State<_ConsoleList> createState() => _ConsoleListState();
@@ -67,7 +69,7 @@ class _ConsoleListState extends State<_ConsoleList> {
   // Reloaded on the way back: the console may have synced, or unlinked.
   Future<void> _open(ParentalDevice d) async {
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ParentalConsolePage(api: widget.api, device: d)),
+      MaterialPageRoute(builder: (_) => ParentalConsolePage(api: widget.api, device: d, lock: widget.lock)),
     );
     if (mounted) _reload();
   }
@@ -139,8 +141,7 @@ class _ConsoleListState extends State<_ConsoleList> {
                     ),
                   ),
                 // A console that has claimed a code; its row opens what it
-                // holds. Read-only: an editor waits until a console is shown
-                // to apply a served setting (PRD questions Q1 and Q3).
+                // holds, and from there what can be changed.
                 ...paired.map(
                   (d) => StateRow(
                     name: d.nickname.isEmpty ? l.parentalConsole : d.nickname,

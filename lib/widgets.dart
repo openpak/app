@@ -244,7 +244,8 @@ void showToast(BuildContext context, String message) => ScaffoldMessenger.of(
   context,
 ).showSnackBar(SnackBar(content: Text(message)));
 
-Future<bool> confirm(BuildContext context, String title, {String? detail}) async {
+/// [action] names the confirming button where "Confirm" would be vague.
+Future<bool> confirm(BuildContext context, String title, {String? detail, String? action}) async {
   final ok = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
@@ -257,7 +258,7 @@ Future<bool> confirm(BuildContext context, String title, {String? detail}) async
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: Text(context.l10n.commonConfirm),
+          child: Text(action ?? context.l10n.commonConfirm),
         ),
       ],
     ),

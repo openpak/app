@@ -3,6 +3,41 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.17.0 — 2026-09-27
+
+- **Change restrictions**, from a console's screen. The level (None, Children, Young teens, Older
+  teens, Custom); under Custom the age limit, rating system, communication, posting to social
+  media and VR; the play timer, the same every day or different each day, each day with its
+  limit (0–360 minutes) and bedtime alarm; and what happens when time is up. Only what the
+  console's own parse table types, with its own bounds, checked in the form. A save sends back the
+  whole document as it was served with only the changed parts replaced, so per-title exceptions,
+  always-allowed titles and anything the form does not show go back untouched. A refusal from the
+  server is shown on the field it names. After a save the console reads "Waiting for the console"
+  until its receipt names the new document, never "applied", with how it picks changes up: the
+  Update settings button in its Parental Controls, or its own timer.
+- **Change PIN**, beside Show PIN: four digits, typed twice, on the number pad, and only after the
+  phone's own unlock again (or the OpenPak password where the device has none). Afterwards the
+  new PIN is the one shown, and the screen says the old one keeps working on the console until it
+  syncs. Never written to the phone or logged.
+- **Remove console**, after a confirmation that says the console itself stays linked until it is
+  unlinked there with the PIN.
+- **Play activity**: the last seven days, the console's time used per day and each title's time
+  under it (by name, or by title id where there is none). One line when nothing was recorded.
+- **Fixed: a console's screen, and the locked screen, started under the app bar**, so the top of
+  the first panel (the last-synced time) could never be scrolled into view. Their padding was read
+  from above the Scaffold, where only the status bar counts, instead of from its body, where the
+  app bar does too. A test now opens each parental screen through the lock under a status bar and
+  checks the first panel clears the bar.
+- The console screen is tighter: the restrictions open the editor from any row and end in a
+  Change restrictions row; the PIN panel is one row with its two actions under it. The PIN's help
+  no longer says to change it on the console.
+- **The parental screens are kept out of screenshots**: Android sets `FLAG_SECURE` while they are
+  open (no screenshots or screen recording, a blank recent-apps picture) and clears it when they
+  close; iOS covers the window whenever the app stops being active, so the app switcher shows no
+  PIN. A `MethodChannel` in `MainActivity.kt` and `AppDelegate.swift`; no new dependency.
+- Needs the website's `PUT …/setting`, `PUT …/pin`, `DELETE …/{moonID}` and `GET …/activity`.
+  From an older website a save or a PIN change fails with its error, and activity shows as none.
+
 ## v0.16.0 — 2026-09-27
 
 - **A console's own screen**, opened from its row: its name, whether it holds the current settings

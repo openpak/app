@@ -37,6 +37,7 @@ String apiErrorText(AppLocalizations l, ApiException e) {
     'friend_conflict' => l.errorFriendConflict,
     'friend_self' => l.errorFriendSelf,
     'internal' => l.errorInternal,
+    'invalid_pin' => l.parentalPinInvalid,
     'invalid_credentials' => l.errorInvalidCredentials,
     'link_expired' => l.errorLinkExpired,
     'no_pending_request' => l.errorNoPendingRequest,

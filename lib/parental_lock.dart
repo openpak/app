@@ -2,10 +2,14 @@
 /// (biometrics, falling back to its PIN, pattern or passcode), never a PIN of
 /// the app's. Opening the screens asks, and so does coming back to them after
 /// more than [ParentalLock.relockAfter] in the background.
+///
+/// The gate is also where the screens are kept out of screenshots and the
+/// recent-apps picture: [secureScreens] is on for as long as it is mounted.
 library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 
 import 'api.dart';
@@ -63,6 +67,48 @@ class ParentalLock {
   bool expired(DateTime? hiddenAt) => hiddenAt != null && now().difference(hiddenAt) > relockAfter;
 }
 
+/// The phone's unlock, or the account password where it has none of its own
+/// to ask. The gate asks it on the way in; changing a PIN asks it again.
+Future<LockOutcome> askParentalUnlock(BuildContext context, OpenPakApi api, ParentalLock lock, String reason) async {
+  final outcome = await lock.unlock(reason);
+  if (outcome != LockOutcome.password || !context.mounted) return outcome;
+  return _password(context, api);
+}
+
+/// The account password, sent once and not kept: the dialog's field goes
+/// with the dialog.
+Future<LockOutcome> _password(BuildContext context, OpenPakApi api) async {
+  final l = context.l10n;
+  final typed = await promptForm(
+    context,
+    title: l.parentalTitle,
+    labels: ['*${l.commonPassword}'],
+    action: l.parentalUnlock,
+    help: l.parentalPasswordLock,
+  );
+  if (typed == null || typed.first.isEmpty) return LockOutcome.denied;
+  try {
+    await api.parentalUnlock(typed.first);
+    return LockOutcome.allowed;
+  } on ApiException catch (e) {
+    if (context.mounted) showToast(context, apiErrorText(l, e));
+    return LockOutcome.denied;
+  }
+}
+
+/// Android's FLAG_SECURE (no screenshots, a blank recent-apps picture) and,
+/// on iOS, a cover over the window whenever the app is not active. Set in
+/// MainActivity.kt and AppDelegate.swift; elsewhere there is nothing to set.
+Future<void> secureScreens(bool on) async {
+  try {
+    await const MethodChannel('org.openpak/secure').invokeMethod<void>('set', on);
+  } on MissingPluginException {
+    // Desktop and tests: no window flag to set.
+  } on PlatformException {
+    // Never a reason to keep the screens shut; the unlock still stands.
+  }
+}
+
 /// Shows [child] only once [lock] allows it; back from the background after
 /// too long, it closes whatever parental screen is on top and asks again.
 class ParentalLockGate extends StatefulWidget {
@@ -93,12 +139,14 @@ class _ParentalLockGateState extends State<ParentalLockGate> {
       },
       onResume: _resumed,
     );
+    secureScreens(true);
     WidgetsBinding.instance.addPostFrameCallback((_) => _unlock());
   }
 
   @override
   void dispose() {
     _life.dispose();
+    secureScreens(false);
     super.dispose();
   }
 
@@ -115,35 +163,13 @@ class _ParentalLockGateState extends State<ParentalLockGate> {
   Future<void> _unlock() async {
     if (_asking || !mounted) return;
     setState(() => _asking = true);
-    var outcome = await _lock.unlock(context.l10n.parentalLockReason);
-    if (outcome == LockOutcome.password && mounted) outcome = await _password();
+    final outcome = await askParentalUnlock(context, widget.api, _lock, context.l10n.parentalLockReason);
     if (!mounted) return;
     setState(() {
       _asking = false;
       _outcome = outcome;
       _hiddenAt = null;
     });
-  }
-
-  /// The account password, sent once and not kept: the dialog's field goes
-  /// with the dialog.
-  Future<LockOutcome> _password() async {
-    final l = context.l10n;
-    final typed = await promptForm(
-      context,
-      title: l.parentalTitle,
-      labels: ['*${l.commonPassword}'],
-      action: l.parentalUnlock,
-      help: l.parentalPasswordLock,
-    );
-    if (typed == null || typed.first.isEmpty) return LockOutcome.denied;
-    try {
-      await widget.api.parentalUnlock(typed.first);
-      return LockOutcome.allowed;
-    } on ApiException catch (e) {
-      if (mounted) showToast(context, apiErrorText(l, e));
-      return LockOutcome.denied;
-    }
   }
 
   @override
@@ -159,22 +185,28 @@ class _ParentalLockGateState extends State<ParentalLockGate> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: glassAppBar(title: Text(l.parentalTitle)),
-      body: ListView(
-        padding: pagePadding(context),
-        children: [
-          Panel(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(why, style: TextStyle(color: t.muted)),
+      // A Builder, so the padding is read below the Scaffold: with
+      // extendBodyBehindAppBar the Scaffold's MediaQuery counts the app bar in
+      // its top padding, and this page's own context, above it, only the
+      // status bar. Read from there, the first panel sat under the bar.
+      body: Builder(
+        builder: (context) => ListView(
+          padding: pagePadding(context),
+          children: [
+            Panel(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(why, style: TextStyle(color: t.muted)),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: _asking ? null : _unlock,
-            icon: const Icon(Icons.lock_open),
-            label: Text(l.parentalUnlock),
-          ),
-        ],
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: _asking ? null : _unlock,
+              icon: const Icon(Icons.lock_open),
+              label: Text(l.parentalUnlock),
+            ),
+          ],
+        ),
       ),
     );
   }

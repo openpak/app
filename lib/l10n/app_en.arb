@@ -1900,9 +1900,9 @@
   "@parentalHidePin": {
     "description": "Button that hides the console's PIN again."
   },
-  "parentalPinHelp": "This is the PIN the console asks for. Change it on the console.",
+  "parentalPinHelp": "This is the PIN the console asks for. Change it here; the console takes the new one at its next sync.",
   "@parentalPinHelp": {
-    "description": "Under the PIN: what it is and where to change it."
+    "description": "Under the PIN: what it is, and that it is changed here and taken by the console at its next sync."
   },
   "parentalPinNone": "The console has not reported its PIN yet.",
   "@parentalPinNone": {
@@ -1935,5 +1935,152 @@
   "parentalUnlock": "Unlock",
   "@parentalUnlock": {
     "description": "Button that asks for the unlock again."
+  },
+  "parentalChangeRestrictions": "Change restrictions",
+  "@parentalChangeRestrictions": {
+    "description": "Button that opens the restriction editor, and its title."
+  },
+  "parentalLimitByAge": "Limit by age",
+  "@parentalLimitByAge": {
+    "description": "Switch: whether games are limited by their age rating."
+  },
+  "parentalUpToAgeField": "Up to age",
+  "@parentalUpToAgeField": {
+    "description": "Field: the highest age rating allowed."
+  },
+  "parentalTimer": "Timer",
+  "@parentalTimer": {
+    "description": "Label: whether the play timer is the same every day or set per weekday."
+  },
+  "parentalTimerDaily": "Same every day",
+  "@parentalTimerDaily": {
+    "description": "The play timer is the same every day."
+  },
+  "parentalTimerEachDay": "Different each day",
+  "@parentalTimerEachDay": {
+    "description": "The play timer is set per weekday."
+  },
+  "parentalLimitPlayTime": "Limit play time",
+  "@parentalLimitPlayTime": {
+    "description": "Switch: whether a day has a play-time limit."
+  },
+  "parentalMinutesField": "Minutes a day",
+  "@parentalMinutesField": {
+    "description": "Field: the play-time limit in minutes."
+  },
+  "parentalBedtimeAlarm": "Bedtime alarm",
+  "@parentalBedtimeAlarm": {
+    "description": "Switch: whether a day has a bedtime alarm."
+  },
+  "parentalNumberRange": "Enter a whole number from 0 to {max}.",
+  "@parentalNumberRange": {
+    "description": "A number field outside the console's bounds.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "parentalSave": "Save",
+  "@parentalSave": {
+    "description": "Button that saves the restrictions."
+  },
+  "parentalSaved": "Saved. Waiting for the console.",
+  "@parentalSaved": {
+    "description": "Toast after the restrictions are saved on the server; the console has not taken them yet."
+  },
+  "parentalSyncHelp": "The console picks up changes when Update settings is pressed in its Parental Controls, or on its own timer.",
+  "@parentalSyncHelp": {
+    "description": "Shown while the console does not yet hold the latest settings: when it picks them up."
+  },
+  "parentalRefusedField": "The console cannot take this value.",
+  "@parentalRefusedField": {
+    "description": "Under a field the server refused: the console could not parse it."
+  },
+  "parentalRefused": "The console cannot take this setting: {path}",
+  "@parentalRefused": {
+    "description": "A refused setting that no field on the screen matches; path is the setting's dotted path.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "parentalChangePin": "Change PIN",
+  "@parentalChangePin": {
+    "description": "Button that sets a new console PIN, and its dialog title."
+  },
+  "parentalNewPin": "New PIN",
+  "@parentalNewPin": {
+    "description": "Field: the new PIN."
+  },
+  "parentalNewPinAgain": "New PIN again",
+  "@parentalNewPinAgain": {
+    "description": "Field: the new PIN typed a second time."
+  },
+  "parentalPinFourDigits": "Four digits.",
+  "@parentalPinFourDigits": {
+    "description": "Hint under the new PIN."
+  },
+  "parentalPinInvalid": "The PIN must be four digits.",
+  "@parentalPinInvalid": {
+    "description": "The new PIN is not four digits."
+  },
+  "parentalPinMismatch": "The two PINs do not match.",
+  "@parentalPinMismatch": {
+    "description": "The two PINs typed differ."
+  },
+  "parentalPinSaved": "PIN saved. Waiting for the console.",
+  "@parentalPinSaved": {
+    "description": "Toast after a new PIN is saved on the server; the console has not taken it yet."
+  },
+  "parentalPinOldStillWorks": "Until the console picks up the new PIN, the old one is still the one that works on it.",
+  "@parentalPinOldStillWorks": {
+    "description": "Under a newly set PIN until the console syncs."
+  },
+  "parentalPinLockReason": "Unlock to change the console's PIN",
+  "@parentalPinLockReason": {
+    "description": "Shown in the phone's own unlock prompt before a new PIN is set."
+  },
+  "parentalRemoveConsole": "Remove console",
+  "@parentalRemoveConsole": {
+    "description": "Button that removes a console from the list."
+  },
+  "parentalRemoveConfirm": "Remove this console?",
+  "@parentalRemoveConfirm": {
+    "description": "Title of the confirmation before removing a console."
+  },
+  "parentalRemoveDetail": "This removes the console from your list only. The console itself stays linked until it is unlinked there, in System Settings → Parental Controls, with the PIN. Its PIN, restrictions and play activity will no longer be shown here.",
+  "@parentalRemoveDetail": {
+    "description": "Body of the confirmation before removing a console."
+  },
+  "parentalRemove": "Remove",
+  "@parentalRemove": {
+    "description": "Confirm button that removes the console."
+  },
+  "parentalActivity": "Play activity",
+  "@parentalActivity": {
+    "description": "Section label above the console's play time."
+  },
+  "parentalLast7Days": "Last 7 days",
+  "@parentalLast7Days": {
+    "description": "Tag beside the play activity: the period it covers."
+  },
+  "parentalMinutes": "{minutes, plural, =1{1 minute} other{{minutes} minutes}}",
+  "@parentalMinutes": {
+    "description": "Time played, in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "parentalTimeUsed": "Time used",
+  "@parentalTimeUsed": {
+    "description": "Under a day of play activity: the console's own count for the day, HOME menu included, so it can be more than its titles add up to."
+  },
+  "parentalNoActivity": "No play time recorded yet.",
+  "@parentalNoActivity": {
+    "description": "The play activity section when the console has reported no play time."
   }
 }

@@ -18,10 +18,14 @@ import 'package:http/http.dart' as http;
 /// (see apiErrorText in l10n.dart). [code] is null from a server older than
 /// the error codes, and for failures the client raises itself.
 class ApiException implements Exception {
-  ApiException(this.statusCode, this.message, {this.code, this.fromServer = false});
+  ApiException(this.statusCode, this.message, {this.code, this.fromServer = false, this.path});
   final int statusCode;
   final String message;
   final String? code;
+
+  /// Where in the sent document the server found the fault, dotted
+  /// (`customSettings.ageRestriction.ratingAge`); null when it did not say.
+  final String? path;
 
   /// Whether [message] is the server's own words rather than a placeholder.
   final bool fromServer;
@@ -362,6 +366,30 @@ class ParentalDevice {
   static DateTime? _unix(Object? v) => v is num && v > 0
       ? DateTime.fromMillisecondsSinceEpoch(v.toInt() * 1000)
       : null;
+}
+
+/// One day of play on a console: the date as the console's own calendar
+/// named it, and each title's minutes.
+class PlayDay {
+  PlayDay({required this.date, required this.totalMinutes, this.titles = const []});
+  final String date;
+  final int totalMinutes;
+
+  /// [name] is empty where the catalogue has none; show the id then.
+  final List<({String titleId, String name, int minutes})> titles;
+
+  factory PlayDay.fromJson(Map<String, dynamic> j) => PlayDay(
+    date: j['date'] as String? ?? '',
+    totalMinutes: (j['total_minutes'] as num?)?.toInt() ?? 0,
+    titles: [
+      for (final t in (j['titles'] as List? ?? const []).whereType<Map<String, dynamic>>())
+        (
+          titleId: t['title_id'] as String? ?? '',
+          name: t['name'] as String? ?? '',
+          minutes: (t['minutes'] as num?)?.toInt() ?? 0,
+        ),
+    ],
+  );
 }
 
 class Invitation {
@@ -731,12 +759,14 @@ class OpenPakApi {
     }
     var message = 'Request failed (${r.statusCode})';
     String? code;
+    String? path;
     var fromServer = false;
     try {
       final body = jsonDecode(r.body);
       if (body is Map && body['error'] is String) message = body['error'];
       if (body is Map && body['detail'] is String) message = body['detail'];
       if (body is Map && body['code'] is String) code = body['code'];
+      if (body is Map && body['path'] is String) path = body['path'];
       fromServer = body is Map && (body['error'] is String || body['detail'] is String);
     } catch (_) {
       // A non-JSON error body is a proxy or an outage, not something to show.
@@ -745,7 +775,7 @@ class OpenPakApi {
       token = null;
       onUnauthorized?.call();
     }
-    throw ApiException(r.statusCode, message, code: code, fromServer: fromServer);
+    throw ApiException(r.statusCode, message, code: code, fromServer: fromServer, path: path);
   }
 
   /// POST /token — mints the bearer and keeps it on this instance. Throws
@@ -1254,6 +1284,53 @@ class OpenPakApi {
     if (r.statusCode == 404) return null;
     await _decode(r.statusCode < 300 ? http.Response('', r.statusCode) : r); // throws on failure
     return r.bodyBytes;
+  }
+
+  /// PUT /me/parental-controls/{moon_id}/setting — the whole document, as the
+  /// console will be served it. A 400 names the refused part in
+  /// [ApiException.path]; nothing is stored then.
+  Future<void> parentalSaveSetting(String moonId, Map<String, dynamic> setting) async {
+    await _decode(
+      await _http.put(
+        _uri('/me/parental-controls/${Uri.encodeComponent(moonId)}/setting'),
+        headers: _headers(json: true),
+        body: jsonEncode({'setting': setting}),
+      ),
+    );
+  }
+
+  /// PUT /me/parental-controls/{moon_id}/pin — the console's next PIN. The
+  /// console keeps its old one until it syncs.
+  Future<void> parentalSetPin(String moonId, String pin) async {
+    await _decode(
+      await _http.put(
+        _uri('/me/parental-controls/${Uri.encodeComponent(moonId)}/pin'),
+        headers: _headers(json: true),
+        body: jsonEncode({'unlock_code': pin}),
+      ),
+    );
+  }
+
+  /// DELETE /me/parental-controls/{moon_id} — off this account's list. The
+  /// console is not told.
+  Future<void> parentalRemove(String moonId) async {
+    await _decode(
+      await _http.delete(_uri('/me/parental-controls/${Uri.encodeComponent(moonId)}'), headers: _headers()),
+    );
+  }
+
+  /// GET /me/parental-controls/{moon_id}/activity — play time per day, newest
+  /// first. A server from before activity answers 404, which is none.
+  Future<List<PlayDay>> parentalActivity(String moonId, {int days = 7}) async {
+    final r = await _http.get(
+      _uri('/me/parental-controls/${Uri.encodeComponent(moonId)}/activity?days=$days'),
+      headers: _headers(),
+    );
+    if (r.statusCode == 404) return const [];
+    return [
+      for (final d in ((await _decode(r))['days'] as List? ?? const []).whereType<Map<String, dynamic>>())
+        PlayDay.fromJson(d),
+    ];
   }
 
   /// POST /me/parental-controls/unlock — the account password again, where the
