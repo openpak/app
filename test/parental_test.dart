@@ -405,10 +405,13 @@ void main() {
     );
     final days = await api.parentalActivity('00000000000000aa');
     expect(days.map((d) => (d.date, d.totalMinutes)), [('2026-09-27', 95), ('2026-09-26', 15)]);
-    expect(days.first.titles, [
-      (titleId: '0100b3c014bda000', name: 'Stardew Valley', minutes: 60),
-      (titleId: '01001b300b9be000', name: '', minutes: 20),
+    expect(days.first.titles.map((t) => (t.titleId, t.name, t.minutes)), [
+      ('0100b3c014bda000', 'Stardew Valley', 60),
+      ('01001b300b9be000', '', 20),
     ]);
+    // An older server: no players and no anonymous time.
+    expect(days.first.titles.first.players, isEmpty);
+    expect(days.first.titles.first.anonymousMinutes, 0);
     expect(days.last.titles, isEmpty);
     status = 404;
     expect(await api.parentalActivity('00000000000000aa'), isEmpty);
@@ -574,5 +577,74 @@ void main() {
       expect(find.byType(AlertDialog), findsNothing);
       expect(find.text('Name saved.'), findsOneWidget);
     });
+  });
+
+  test('who played a title: named players, a user gone from the console, and time with no user', () {
+    final day = PlayDay.fromJson({
+      'date': '2026-09-27',
+      'total_minutes': 30,
+      'titles': [
+        {
+          'title_id': '0100b3c014bda000',
+          'name': 'Moving Out 2',
+          'minutes': 25,
+          'players': [
+            {'id': '10000000_00b20002_00000000_00000001', 'nickname': 'Leia', 'minutes': 13},
+            {'id': '2', 'minutes': 7},
+            {'nickname': 'no id', 'minutes': 1},
+          ],
+          'anonymous_minutes': 5,
+        },
+      ],
+    });
+    final title = day.titles.single;
+    expect(title.players, [
+      (id: '10000000_00b20002_00000000_00000001', nickname: 'Leia', minutes: 13),
+      (id: '2', nickname: '', minutes: 7),
+    ]);
+    expect(title.anonymousMinutes, 5);
+  });
+
+  testWidgets('play activity names who played, with a line for a gone user and one for no user', (tester) async {
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((req) async => switch (req.url.path) {
+            final p when p.endsWith('/activity') => _json({
+                'days': [
+                  {
+                    'date': '2026-09-27',
+                    'total_minutes': 30,
+                    'titles': [
+                      {
+                        'title_id': '0100b3c014bda000',
+                        'name': 'Moving Out 2',
+                        'minutes': 25,
+                        'players': [
+                          {'id': 'a', 'nickname': 'Leia', 'minutes': 13},
+                          {'id': 'b', 'minutes': 7},
+                        ],
+                        'anonymous_minutes': 5,
+                      },
+                      {'title_id': '01001b300b9be000', 'minutes': 3, 'players': [], 'anonymous_minutes': 0},
+                    ],
+                  },
+                ],
+              }),
+            final p when p.endsWith('/image') => http.Response('', 404),
+            _ => _json({'devices': [_console]}),
+          }),
+    );
+    await tester.pumpWidget(localizedApp(
+      theme: openPakLight(),
+      home: ParentalConsolePage(api: api, device: ParentalDevice.fromJson(_console)),
+    ));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Moving Out 2'));
+    expect(find.text('Leia'), findsOneWidget);
+    expect(find.text('13 minutes'), findsOneWidget);
+    expect(find.text('A user no longer on this console'), findsOneWidget);
+    expect(find.text('No user selected'), findsOneWidget);
+    expect(find.text('5 minutes'), findsOneWidget);
   });
 }

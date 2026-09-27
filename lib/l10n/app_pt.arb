@@ -461,5 +461,7 @@
   "parentalNameSaved": "Nome guardado.",
   "parentalSerial": "Número de série {serial}",
   "parentalFirmware": "Versão do sistema {firmware}",
-  "parentalNameOffer": "Consola associada. Dá-lhe um nome para a distinguir das outras."
+  "parentalNameOffer": "Consola associada. Dá-lhe um nome para a distinguir das outras.",
+  "parentalGoneUser": "Um utilizador que já não está nesta consola",
+  "parentalNoUserSelected": "Nenhum utilizador selecionado"
 }

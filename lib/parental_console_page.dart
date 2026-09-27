@@ -173,6 +173,11 @@ class _ParentalConsolePageState extends State<ParentalConsolePage> {
     await _refresh();
   }
 
+  /// Each player's picture is fetched once, for the Players section and the
+  /// activity alike.
+  Future<Uint8List?> _playerImage(String moonId, String playerId) =>
+      _images.putIfAbsent(playerId, () => widget.api.parentalPlayerImage(moonId, playerId));
+
   Future<void> _rename() async {
     final saved = await renameConsole(context, widget.api, _device);
     if (saved == null || !mounted) return;
@@ -314,7 +319,7 @@ class _ParentalConsolePageState extends State<ParentalConsolePage> {
                             ListTile(
                               leading: _PlayerImage(
                                 name: p.nickname,
-                                image: _images.putIfAbsent(p.id, () => widget.api.parentalPlayerImage(d.moonId, p.id)),
+                                image: _playerImage(d.moonId, p.id),
                               ),
                               title: Text(p.nickname),
                             ),
@@ -396,7 +401,9 @@ class _ParentalConsolePageState extends State<ParentalConsolePage> {
               ],
               FutureBuilder<List<PlayDay>>(
                 future: _activity,
-                builder: (context, snap) => snap.hasData ? _Activity(days: snap.data!) : const SizedBox.shrink(),
+                builder: (context, snap) => snap.hasData
+                  ? _Activity(days: snap.data!, image: (id) => _playerImage(d.moonId, id))
+                  : const SizedBox.shrink(),
               ),
               const SizedBox(height: 28),
               TextButton.icon(
@@ -416,8 +423,29 @@ class _ParentalConsolePageState extends State<ParentalConsolePage> {
 /// The last days' play, per day and per title. Always its own section, so
 /// the feature can be found; one line when nothing was played.
 class _Activity extends StatelessWidget {
-  const _Activity({required this.days});
+  const _Activity({required this.days, required this.image});
   final List<PlayDay> days;
+  final Future<Uint8List?> Function(String playerId) image;
+
+  /// Who played a title: one short line each, the picture shrunk to fit, so
+  /// a day of three titles and two players each still reads at a glance.
+  Widget _who(BuildContext context, Widget picture, String name, int minutes, {bool muted = false}) {
+    final t = tokensOf(context);
+    // A step below the title's own line, so the title still leads.
+    final style = TextStyle(fontSize: 12.5, color: muted ? t.muted : null);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(48, 2, 16, 6),
+      child: Row(
+        children: [
+          SizedBox.square(dimension: 22, child: FittedBox(child: picture)),
+          const SizedBox(width: 8),
+          Expanded(child: Text(name, style: style, overflow: TextOverflow.ellipsis)),
+          const SizedBox(width: 8),
+          Text(context.l10n.parentalMinutes(minutes), style: TextStyle(fontSize: 12, color: t.muted)),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -448,13 +476,29 @@ class _Activity extends StatelessWidget {
                   subtitle: Text(l.parentalTimeUsed, style: TextStyle(color: t.muted)),
                   trailing: Text(l.parentalMinutes(played[i].totalMinutes)),
                 ),
-                for (final title in played[i].titles)
+                for (final title in played[i].titles) ...[
                   ListTile(
                     dense: true,
                     contentPadding: const EdgeInsets.only(left: 32, right: 16),
                     title: Text(title.name.isEmpty ? title.titleId : title.name),
                     trailing: Text(l.parentalMinutes(title.minutes), style: TextStyle(color: t.muted)),
                   ),
+                  for (final p in title.players)
+                    p.nickname.isEmpty
+                        // A user since deleted from the console: nothing to
+                        // fetch, and no name to give.
+                        ? _who(context, const Avatar(name: '', dim: true), l.parentalGoneUser, p.minutes, muted: true)
+                        : _who(context, _PlayerImage(name: p.nickname, image: image(p.id)), p.nickname, p.minutes),
+                  if (title.anonymousMinutes > 0)
+                    _who(
+                      context,
+                      Icon(Icons.person_off_outlined, color: t.muted),
+                      l.parentalNoUserSelected,
+                      title.anonymousMinutes,
+                      muted: true,
+                    ),
+                  if (title.players.isNotEmpty || title.anonymousMinutes > 0) const SizedBox(height: 4),
+                ],
               ],
             ],
           ),

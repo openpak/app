@@ -2124,5 +2124,13 @@
   "parentalNameOffer": "Console paired. Give it a name to tell it apart from others.",
   "@parentalNameOffer": {
     "description": "Snackbar when a console has just paired and has no name yet; its action is Rename."
+  },
+  "parentalGoneUser": "A user no longer on this console",
+  "@parentalGoneUser": {
+    "description": "A player in play activity whose user is no longer on the console."
+  },
+  "parentalNoUserSelected": "No user selected",
+  "@parentalNoUserSelected": {
+    "description": "Play activity: time a title was played with no user selected."
   }
 }

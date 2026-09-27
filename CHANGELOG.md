@@ -15,6 +15,10 @@ of truth; this file is the readable summary.
   made from its serial number, else "Console". The status panel adds the serial number and system
   version, small, where the server has them.
 - A console that has just paired without a name is offered one, once, in a snackbar with Rename.
+- **Play activity says who played.** Under each title, one short line per user with their small
+  picture (the Players section's) and their minutes, most first; a user since deleted from the
+  console reads "A user no longer on this console", and time played with no user selected is its own
+  line when there is any. From a server without the per-user split, titles show as before.
 - Needs the website's naming route and the list's `named`, `serial_number` and `firmware`; an older
   website leaves them out and the screens read as before.
 

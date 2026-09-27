@@ -391,19 +391,49 @@ class PlayDay {
   final int totalMinutes;
 
   /// [name] is empty where the catalogue has none; show the id then.
-  final List<({String titleId, String name, int minutes})> titles;
+  final List<PlayedTitle> titles;
 
   factory PlayDay.fromJson(Map<String, dynamic> j) => PlayDay(
     date: j['date'] as String? ?? '',
     totalMinutes: (j['total_minutes'] as num?)?.toInt() ?? 0,
     titles: [
       for (final t in (j['titles'] as List? ?? const []).whereType<Map<String, dynamic>>())
-        (
-          titleId: t['title_id'] as String? ?? '',
-          name: t['name'] as String? ?? '',
-          minutes: (t['minutes'] as num?)?.toInt() ?? 0,
-        ),
+        PlayedTitle.fromJson(t),
     ],
+  );
+}
+
+/// One title on a day, and who played it. An older server sends no players
+/// and no anonymous time, which read as none.
+class PlayedTitle {
+  PlayedTitle({
+    required this.titleId,
+    this.name = '',
+    this.minutes = 0,
+    this.players = const [],
+    this.anonymousMinutes = 0,
+  });
+  final String titleId;
+  final String name;
+  final int minutes;
+
+  /// Most minutes first, as the server sorts them. [nickname] is empty for a
+  /// user since deleted from the console.
+  final List<({String id, String nickname, int minutes})> players;
+
+  /// Played with no user selected.
+  final int anonymousMinutes;
+
+  factory PlayedTitle.fromJson(Map<String, dynamic> t) => PlayedTitle(
+    titleId: t['title_id'] as String? ?? '',
+    name: t['name'] as String? ?? '',
+    minutes: (t['minutes'] as num?)?.toInt() ?? 0,
+    players: [
+      for (final p in (t['players'] as List? ?? const []).whereType<Map<String, dynamic>>())
+        if (_nonEmpty(p['id']) case final id?)
+          (id: id, nickname: _nonEmpty(p['nickname']) ?? '', minutes: (p['minutes'] as num?)?.toInt() ?? 0),
+    ],
+    anonymousMinutes: (t['anonymous_minutes'] as num?)?.toInt() ?? 0,
   );
 }
 
