@@ -310,6 +310,9 @@ class ParentalDevice {
     required this.expiresAt,
     required this.hasSetting,
     this.nickname = '',
+    this.named = false,
+    this.serialNumber = '',
+    this.firmware = '',
     this.setting = const {},
     this.players = const [],
     this.syncedAt,
@@ -322,8 +325,17 @@ class ParentalDevice {
   final DateTime? expiresAt;
   final bool hasSetting;
 
-  /// The console's own name; empty when it has not said.
+  /// The name to show: the parent's, else one the server makes from the
+  /// serial number ("Switch ···0001"), else empty. The console never sends
+  /// a name of its own.
   final String nickname;
+
+  /// Whether [nickname] is one the parent chose.
+  final bool named;
+
+  /// Empty where the server has none, as from one older than naming.
+  final String serialNumber;
+  final String firmware;
 
   /// The setting document as the console is served it, in the console's own
   /// shape (study §5b). Kept whole rather than modelled, so nothing in it is
@@ -349,7 +361,10 @@ class ParentalDevice {
     pairingCode: j['pairing_code'] as String? ?? '',
     expiresAt: _unix(j['expires_at']),
     hasSetting: j['has_setting'] as bool? ?? false,
-    nickname: j['nickname'] as String? ?? '',
+    nickname: _nonEmpty(j['nickname']) ?? '',
+    named: j['named'] == true,
+    serialNumber: _nonEmpty(j['serial_number']) ?? '',
+    firmware: _nonEmpty(j['firmware']) ?? '',
     setting: j['setting'] is Map<String, dynamic> ? j['setting'] as Map<String, dynamic> : const {},
     players: [
       for (final p in (j['players'] as List? ?? const []).whereType<Map<String, dynamic>>())
@@ -1295,6 +1310,19 @@ class OpenPakApi {
         _uri('/me/parental-controls/${Uri.encodeComponent(moonId)}/setting'),
         headers: _headers(json: true),
         body: jsonEncode({'setting': setting}),
+      ),
+    );
+  }
+
+  /// PUT /me/parental-controls/{moon_id}/name — the parent's name for the
+  /// console, trimmed by the server; empty clears it. Never sent to the
+  /// console.
+  Future<void> parentalRename(String moonId, String name) async {
+    await _decode(
+      await _http.put(
+        _uri('/me/parental-controls/${Uri.encodeComponent(moonId)}/name'),
+        headers: _headers(json: true),
+        body: jsonEncode({'name': name}),
       ),
     );
   }

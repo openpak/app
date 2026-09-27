@@ -3,6 +3,21 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.18.0 — 2026-09-27
+
+- **A console can be named**, so two under one account can be told apart: Rename in the console
+  screen's app bar opens a field of up to 32 characters (`PUT /me/parental-controls/{moonID}/name`).
+  It is prefilled only with a name the parent chose, and Save stays off until the name changes;
+  empty goes back to the default. A refused name is shown on the field. The name stays on OpenPak
+  and never goes to the console, so there is nothing to wait for. No second unlock: a name is not
+  a secret, and the screen is already behind the phone's lock.
+- The list and the console screen show the server's name for a console: the parent's, else one
+  made from its serial number, else "Console". The status panel adds the serial number and system
+  version, small, where the server has them.
+- A console that has just paired without a name is offered one, once, in a snackbar with Rename.
+- Needs the website's naming route and the list's `named`, `serial_number` and `firmware`; an older
+  website leaves them out and the screens read as before.
+
 ## v0.17.0 — 2026-09-27
 
 - **Change restrictions**, from a console's screen. The level (None, Children, Young teens, Older

@@ -498,4 +498,81 @@ void main() {
       clear(tester, 'editor');
     });
   });
+
+  group('naming a console', () {
+    test('the list reads the name, whether the parent chose it, the serial and the firmware', () {
+      final named = ParentalDevice.fromJson({
+        ..._console,
+        'nickname': 'Kids room',
+        'named': true,
+        'serial_number': 'XKJ70000000001',
+        'firmware': '22.5.0',
+      });
+      expect((named.nickname, named.named, named.serialNumber, named.firmware),
+          ('Kids room', true, 'XKJ70000000001', '22.5.0'));
+
+      // An older server: none of the new fields, and nothing breaks.
+      final old = ParentalDevice.fromJson({'moon_id': '00000000000000aa', 'paired': true});
+      expect((old.nickname, old.named, old.serialNumber, old.firmware), ('', false, '', ''));
+
+      // Wrong types and empty strings read as absent.
+      final odd = ParentalDevice.fromJson({
+        ..._console,
+        'nickname': 'Switch ···0001',
+        'named': 'yes',
+        'serial_number': 42,
+        'firmware': '',
+      });
+      expect((odd.nickname, odd.named, odd.serialNumber, odd.firmware), ('Switch ···0001', false, '', ''));
+    });
+
+    testWidgets('rename sends the trimmed name and shows a refusal on the field', (tester) async {
+      final sent = <Object?>[];
+      var refuse = true;
+      final api = OpenPakApi(
+        baseUrl: 'https://openpak.test',
+        token: 't',
+        client: MockClient((req) async {
+          if (req.method == 'PUT') {
+            expect(req.url.path, '/api/v1/me/parental-controls/00000000000000aa/name');
+            sent.add(jsonDecode(req.body));
+            return refuse
+                ? _json({'error': 'name too long', 'code': 'invalid_name'}, status: 400)
+                : http.Response('', 204);
+          }
+          return _json({'devices': [_console]});
+        }),
+      );
+      final device = ParentalDevice.fromJson({..._console, 'nickname': 'Switch ···0001', 'named': false});
+      await tester.pumpWidget(localizedApp(theme: openPakLight(), home: ParentalConsolePage(api: api, device: device)));
+      await tester.pumpAndSettle();
+      expect(find.text('Switch ···0001'), findsWidgets);
+
+      await tester.tap(find.byTooltip('Rename'));
+      await tester.pumpAndSettle();
+      final field = find.widgetWithText(TextField, 'Console name');
+      // A default name is not prefilled, and nothing typed is nothing to save.
+      expect(tester.widget<TextField>(field).controller!.text, '');
+      final save = find.widgetWithText(FilledButton, 'Save');
+      expect(tester.widget<FilledButton>(save).onPressed, isNull);
+
+      await tester.enterText(field, '  Kids room  ');
+      await tester.pump();
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(sent, [
+        {'name': 'Kids room'},
+      ]);
+      expect(
+        find.descendant(of: field, matching: find.text('A name can be up to 32 characters, without control characters.')),
+        findsOneWidget,
+      );
+
+      refuse = false;
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.text('Name saved.'), findsOneWidget);
+    });
+  });
 }

@@ -453,5 +453,13 @@
   "parentalLast7Days": "7 derniers jours",
   "parentalMinutes": "{minutes, plural, =1{1 minute} other{{minutes} minutes}}",
   "parentalTimeUsed": "Temps d'utilisation",
-  "parentalNoActivity": "Aucun temps de jeu enregistré pour l'instant."
+  "parentalNoActivity": "Aucun temps de jeu enregistré pour l'instant.",
+  "parentalRename": "Renommer",
+  "parentalConsoleName": "Nom de la console",
+  "parentalConsoleNameHelp": "Jusqu'à 32 caractères. Laisse vide pour utiliser le nom par défaut.",
+  "parentalNameInvalid": "Un nom peut comporter jusqu'à 32 caractères, sans caractères de contrôle.",
+  "parentalNameSaved": "Nom enregistré.",
+  "parentalSerial": "Numéro de série {serial}",
+  "parentalFirmware": "Version du système {firmware}",
+  "parentalNameOffer": "Console associée. Donne-lui un nom pour la distinguer des autres."
 }

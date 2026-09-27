@@ -2082,5 +2082,47 @@
   "parentalNoActivity": "No play time recorded yet.",
   "@parentalNoActivity": {
     "description": "The play activity section when the console has reported no play time."
+  },
+  "parentalRename": "Rename",
+  "@parentalRename": {
+    "description": "Action that renames a console; also its tooltip."
+  },
+  "parentalConsoleName": "Console name",
+  "@parentalConsoleName": {
+    "description": "Field: the name the parent gives a console."
+  },
+  "parentalConsoleNameHelp": "Up to 32 characters. Leave it empty to use the default name.",
+  "@parentalConsoleNameHelp": {
+    "description": "Under the console name field."
+  },
+  "parentalNameInvalid": "A name can be up to 32 characters, without control characters.",
+  "@parentalNameInvalid": {
+    "description": "The server refused a console name."
+  },
+  "parentalNameSaved": "Name saved.",
+  "@parentalNameSaved": {
+    "description": "Toast after a console is renamed. The name never goes to the console, so there is nothing to wait for."
+  },
+  "parentalSerial": "Serial number {serial}",
+  "@parentalSerial": {
+    "description": "The console's serial number, small under its sync state.",
+    "placeholders": {
+      "serial": {
+        "type": "String"
+      }
+    }
+  },
+  "parentalFirmware": "System version {firmware}",
+  "@parentalFirmware": {
+    "description": "The console's system version, small under its sync state.",
+    "placeholders": {
+      "firmware": {
+        "type": "String"
+      }
+    }
+  },
+  "parentalNameOffer": "Console paired. Give it a name to tell it apart from others.",
+  "@parentalNameOffer": {
+    "description": "Snackbar when a console has just paired and has no name yet; its action is Rename."
   }
 }

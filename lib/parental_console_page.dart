@@ -173,6 +173,13 @@ class _ParentalConsolePageState extends State<ParentalConsolePage> {
     await _refresh();
   }
 
+  Future<void> _rename() async {
+    final saved = await renameConsole(context, widget.api, _device);
+    if (saved == null || !mounted) return;
+    // A false is the console gone; the refresh is what leaves the screen.
+    await _refresh();
+  }
+
   Future<void> _remove() async {
     final l = context.l10n;
     if (!await confirm(context, l.parentalRemoveConfirm, detail: l.parentalRemoveDetail, action: l.parentalRemove)) {
@@ -203,7 +210,12 @@ class _ParentalConsolePageState extends State<ParentalConsolePage> {
     final editable = d.setting['functionalRestrictionLevel'] is String;
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: glassAppBar(title: Text(name)),
+      appBar: glassAppBar(
+        title: Text(name),
+        actions: [
+          IconButton(tooltip: l.parentalRename, icon: const Icon(Icons.edit_outlined), onPressed: _rename),
+        ],
+      ),
       // A Builder, so the padding is read below the Scaffold: with
       // extendBodyBehindAppBar the Scaffold's MediaQuery counts the app bar in
       // its top padding, and this page's own context, above it, only the
@@ -231,6 +243,18 @@ class _ParentalConsolePageState extends State<ParentalConsolePage> {
                         null => null,
                       }),
                     ),
+                    // What the console reported of itself, to tell two apart.
+                    if (d.serialNumber.isNotEmpty || d.firmware.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                        child: Text(
+                          [
+                            if (d.serialNumber.isNotEmpty) l.parentalSerial(d.serialNumber),
+                            if (d.firmware.isNotEmpty) l.parentalFirmware(d.firmware),
+                          ].join(' · '),
+                          style: TextStyle(color: t.muted, fontSize: 12),
+                        ),
+                      ),
                     // Until the console fetches, a change is only on the server.
                     if (d.synced == false)
                       Padding(
@@ -435,6 +459,93 @@ class _Activity extends StatelessWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// Asks for a new name for [device] and saves it: true once saved (and said
+/// so), false when the console turned out to be gone, null when cancelled.
+Future<bool?> renameConsole(BuildContext context, OpenPakApi api, ParentalDevice device) async {
+  final saved = await showDialog<bool>(
+    context: context,
+    builder: (_) => RenameConsoleDialog(api: api, device: device),
+  );
+  if (saved == true && context.mounted) showToast(context, context.l10n.parentalNameSaved);
+  return saved;
+}
+
+/// The parent's name for a console. Prefilled only with a name the parent
+/// chose, not with the one made from the serial number, so saving it
+/// unchanged cannot turn a default into a chosen name. It saves from here, so
+/// a refusal lands on the field rather than in a toast behind the dialog.
+class RenameConsoleDialog extends StatefulWidget {
+  const RenameConsoleDialog({super.key, required this.api, required this.device});
+  final OpenPakApi api;
+  final ParentalDevice device;
+
+  static const maxLength = 32;
+
+  @override
+  State<RenameConsoleDialog> createState() => _RenameConsoleDialogState();
+}
+
+class _RenameConsoleDialogState extends State<RenameConsoleDialog> {
+  late final String _initial = widget.device.named ? widget.device.nickname : '';
+  late final _name = TextEditingController(text: _initial);
+  String? _error;
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final l = context.l10n;
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await widget.api.parentalRename(widget.device.moonId, _name.text.trim());
+      if (mounted) Navigator.pop(context, true);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      if (e.statusCode == 404) return Navigator.pop(context, false);
+      setState(() => _error = e.code == 'invalid_name' ? l.parentalNameInvalid : apiErrorText(l, e));
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final changed = _name.text.trim() != _initial;
+    return AlertDialog(
+      title: Text(l.parentalRename),
+      content: TextField(
+        controller: _name,
+        autofocus: true,
+        maxLength: RenameConsoleDialog.maxLength,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: InputDecoration(
+          labelText: l.parentalConsoleName,
+          helperText: l.parentalConsoleNameHelp,
+          helperMaxLines: 2,
+          errorText: _error,
+          errorMaxLines: 2,
+        ),
+        onChanged: (_) => setState(() => _error = null),
+        onSubmitted: (_) {
+          if (changed && !_saving) _save();
+        },
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l.commonCancel)),
+        FilledButton(onPressed: changed && !_saving ? _save : null, child: Text(l.parentalSave)),
       ],
     );
   }

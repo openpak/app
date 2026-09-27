@@ -37,16 +37,49 @@ class _ConsoleListState extends State<_ConsoleList> {
   late Future<List<ParentalDevice>> _devices;
   bool _pairing = false;
 
+  /// The paired consoles at the last load; null before the first, so the
+  /// consoles already there when the screen opens are not offered a name.
+  Set<String>? _known;
+
   @override
   void initState() {
     super.initState();
     _reload();
   }
 
-  // A block, not an arrow: an arrow would hand setState the Future it assigns.
-  void _reload() => setState(() {
-    _devices = widget.api.parentalDevices();
-  });
+  void _reload() {
+    final next = widget.api.parentalDevices();
+    // A block, not an arrow: an arrow would hand setState the Future it assigns.
+    setState(() {
+      _devices = next;
+    });
+    next.then(_offerName, onError: (Object _) {});
+  }
+
+  /// A console that has just paired, and has no name of the parent's, is
+  /// offered one: once, as it first appears.
+  void _offerName(List<ParentalDevice> devices) {
+    final known = _known;
+    final paired = devices.where((d) => d.paired);
+    _known = {for (final d in paired) d.moonId};
+    if (known == null || !mounted) return;
+    final fresh = paired.where((d) => !d.named && !known.contains(d.moonId)).firstOrNull;
+    if (fresh == null) return;
+    final l = context.l10n;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l.parentalNameOffer),
+        duration: const Duration(seconds: 10),
+        action: SnackBarAction(
+          label: l.parentalRename,
+          onPressed: () async {
+            if (!mounted) return;
+            if (await renameConsole(context, widget.api, fresh) != null && mounted) _reload();
+          },
+        ),
+      ),
+    );
+  }
 
   Future<void> _pair() async {
     final l = context.l10n;

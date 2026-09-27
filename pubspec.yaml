@@ -1,7 +1,7 @@
 name: openpak
 description: OpenPak companion app — your account, friends and invitations.
 publish_to: none
-version: 0.17.0+33
+version: 0.18.0+34
 
 environment:
   sdk: ^3.9.0
