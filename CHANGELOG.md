@@ -3,6 +3,12 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.19.0 — 2026-10-09
+
+- **The console system UI look, as on openpak.org v0.69.0.** Console-shell grey with white tiles (charcoal in dark mode), flat colours with no gradients, and sentence-case labels. Headings, labels and buttons use M PLUS Rounded 1c, bundled under `assets/fonts` (OFL, subset to Latin, Greek and Cyrillic).
+- The cyan selection cursor marks the current tab in the bottom bar, and appears on a tappable row when it is hovered or focused. It breathes unless animations are turned off.
+- The account page's profile is a flat tile with no cover, and the avatar is a flat accent circle.
+
 ## v0.18.0 — 2026-09-27
 
 - **A console can be named**, so two under one account can be told apart: Rename in the console

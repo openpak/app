@@ -49,28 +49,28 @@ class _ShellState extends State<Shell> {
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: [
           NavigationDestination(
-            icon: Icon(Icons.people_outline),
-            selectedIcon: Icon(Icons.people),
+            icon: NavWell(Icons.people_outline),
+            selectedIcon: NavWell(Icons.people, selected: true),
             label: l.navFriends,
           ),
           NavigationDestination(
-            icon: Icon(Icons.mail_outline),
-            selectedIcon: Icon(Icons.mail),
+            icon: NavWell(Icons.mail_outline),
+            selectedIcon: NavWell(Icons.mail, selected: true),
             label: l.navInvitations,
           ),
           NavigationDestination(
-            icon: Icon(Icons.sports_esports_outlined),
-            selectedIcon: Icon(Icons.sports_esports),
+            icon: NavWell(Icons.sports_esports_outlined),
+            selectedIcon: NavWell(Icons.sports_esports, selected: true),
             label: l.navTitles,
           ),
           NavigationDestination(
-            icon: Icon(Icons.save_outlined),
-            selectedIcon: Icon(Icons.save),
+            icon: NavWell(Icons.save_outlined),
+            selectedIcon: NavWell(Icons.save, selected: true),
             label: l.navSaves,
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
+            icon: NavWell(Icons.person_outline),
+            selectedIcon: NavWell(Icons.person, selected: true),
             label: l.navAccount,
           ),
         ],

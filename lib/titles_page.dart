@@ -474,7 +474,7 @@ class _CatalogRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: t.raised,
         borderRadius: BorderRadius.circular(radiusCard),
-        border: Border.all(color: t.line),
+        border: Border.all(color: t.cardLine),
         boxShadow: t.shadow,
       ),
       child: Padding(

@@ -187,7 +187,7 @@ void main() {
     );
     await tester.pumpWidget(wrap(api));
     await tester.pumpAndSettle();
-    expect(find.text('NEWS'), findsOneWidget);
+    expect(find.text('News'), findsOneWidget);
     expect(find.text('18 September 2026'), findsOneWidget);
     await tester.tap(find.text('Wii U friends are live'));
     await tester.pumpAndSettle();
@@ -198,6 +198,6 @@ void main() {
     articles = [];
     await tester.fling(find.byType(ListView).first, const Offset(0, 400), 1000);
     await tester.pumpAndSettle();
-    expect(find.text('NEWS'), findsNothing);
+    expect(find.text('News'), findsNothing);
   });
 }

@@ -446,8 +446,8 @@ void main() {
     }
 
     await open();
-    await tester.ensureVisible(find.text('Stardew Valley'));
-    expect(find.text('PLAY ACTIVITY'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Stardew Valley'), 200);
+    expect(find.text('Play activity'), findsOneWidget);
     expect(find.text('Time used'), findsNWidgets(2), reason: 'the day with 0 minutes is left out');
     expect(find.text('95 minutes'), findsOneWidget);
     expect(find.text('01001b300b9be000'), findsOneWidget);
@@ -455,8 +455,8 @@ void main() {
 
     days = [];
     await open();
-    await tester.ensureVisible(find.text('No play time recorded yet.'));
-    expect(find.text('PLAY ACTIVITY'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('No play time recorded yet.'), 200);
+    expect(find.text('Play activity'), findsOneWidget);
     expect(find.text('Time used'), findsNothing);
   });
 
@@ -640,7 +640,7 @@ void main() {
       home: ParentalConsolePage(api: api, device: ParentalDevice.fromJson(_console)),
     ));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Moving Out 2'));
+    await tester.scrollUntilVisible(find.text('Moving Out 2'), 200);
     expect(find.text('Leia'), findsOneWidget);
     expect(find.text('13 minutes'), findsOneWidget);
     expect(find.text('A user no longer on this console'), findsOneWidget);

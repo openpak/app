@@ -246,7 +246,6 @@ class _AccountPageState extends State<AccountPage> {
                   label: Text(l.accountChangePassword),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
-                    side: BorderSide(color: t.line),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -257,7 +256,6 @@ class _AccountPageState extends State<AccountPage> {
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
                     foregroundColor: t.bad,
-                    side: BorderSide(color: t.line),
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -463,8 +461,8 @@ class _AccountPageState extends State<AccountPage> {
       d == null ? l.accountSession : l.accountSignedInOn(shortDate(l, d));
 }
 
-/// The website's profile card: a gradient cover, the avatar overlapping it in
-/// a ring of the card's own colour, the name, and the friend code in a well
+/// The website's profile card: the avatar and name on a flat tile, and the
+/// friend code in a well
 /// with its copy button — the code exists to be handed to someone else.
 class _ProfileCard extends StatelessWidget {
   const _ProfileCard({super.key, required this.api, required this.me, required this.onTap});
@@ -482,7 +480,7 @@ class _ProfileCard extends StatelessWidget {
         color: t.raised,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusLg),
-          side: BorderSide(color: t.line),
+          side: BorderSide(color: t.cardLine),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -490,54 +488,44 @@ class _ProfileCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(height: 88, decoration: const BoxDecoration(gradient: coverGradient)),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // No cover band: the site's profile is the avatar and the
+                    // name on a flat tile, the cover being a gradient it dropped.
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Transform.translate(
-                          offset: const Offset(0, -32),
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(color: t.raised, shape: BoxShape.circle),
-                            child: AccountAvatar(api: api, account: me, size: 80),
+                        AccountAvatar(api: api, account: me, size: 64),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                me.displayName.isEmpty ? l.accountYou : me.displayName,
+                                style: const TextStyle(fontFamily: uiFont, fontSize: 24, fontWeight: FontWeight.w800),
+                              ),
+                              if (me.email.isNotEmpty)
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(me.email, overflow: TextOverflow.ellipsis, style: TextStyle(color: t.muted)),
+                                    ),
+                                    if (me.emailVerified) ...[
+                                      const SizedBox(width: 8),
+                                      StatePill(text: l.accountEmailConfirmed, state: RowState.ok),
+                                    ],
+                                  ],
+                                ),
+                            ],
                           ),
                         ),
-                        const Spacer(),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 44),
-                          child: Icon(Icons.chevron_right, color: t.muted),
-                        ),
+                        Icon(Icons.chevron_right, color: t.muted),
                       ],
                     ),
-                    Transform.translate(
-                      offset: const Offset(0, -20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            me.displayName.isEmpty ? l.accountYou : me.displayName,
-                            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.8),
-                          ),
-                          if (me.email.isNotEmpty)
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: Text(me.email, overflow: TextOverflow.ellipsis, style: TextStyle(color: t.muted)),
-                                ),
-                                if (me.emailVerified) ...[
-                                  const SizedBox(width: 8),
-                                  StatePill(text: l.accountEmailConfirmed, state: RowState.ok),
-                                ],
-                              ],
-                            ),
-                        ],
-                      ),
-                    ),
+                    const SizedBox(height: 16),
                     // Every code this account can be added by, each in its
                     // own well with a copy button, as on the website's banner.
                     for (final c in me.friendCodes)
@@ -592,8 +580,8 @@ class _CodeWell extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  label.toUpperCase(),
-                  style: TextStyle(color: t.muted, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1),
+                  label,
+                  style: TextStyle(fontFamily: uiFont, color: t.muted, fontSize: 12, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 // One line, shrunk if it must: a code split across lines
@@ -681,9 +669,9 @@ class _Stat extends StatelessWidget {
               Text(
                 '$value',
                 style: const TextStyle(
+                  fontFamily: uiFont,
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
-                  letterSpacing: -0.6,
                   fontFeatures: [FontFeature.tabularFigures()],
                 ),
               ),

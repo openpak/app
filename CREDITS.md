@@ -53,3 +53,19 @@ gradients and namespaced editor attributes stripped (they would be unbound
 prefixes once the body is rewrapped), and the art scaled to the box — wordmarks
 to its width, device marks to whichever side binds first. Keep `consoleSlug` (Go)
 and `consoleAsset` (Dart) in step with the filenames here.
+
+# UI font (assets/fonts)
+
+| File | Source | Licence |
+|---|---|---|
+| `MPLUSRounded1c-Medium.ttf` (500), `-Bold.ttf` (700), `-ExtraBold.ttf` (800) | M PLUS Rounded 1c, `google/fonts` `ofl/mplusrounded1c`, Copyright 2016 The Rounded M+ Project Authors | SIL Open Font License 1.1 (`assets/fonts/OFL.txt`) |
+
+Used for headings, labels, buttons and numbers; body text stays on the system
+font. The website serves the same three weights as woff2
+(`website/web/static/fonts`). The TTFs here are the static instances, cut down
+with `pyftsubset` to Latin, Latin Extended, Greek, Cyrillic, general
+punctuation and the euro sign (about 260 KB each instead of 3.5 MB with the
+Japanese glyphs the app never shows); a glyph outside that falls back to the
+system font. The OFL names no Reserved Font Name, so the subset keeps the
+family name. Keep `uiFont` in `lib/theme.dart` in step with the family name in
+`pubspec.yaml`.

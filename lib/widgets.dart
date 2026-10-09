@@ -37,7 +37,7 @@ class Panel extends StatelessWidget {
         color: t.raised,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusCard),
-          side: BorderSide(color: t.line),
+          side: BorderSide(color: t.cardLine),
         ),
         clipBehavior: Clip.antiAlias,
         child: child,
@@ -62,12 +62,12 @@ class SectionLabel extends StatelessWidget {
           // large text wraps rather than pushing its count off the screen.
           Flexible(
             child: Text(
-              text.toUpperCase(),
+              text,
               style: TextStyle(
-                color: t.muted,
-                fontSize: 12,
+                fontFamily: uiFont,
+                color: t.ink2,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 1.1,
               ),
             ),
           ),
@@ -82,6 +82,7 @@ class SectionLabel extends StatelessWidget {
               child: Text(
                 trailing!,
                 style: TextStyle(
+                  fontFamily: uiFont,
                   color: Theme.of(context).colorScheme.primary,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -91,6 +92,118 @@ class SectionLabel extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// The selection cursor: a gap in the page's colour, then a cyan ring that
+/// breathes between [Tokens.cursor] and [Tokens.cursor2] over 1.6s, as the
+/// site's `.sel` does. Wrap a tile and say when it is [active] (hovered,
+/// focused, current). It is never decoration; an inactive ring costs nothing
+/// and paints nothing. Under reduced motion the ring holds still.
+///
+/// The ring paints 7px outside the child, so the parent must leave that much
+/// room (the page padding and row margins already do).
+class CursorRing extends StatefulWidget {
+  const CursorRing({
+    super.key,
+    required this.active,
+    required this.radius,
+    required this.child,
+    this.gap,
+  });
+  final bool active;
+  final double radius;
+  final Widget child;
+
+  /// What the gap is filled with: the colour of whatever the tile sits on.
+  /// Defaults to the page.
+  final Color? gap;
+
+  @override
+  State<CursorRing> createState() => _CursorRingState();
+}
+
+class _CursorRingState extends State<CursorRing> with SingleTickerProviderStateMixin {
+  // Half a cycle each way: cursor -> cursor-2 at 50%, back at 100% of 1.6s.
+  late final AnimationController _breath = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 800),
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _sync();
+  }
+
+  @override
+  void didUpdateWidget(CursorRing old) {
+    super.didUpdateWidget(old);
+    _sync();
+  }
+
+  void _sync() {
+    final still = MediaQuery.disableAnimationsOf(context);
+    if (widget.active && !still) {
+      if (!_breath.isAnimating) _breath.repeat(reverse: true);
+    } else {
+      _breath.stop();
+      _breath.value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _breath.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.active) return widget.child;
+    final t = tokensOf(context);
+    final gap = widget.gap ?? Theme.of(context).scaffoldBackgroundColor;
+    return AnimatedBuilder(
+      animation: _breath,
+      child: widget.child,
+      builder: (context, child) => DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(widget.radius),
+          boxShadow: [...cursorShadows(gap, Color.lerp(t.cursor, t.cursor2, _breath.value)!), ...t.shadowRaised],
+        ),
+        child: child,
+      ),
+    );
+  }
+}
+
+/// One destination of the phone menu: HOME's round system button. Every one
+/// sits in a raised round well; the current one wears the cursor (a 2px gap,
+/// then a 2px ring, as the site's tab bar does).
+class NavWell extends StatelessWidget {
+  const NavWell(this.icon, {super.key, this.selected = false});
+  final IconData icon;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokensOf(context);
+    final ink = Theme.of(context).colorScheme.onSurface;
+    return Container(
+      width: 34,
+      height: 34,
+      decoration: BoxDecoration(
+        color: t.raised,
+        shape: BoxShape.circle,
+        boxShadow: selected
+            ? [
+                BoxShadow(color: t.cursor, spreadRadius: 4),
+                BoxShadow(color: Theme.of(context).scaffoldBackgroundColor, spreadRadius: 2),
+              ]
+            : t.shadow,
+      ),
+      child: Icon(icon, size: 20, color: selected ? ink : t.muted),
     );
   }
 }
@@ -151,8 +264,7 @@ class Avatar extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: dim ? t.paper2 : null,
-        gradient: dim ? null : avatarGradient,
+        color: dim ? t.paper2 : scheme.primary,
         shape: BoxShape.circle,
         border: Border.all(
           color: online ? t.ok : t.line,
@@ -163,8 +275,9 @@ class Avatar extends StatelessWidget {
       child: Text(
         name.isEmpty ? '?' : name.characters.first.toUpperCase(),
         style: TextStyle(
-          color: dim ? t.muted : Colors.white,
-          fontWeight: FontWeight.w700,
+          fontFamily: uiFont,
+          color: dim ? t.muted : scheme.onPrimary,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );
@@ -462,6 +575,9 @@ class StateRow extends StatefulWidget {
 class _StateRowState extends State<StateRow> {
   bool _open = false;
 
+  // Hover and focus select a row the way they do on HOME: the cursor ring.
+  bool _hover = false, _focus = false;
+
   @override
   Widget build(BuildContext context) {
     final t = tokensOf(context);
@@ -476,7 +592,7 @@ class _StateRowState extends State<StateRow> {
     final hasActions = widget.trailing != null;
     final name = Text(
       widget.name,
-      style: const TextStyle(fontWeight: FontWeight.w600),
+      style: const TextStyle(fontFamily: uiFont, fontWeight: FontWeight.w700),
       overflow: TextOverflow.ellipsis,
     );
     final pill = _Pill(
@@ -484,8 +600,8 @@ class _StateRowState extends State<StateRow> {
       color: ink,
       border: widget.state == RowState.idle ? t.line2 : border,
     );
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+    final tappable = expandable || widget.onTap != null;
+    final tile = Container(
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(radiusCard),
@@ -494,6 +610,8 @@ class _StateRowState extends State<StateRow> {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: expandable ? () => setState(() => _open = !_open) : widget.onTap,
+        onHover: (v) => setState(() => _hover = v),
+        onFocusChange: (v) => setState(() => _focus = v),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Column(
@@ -549,6 +667,10 @@ class _StateRowState extends State<StateRow> {
         ),
       ),
     );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: CursorRing(active: tappable && (_hover || _focus), radius: radiusCard, child: tile),
+    );
   }
 }
 
@@ -583,7 +705,7 @@ class _Pill extends StatelessWidget {
           child: Text(
             text,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: color, fontSize: 12.5, fontWeight: FontWeight.w600),
+            style: TextStyle(fontFamily: uiFont, color: color, fontSize: 12.5, fontWeight: FontWeight.w700),
           ),
         ),
       ],
@@ -755,8 +877,8 @@ class _LiveDotState extends State<LiveDot> with SingleTickerProviderStateMixin {
   }
 }
 
-/// The site's usage meter: 4px, a sunk track, the indigo-to-violet fill
-/// (amber when [warn]).
+/// The site's usage meter: 4px, a sunk track, a flat accent fill (amber when
+/// [warn]).
 class UsageBar extends StatelessWidget {
   const UsageBar({super.key, required this.value, this.warn = false});
   final double value;
@@ -774,8 +896,7 @@ class UsageBar extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
-            color: warn ? t.warn : null,
-            gradient: warn ? null : const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFFA855F7)]),
+            color: warn ? t.warn : Theme.of(context).colorScheme.primary,
           ),
         ),
       ),

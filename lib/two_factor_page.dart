@@ -112,7 +112,6 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
       label: Text(context.l10n.twoFactorOpenInApp),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(48),
-        side: BorderSide(color: t.line),
       ),
     ),
     const SizedBox(height: 20),
@@ -162,7 +161,6 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
       label: Text(context.l10n.commonCopy),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(48),
-        side: BorderSide(color: t.line),
       ),
     ),
     const SizedBox(height: 12),
