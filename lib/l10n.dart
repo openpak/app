@@ -22,6 +22,10 @@ extension L10nContext on BuildContext {
 /// is only shown when an old server sent a status nothing else covers.
 String apiErrorText(AppLocalizations l, ApiException e) {
   final byCode = switch (e.code) {
+       'handle_taken' => l.errorHandleTaken,
+    'handle_invalid' => l.errorHandleInvalid,
+    'handle_reserved' => l.errorHandleReserved,
+    'handle_profane' => l.errorHandleProfane,
     'account_suspended' => l.errorAccountSuspended,
     'avatar_invalid' => l.errorAvatarInvalid,
     'avatars_unavailable' => l.errorAvatarsUnavailable,

@@ -335,7 +335,7 @@ void main() {
     final ms = await api.chatHistory('acct-2', after: 7);
     expect(ms.single.isText, isTrue);
     expect((await api.sendChat('acct-2', 'yo')).id, 9);
-    await api.register(email: 'a@x.test', password: 'password-1', displayName: 'Leia');
+    await api.register(email: 'a@x.test', password: 'password-1', displayName: 'Leia',handle:'LeiaOrgana');
     await api.forgotPassword('a@x.test');
     await api.changePassword('old-pass-1', 'new-pass-1');
     await api.linkWfc('1234-5678-9012');
@@ -503,18 +503,18 @@ void main() {
     expect(api.token, 'opk_abc');
   });
 
-  test('friend_codes is read in order; an older server falls back to the two codes', () {
+  test('friend_codes uses the permanent handle and numeric codes; retired OP codes are ignored', () {
     final now = Account.fromJson({
       'friend_codes': [
-        {'kind': 'openpak', 'console': '', 'label': 'OpenPak', 'code': 'OP-AB2C-D3E4'},
+        {'kind': 'handle', 'console': '', 'label': 'Handle', 'code': 'LeiaOrgana'},
         {'kind': 'wiiu', 'console': 'Wii U', 'label': 'Wii U · NNID', 'code': 'leia'},
         {'kind': '3ds', 'console': '3DS', 'label': '3DS', 'code': ''},
       ],
     });
-    expect(now.friendCodes.map((c) => '${c.kind} ${c.label} ${c.code}'), ['openpak OpenPak OP-AB2C-D3E4', 'wiiu Wii U · NNID leia']);
+    expect(now.friendCodes.map((c) => '${c.kind} ${c.label} ${c.code}'), ['handle Handle LeiaOrgana', 'wiiu Wii U · NNID leia']);
 
     final old = Account.fromJson({'openpak_code': 'OP-AB2C-D3E4', 'friend_code': 'SW-1234-5678-9012'});
-    expect(old.friendCodes.map((c) => c.kind), ['openpak', 'switch']);
+    expect(old.friendCodes.map((c) => c.kind), ['switch']);
     expect(Account.fromJson({}).friendCodes, isEmpty);
   });
 

@@ -451,22 +451,22 @@ bool looksLikeSwitchTitleId(String id) => _switchTitleId.hasMatch(id);
 
 /// A code's shape per kind: the prefix, the group sizes, the characters kept
 /// and the placeholder. The same table as website/web/static/site.js
-/// (data-friend-form); OpenPak codes skip 0, 1, I, L, O and U.
+/// (data-friend-form). Handles are typed verbatim.
 const friendCodeShapes = {
-  'openpak': (prefix: 'OP-', groups: [4, 4], drop: r'[^2-9A-HJKMNP-TV-Z]', hint: 'OP-XXXX-XXXX'),
   'switch': (prefix: 'SW-', groups: [4, 4, 4, 4], drop: r'[^0-9A-F]', hint: 'SW-XXXX-XXXX-XXXX'),
   '3ds': (prefix: '', groups: [4, 4, 4], drop: r'[^0-9]', hint: '1234-5678-9012'),
 };
 
 /// Kinds typed as they are, with no shape to fit: a Nintendo Network ID is a
 /// name, and an email address is an address.
-const freeFriendCodeHints = {'wiiu': 'NNID', 'email': 'name@example.com'};
+const freeFriendCodeHints = {'handle': 'ExampleUser', 'wiiu': 'NNID', 'email': 'name@example.com'};
 
 /// Whatever was typed, fitted to [kind]'s shape: upper-cased, the prefix
 /// taken off and put back, stray characters dropped, dashes between groups.
 String fitFriendCode(String kind, String typed) {
   if (freeFriendCodeHints.containsKey(kind)) return typed;
-  final sh = friendCodeShapes[kind] ?? friendCodeShapes['openpak']!;
+  final sh = friendCodeShapes[kind];
+  if (sh == null) return typed;
   var raw = typed.toUpperCase();
   if (sh.prefix.isNotEmpty && raw.startsWith(sh.prefix.substring(0, 2))) raw = raw.substring(2);
   raw = raw.replaceAll(RegExp(sh.drop), '');
@@ -487,7 +487,7 @@ class _AddFriendDialog extends StatefulWidget {
 }
 
 class _AddFriendDialogState extends State<_AddFriendDialog> {
-  String _kind = 'openpak';
+  String _kind = 'handle';
   final _code = TextEditingController();
 
   void _refit() {
@@ -513,10 +513,9 @@ class _AddFriendDialogState extends State<_AddFriendDialog> {
             isExpanded: true,
             decoration: InputDecoration(labelText: l.friendsAddKind),
             items: [
-              DropdownMenuItem(value: 'openpak', child: Text(l.friendsKindOpenpak)),
+              DropdownMenuItem(value: 'handle', child: Text(l.commonHandle)),
               DropdownMenuItem(value: 'switch', child: Text(l.friendsKindSwitch)),
               DropdownMenuItem(value: '3ds', child: Text(l.friendsKind3ds)),
-              DropdownMenuItem(value: 'wiiu', child: Text(l.friendsKindWiiu)),
               DropdownMenuItem(value: 'email', child: Text(l.friendsKindEmail)),
             ],
             onChanged: (v) => setState(() {

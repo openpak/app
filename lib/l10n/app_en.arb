@@ -2132,5 +2132,11 @@
   "parentalNoUserSelected": "No user selected",
   "@parentalNoUserSelected": {
     "description": "Play activity: time a title was played with no user selected."
-  }
+  },
+  "commonHandle": "Handle",
+  "handleRules": "Choose a permanent handle: 6–15 letters and digits, starting with a letter. It is your OpenPak and console account ID and cannot be changed. Your display name is separate and can be changed.",
+  "errorHandleTaken": "That handle is unavailable. Choose another.",
+  "errorHandleInvalid": "Use 6–15 letters and digits, starting with a letter.",
+  "errorHandleReserved": "That handle is reserved. Choose another.",
+  "errorHandleProfane": "That handle is not allowed. Choose another."
 }

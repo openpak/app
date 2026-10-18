@@ -363,8 +363,8 @@ void main() {
   });
 
   test('a typed code is fitted to its kind, as the website does', () {
-    expect(fitFriendCode('openpak', 'op-ab2c-d3e4'), 'OP-AB2C-D3E4');
-    expect(fitFriendCode('openpak', 'o1l2'), 'OP-2'); // 0/1/I/L/O/U are never in a code; the o is the prefix
+    expect(fitFriendCode('handle', 'LeiaOrgana'), 'LeiaOrgana');
+    expect(fitFriendCode('handle', 'hansolo'), 'hansolo');
     expect(fitFriendCode('switch', 'sw12345678abcd'), 'SW-1234-5678-ABCD');
     expect(fitFriendCode('switch', '1234-5678-9abc-def0-99'), 'SW-1234-5678-9ABC-DEF0');
     expect(fitFriendCode('3ds', '123456789012345'), '1234-5678-9012');
@@ -389,7 +389,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Add by friend code'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('OpenPak code'));
+    await tester.tap(find.text('Handle'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('3DS friend code').last);
     await tester.pumpAndSettle();

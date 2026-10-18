@@ -57,6 +57,7 @@ class Account {
   Account({
     required this.id,
     required this.displayName,
+    this.handle = '',
     this.friendCode,
     this.friendCodes = const [],
     this.country = '',
@@ -69,6 +70,7 @@ class Account {
   });
   final String id;
   final String displayName;
+  final String handle;
 
   /// Present only once a console is linked.
   final String? friendCode;
@@ -97,16 +99,17 @@ class Account {
   factory Account.fromJson(Map<String, dynamic> j) => Account(
     id: j['account_id'] as String? ?? '',
     displayName: j['display_name'] as String? ?? '',
+    handle: j['handle'] as String? ?? '',
     friendCode: j['friend_code'] as String?,
     // friend_codes is website v0.55.1; before it, the two codes it replaces.
     friendCodes: j['friend_codes'] is List
         ? [
             for (final c in (j['friend_codes'] as List).whereType<Map<String, dynamic>>())
-              if (_nonEmpty(c['code']) != null)
+              if (_nonEmpty(c['code']) != null && c['kind'] != 'openpak')
                 (kind: c['kind'] as String? ?? '', label: c['label'] as String? ?? '', code: c['code'] as String),
           ]
         : [
-            if (_nonEmpty(j['openpak_code']) case final c?) (kind: 'openpak', label: 'OpenPak', code: c),
+            if (_nonEmpty(j['handle']) case final c?) (kind: 'handle', label: 'Handle', code: c),
             if (_nonEmpty(j['friend_code']) case final c?) (kind: 'switch', label: 'Switch', code: c),
           ],
     country: j['country'] as String? ?? '',
@@ -1101,9 +1104,9 @@ class OpenPakApi {
     return FriendRequests(incoming: read('incoming'), outgoing: read('outgoing'));
   }
 
-  /// POST /me/friends/requests — add by code. [kind] is openpak, switch,
-  /// 3ds, wiiu or email (website v0.57.0); left out, the server reads an OP- code as OpenPak and anything else
-  /// as Switch.
+  /// POST /me/friends/requests — add by code. [kind] is handle, switch,
+  /// 3ds, wiiu or email; left out, the server tries a handle first, then numeric codes.
+
   Future<void> addFriend(String friendCode, {String? kind}) => _post('/me/friends/requests', {
     'friend_code': friendCode,
     'kind': ?kind,
@@ -1155,10 +1158,12 @@ class OpenPakApi {
     required String email,
     required String password,
     required String displayName,
+    required String handle,
   }) => _post('/register', {
     'email': email,
     'password': password,
     'display_name': displayName,
+    'handle': handle,
   });
 
   /// POST /password/forgot — public; the mail links to the website's reset page.

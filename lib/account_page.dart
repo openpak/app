@@ -533,7 +533,7 @@ class _ProfileCard extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: _CodeWell(
                           label: switch (c.kind) {
-                            'openpak' => l.friendsKindOpenpak,
+                            'handle' => l.commonHandle,
                             'switch' => l.friendsKindSwitch,
                             '3ds' => l.friendsKind3ds,
                             'email' => l.friendsKindEmail,

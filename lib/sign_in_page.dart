@@ -118,14 +118,14 @@ class _SignInPageState extends State<SignInPage> {
     final v = await promptForm(
       context,
       title: l.signInCreateAccount,
-      labels: [l.commonDisplayName, '@${l.commonEmail}', '*${l.commonPassword}'],
+      labels: [l.commonHandle, l.commonDisplayName, '@${l.commonEmail}', '*${l.commonPassword}'],
       action: l.signInCreate,
-      help: l.signInCreateHelp,
+      help: l.handleRules,
     );
     if (v == null) return;
     await _ask(
-      () => widget.api.register(displayName: v[0], email: v[1], password: v[2]),
-      l.signInCreateSent(v[1]),
+      () => widget.api.register(handle: v[0], displayName: v[1], email: v[2], password: v[3]),
+      l.signInCreateSent(v[2]),
     );
   }
 
