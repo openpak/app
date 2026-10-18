@@ -3,6 +3,13 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.20.0 — 2026-10-18
+
+- Signup now requires a permanent handle, with a separate editable account name.
+- Friend lookup uses the unified handle; retired OP codes are removed from the app.
+- Numeric console friend codes remain separate. Handle validation errors now explain the shared rules.
+- Signed APKs published; release tests passed.
+
 ## v0.19.0 — 2026-10-09
 
 - **The console system UI look, as on openpak.org v0.69.0.** Console-shell grey with white tiles (charcoal in dark mode), flat colours with no gradients, and sentence-case labels. Headings, labels and buttons use M PLUS Rounded 1c, bundled under `assets/fonts` (OFL, subset to Latin, Greek and Cyrillic).
