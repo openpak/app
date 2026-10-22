@@ -1,5 +1,13 @@
 # OpenPak companion apps PRD (Android, iOS)
 
+> **Current Switch client (2026-10-13): Harbor**, at
+> `~/REPOS/Openpak/emulators/harbor`. Harbor is an independent
+> OpenPak project based on Eden. Citron, Ryujinx (desktop and Android), and
+> the former OpenPak Eden checkouts have been removed. References to those
+> forks below record historical evidence only: do not run their commands,
+> reinstall them, or select them for current work. Use Harbor's README and
+> current handoff for builds and testing; old results do not establish Harbor parity.
+
 Status: **A0/A1 built** (2026-09-08, one Flutter codebase in `app`, Android installs). Original brief (2026-09-07): API-first: no app code before the mobile
 API contract (website PRD, WEB-08) is published.
 
@@ -19,9 +27,7 @@ when a friend invites you, without touching the console.
 
 ## 3. Evidence and current baseline
 
-Observed earlier (evidence only): Android and iOS apps exist with account, friends and
-sessions views. No local source for either; scope comes from their public descriptions and
-from the emulator's client surface (profile, friends, presence, invitations, history,
+Scope comes from the emulator's client surface (profile, friends, presence, invitations, history,
 online counts).
 
 ## 4. Users and journeys
@@ -60,10 +66,7 @@ does the same with this app.
 
 ## 6. Independent implementation rules (apply verbatim)
 
-- Every earlier network repository is source-available; its noncompete clause forbids
-  using that code in a competing product. earlier code, routes, schemas and prose are
-  **evidence of observable behaviour only**, never implementation input. Do not copy,
-  translate, or structurally mirror them. Cite them as evidence, then design from scratch.
+- OpenPak servers are AGPL-3.0-only and OpenPak-authored.
 - Go 1.26, module `github.com/openpak/<repo>`, AGPL-3.0-only, `LICENSE` verbatim from
   gnu.org. Server-rendered templates and minimal browser JavaScript for web surfaces.
   Native mobile code is the recorded non-Go exception.
@@ -140,7 +143,7 @@ Repos `app-android`, `app-ios` (native, AGPL-3.0). Server side stays in `website
   v0.3.1). Gate: two phones in the same Splatoon 2 private battle hear each other with the
   console showing the room code. Open: talking with the app in the background (Android needs a
   microphone foreground service), NPLN titles (their sessions are not asked yet), and the
-  Wii U/3DS titles on `servers/nex`.
+  Wii U/3DS titles on `platforms/wiiu-3ds/games/nex`.
 
 ## 11. Risks
 
