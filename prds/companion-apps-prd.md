@@ -159,5 +159,5 @@ Repos `app-android`, `app-ios` (native, AGPL-3.0). Server side stays in `website
 
 ## 12. Evidence references
 
-Emulator client surface (paths only) in `earlier-citron/src/web_service/legacy_api.cpp`;
+Emulator client surface (paths only) in the earlier Citron build (`src/web_service/legacy_api.cpp`);
 core contracts in `account/proto`.
