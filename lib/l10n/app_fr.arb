@@ -463,5 +463,10 @@
   "parentalFirmware": "Version du système {firmware}",
   "parentalNameOffer": "Console associée. Donne-lui un nom pour la distinguer des autres.",
   "parentalGoneUser": "Un utilisateur qui n'est plus sur cette console",
-  "parentalNoUserSelected": "Aucun utilisateur sélectionné"
+  "parentalNoUserSelected": "Aucun utilisateur sélectionné",
+  "signInBirthday": "Date de naissance",
+  "signInBirthdayChoose": "Choisis ta date de naissance",
+  "signInTooYoung": "Tu dois avoir au moins {age} ans pour créer un compte OpenPak.",
+  "errorBirthdayInvalid": "Saisis une date de naissance valide.",
+  "statusInDevelopment": "En développement"
 }

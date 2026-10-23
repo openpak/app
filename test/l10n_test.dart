@@ -25,6 +25,15 @@ void main() {
     expect(apiErrorText(en, e), en.errorWrongPassword);
     // No code (an older server): worded by status; a code nobody knows yet, too.
     expect(apiErrorText(en, ApiException(429, 'rate limited')), en.errorRateLimited);
+    // The signup age check has no code of its own; its words are read.
+    expect(
+      apiErrorText(en, ApiException(400, 'you must be at least 16 to create an OpenPak account', fromServer: true)),
+      en.signInTooYoung(16),
+    );
+    expect(
+      apiErrorText(en, ApiException(400, 'birthday must be a past date, YYYY-MM-DD', fromServer: true)),
+      en.errorBirthdayInvalid,
+    );
     expect(apiErrorText(en, ApiException(500, 'x', code: 'brand_new')), en.errorGeneric(500));
   });
 

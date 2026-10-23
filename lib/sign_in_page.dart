@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'api.dart';
 import 'l10n.dart';
 import 'logo.dart';
+import 'theme.dart';
 import 'widgets.dart';
 
 class SignInPage extends StatefulWidget {
@@ -115,17 +116,17 @@ class _SignInPageState extends State<SignInPage> {
 
   Future<void> _register() async {
     final l = context.l10n;
-    final v = await promptForm(
-      context,
-      title: l.signInCreateAccount,
-      labels: [l.commonHandle, l.commonDisplayName, '@${l.commonEmail}', '*${l.commonPassword}'],
-      action: l.signInCreate,
-      help: l.handleRules,
-    );
+    final v = await showDialog<_Signup>(context: context, builder: (_) => const _RegisterDialog());
     if (v == null) return;
     await _ask(
-      () => widget.api.register(handle: v[0], displayName: v[1], email: v[2], password: v[3]),
-      l.signInCreateSent(v[2]),
+      () => widget.api.register(
+        handle: v.handle,
+        displayName: v.displayName,
+        email: v.email,
+        password: v.password,
+        birthday: v.birthday,
+      ),
+      l.signInCreateSent(v.email),
     );
   }
 
@@ -254,4 +255,118 @@ class _SignInPageState extends State<SignInPage> {
       ],
     ),
   ];
+}
+
+/// The youngest age that may sign up. The website enforces it (WEBSITE_MIN_AGE);
+/// the app checks first only so the person is told before sending anything.
+const minimumAge = 16;
+
+/// Whether someone born on [birthday] is under [minimumAge] on [today]. Someone
+/// born on 29 February turns a year older on 1 March, as on the website.
+bool underMinimumAge(DateTime birthday, DateTime today) {
+  final day = DateTime(today.year, today.month, today.day);
+  return DateTime(birthday.year + minimumAge, birthday.month, birthday.day).isAfter(day);
+}
+
+/// YYYY-MM-DD, the format /register takes.
+String isoDay(DateTime d) =>
+    '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+typedef _Signup = ({String handle, String displayName, String email, String password, String birthday});
+
+/// The create-account dialog: the text fields and a date of birth from a date
+/// picker. Under [minimumAge] it says so and will not create the account.
+class _RegisterDialog extends StatefulWidget {
+  const _RegisterDialog();
+
+  @override
+  State<_RegisterDialog> createState() => _RegisterDialogState();
+}
+
+class _RegisterDialogState extends State<_RegisterDialog> {
+  final _handle = TextEditingController();
+  final _name = TextEditingController();
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  DateTime? _birthday;
+
+  @override
+  void dispose() {
+    for (final c in [_handle, _name, _email, _password]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _pickBirthday() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _birthday ?? DateTime(now.year - 20, now.month, now.day),
+      firstDate: DateTime(1900),
+      lastDate: now,
+      initialDatePickerMode: DatePickerMode.year,
+      helpText: context.l10n.signInBirthday,
+    );
+    if (picked != null) setState(() => _birthday = picked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final b = _birthday;
+    final tooYoung = b != null && underMinimumAge(b, DateTime.now());
+    InputDecoration label(String text) => InputDecoration(labelText: text);
+    return AlertDialog(
+      title: Text(l.signInCreateAccount),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(controller: _handle, autofocus: true, autocorrect: false, decoration: label(l.commonHandle)),
+            TextField(controller: _name, autocorrect: false, decoration: label(l.commonDisplayName)),
+            TextField(
+              controller: _email,
+              autocorrect: false,
+              keyboardType: TextInputType.emailAddress,
+              decoration: label(l.commonEmail),
+            ),
+            TextField(controller: _password, obscureText: true, autocorrect: false, decoration: label(l.commonPassword)),
+            const SizedBox(height: 8),
+            InkWell(
+              key: const Key('register-birthday'),
+              onTap: _pickBirthday,
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: l.signInBirthday,
+                  suffixIcon: const Icon(Icons.calendar_today_outlined),
+                  errorText: tooYoung ? l.signInTooYoung(minimumAge) : null,
+                  errorMaxLines: 3,
+                ),
+                child: Text(b == null ? l.signInBirthdayChoose : shortDate(l, b)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(l.handleRules, style: TextStyle(color: Theme.of(context).extension<Tokens>()?.muted, fontSize: 13)),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l.commonCancel)),
+        FilledButton(
+          onPressed: b == null || tooYoung
+              ? null
+              : () => Navigator.pop<_Signup>(context, (
+                  handle: _handle.text.trim(),
+                  displayName: _name.text.trim(),
+                  email: _email.text.trim(),
+                  password: _password.text,
+                  birthday: isoDay(b),
+                )),
+          child: Text(l.signInCreate),
+        ),
+      ],
+    );
+  }
 }

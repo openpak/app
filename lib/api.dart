@@ -1153,17 +1153,20 @@ class OpenPakApi {
   }
 
   /// POST /register — public; the same answer whether or not the address is
-  /// taken, and a verification mail follows.
+  /// taken, and a verification mail follows. [birthday] is the date of birth
+  /// as YYYY-MM-DD; the server refuses a signup under its minimum age with 400.
   Future<void> register({
     required String email,
     required String password,
     required String displayName,
     required String handle,
+    required String birthday,
   }) => _post('/register', {
     'email': email,
     'password': password,
     'display_name': displayName,
     'handle': handle,
+    'birthday': birthday,
   });
 
   /// POST /password/forgot — public; the mail links to the website's reset page.

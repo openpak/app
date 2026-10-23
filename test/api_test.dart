@@ -335,7 +335,7 @@ void main() {
     final ms = await api.chatHistory('acct-2', after: 7);
     expect(ms.single.isText, isTrue);
     expect((await api.sendChat('acct-2', 'yo')).id, 9);
-    await api.register(email: 'a@x.test', password: 'password-1', displayName: 'Leia',handle:'LeiaOrgana');
+    await api.register(email: 'a@x.test', password: 'password-1', displayName: 'Leia', handle: 'LeiaOrgana', birthday: '2000-01-02');
     await api.forgotPassword('a@x.test');
     await api.changePassword('old-pass-1', 'new-pass-1');
     await api.linkWfc('1234-5678-9012');

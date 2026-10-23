@@ -2138,5 +2138,31 @@
   "errorHandleTaken": "That handle is unavailable. Choose another.",
   "errorHandleInvalid": "Use 6–15 letters and digits, starting with a letter.",
   "errorHandleReserved": "That handle is reserved. Choose another.",
-  "errorHandleProfane": "That handle is not allowed. Choose another."
+  "errorHandleProfane": "That handle is not allowed. Choose another.",
+  "signInBirthday": "Date of birth",
+  "@signInBirthday": {
+    "description": "Field in the create-account dialog; opens a date picker."
+  },
+  "signInBirthdayChoose": "Choose your date of birth",
+  "@signInBirthdayChoose": {
+    "description": "Placeholder of the date-of-birth field before a date is picked."
+  },
+  "signInTooYoung": "You must be at least {age} to create an OpenPak account.",
+  "@signInTooYoung": {
+    "description": "Shown under the date of birth when it is under the minimum age, and when the server refuses a signup for that reason.",
+    "placeholders": {
+      "age": {
+        "type": "int",
+        "example": "16"
+      }
+    }
+  },
+  "errorBirthdayInvalid": "Enter a valid date of birth.",
+  "@errorBirthdayInvalid": {
+    "description": "Error shown when the server refuses a signup's date of birth as missing, malformed or in the future."
+  },
+  "statusInDevelopment": "In development",
+  "@statusInDevelopment": {
+    "description": "Status pill of a network feature or console: being built, not ready for players."
+  }
 }

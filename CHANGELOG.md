@@ -3,6 +3,13 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.21.0 — unreleased
+
+- Signup asks for a date of birth, picked from a calendar, and sends it as `birthday` (YYYY-MM-DD).
+  Under 16 the dialog says so and Create stays off; the server's age and date refusals are shown
+  in the app's language.
+- The `in-development` status reads "In development" (Xbox, Xbox 360 and PS3 features).
+
 ## v0.20.0 — 2026-10-18
 
 - Signup now requires a permanent handle, with a separate editable account name.

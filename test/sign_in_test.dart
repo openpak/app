@@ -129,6 +129,23 @@ void main() {
     expect(find.textContaining('15 minutes'), findsOneWidget);
     expect(find.text('Enter your code'), findsOneWidget);
   });
+
+  test('the minimum age counts whole years, 29 February rolling to 1 March', () {
+    expect(underMinimumAge(DateTime(2010, 10, 24), DateTime(2026, 10, 23)), isTrue);
+    expect(underMinimumAge(DateTime(2010, 10, 23), DateTime(2026, 10, 23)), isFalse);
+    expect(underMinimumAge(DateTime(2008, 2, 29), DateTime(2024, 2, 28)), isTrue);
+    expect(underMinimumAge(DateTime(2008, 2, 29), DateTime(2024, 2, 29)), isFalse);
+    expect(isoDay(DateTime(2008, 3, 5)), '2008-03-05');
+  });
+
+  testWidgets('creating an account waits for a date of birth', (tester) async {
+    await pumpSignIn(tester, MockClient((_) async => http.Response('{}', 500)));
+    await tester.tap(find.text('Create an account'));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose your date of birth'), findsOneWidget);
+    final create = tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Create'));
+    expect(create.onPressed, isNull);
+  });
 }
 
 /// A stand-in for any transport failure; the page must not read it as a

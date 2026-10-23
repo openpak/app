@@ -21,6 +21,13 @@ extension L10nContext on BuildContext {
 /// one) is worded by its HTTP status, as the contract asks; the English `error`
 /// is only shown when an old server sent a status nothing else covers.
 String apiErrorText(AppLocalizations l, ApiException e) {
+  // The signup age check answers a plain 400 with English words and no code
+  // of its own, so the words are read here (website accounts.CheckAge).
+  if (e.statusCode == 400 && e.fromServer) {
+    final m = RegExp(r'at least (\d+) to create').firstMatch(e.message);
+    if (m != null) return l.signInTooYoung(int.parse(m.group(1)!));
+    if (e.message.startsWith('birthday ')) return l.errorBirthdayInvalid;
+  }
   final byCode = switch (e.code) {
        'handle_taken' => l.errorHandleTaken,
     'handle_invalid' => l.errorHandleInvalid,

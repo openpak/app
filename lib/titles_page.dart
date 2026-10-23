@@ -658,7 +658,7 @@ int catalogOrder(CatalogItem a, CatalogItem b) {
 RowState statusState(String status) => switch (status) {
   'live' || 'working' || 'active' => RowState.ok,
   'beta' => RowState.beta,
-  'alpha' || 'partial' || 'scaffold' || 'open' => RowState.warn,
+  'alpha' || 'partial' || 'scaffold' || 'in-development' || 'open' => RowState.warn,
   'not-feasible' || 'broken' || 'banned' => RowState.bad,
   _ => RowState.idle, // planned, requestable, anything new
 };
@@ -672,6 +672,7 @@ String statusLabel(AppLocalizations l, String status) => switch (status) {
   'scaffold' => l.statusScaffold,
   'alpha' => l.statusAlpha,
   'partial' => l.statusPartial,
+  'in-development' => l.statusInDevelopment,
   'planned' => l.statusPlanned,
   'requestable' => l.statusRequestable,
   'not-feasible' => l.statusNotFeasible,
