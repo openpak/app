@@ -468,5 +468,18 @@
   "signInBirthdayChoose": "Scegli la tua data di nascita",
   "signInTooYoung": "Devi avere almeno {age} anni per creare un account OpenPak.",
   "errorBirthdayInvalid": "Inserisci una data di nascita valida.",
-  "statusInDevelopment": "In sviluppo"
+  "statusInDevelopment": "In sviluppo",
+  "turnstileTitle": "Controllo rapido",
+  "turnstileHelp": "Cloudflare verifica che a chiedere sia una persona e non un bot. Di solito passa da solo.",
+  "turnstileLoadFailed": "Impossibile caricare il controllo. Controlla la connessione e riprova.",
+  "turnstileRetry": "Riprova",
+  "turnstileInBrowser": "Questo dispositivo non può mostrare il controllo qui, quindi openpak.org si è aperto nel browser. Completa lì.",
+  "errorTurnstileFailed": "Il controllo non è stato superato. Riprova.",
+  "errorTurnstileUnavailable": "Il controllo non risponde al momento. Riprova tra poco.",
+  "errorAccountErasureStarted": "Il periodo di tolleranza è finito e questo account è in fase di cancellazione.",
+  "restoreTitle": "Ripristinare l'account?",
+  "restoreBody": "Il tuo account sarà eliminato il {date}. Vuoi ripristinarlo?",
+  "restoreBodyNoDate": "Il tuo account è programmato per l'eliminazione. Vuoi ripristinarlo?",
+  "restoreHelp": "Ripristina mantiene l'account e ti fa accedere. Annulla lo lascia eliminare.",
+  "restoreButton": "Ripristina"
 }

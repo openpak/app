@@ -468,5 +468,18 @@
   "signInBirthdayChoose": "Choisis ta date de naissance",
   "signInTooYoung": "Tu dois avoir au moins {age} ans pour créer un compte OpenPak.",
   "errorBirthdayInvalid": "Saisis une date de naissance valide.",
-  "statusInDevelopment": "En développement"
+  "statusInDevelopment": "En développement",
+  "turnstileTitle": "Vérification rapide",
+  "turnstileHelp": "Cloudflare vérifie que la demande vient d'une personne et non d'un robot. En général, elle passe toute seule.",
+  "turnstileLoadFailed": "La vérification n'a pas pu se charger. Vérifie ta connexion et réessaie.",
+  "turnstileRetry": "Réessayer",
+  "turnstileInBrowser": "Cet appareil ne peut pas afficher la vérification ici, openpak.org s'est donc ouvert dans ton navigateur. Termine là-bas.",
+  "errorTurnstileFailed": "La vérification a échoué. Réessaie.",
+  "errorTurnstileUnavailable": "La vérification ne répond pas pour le moment. Réessaie dans un instant.",
+  "errorAccountErasureStarted": "Le délai de grâce est passé et ce compte est en cours d'effacement.",
+  "restoreTitle": "Restaurer ton compte ?",
+  "restoreBody": "Ton compte sera supprimé le {date}. Le restaurer ?",
+  "restoreBodyNoDate": "Ton compte doit être supprimé. Le restaurer ?",
+  "restoreHelp": "Restaurer garde ton compte et te connecte. Annuler le laisse être supprimé.",
+  "restoreButton": "Restaurer"
 }

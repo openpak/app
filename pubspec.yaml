@@ -1,7 +1,7 @@
 name: openpak
 description: OpenPak companion app — your account, friends and invitations.
 publish_to: none
-version: 0.21.0+37
+version: 0.22.0+38
 
 environment:
   sdk: ^3.9.0
@@ -33,6 +33,9 @@ dependencies:
   # Parental controls open behind the phone's own unlock (fingerprint, face,
   # PIN, pattern), the platform prompt rather than a PIN of the app's own.
   local_auth: ^3.0.2
+  # The Cloudflare Turnstile check on signup and password reset: the website's
+  # /turnstile-widget page in a webview, its answer back over a JS channel.
+  webview_flutter: ^4.14.1
 
 dev_dependencies:
   flutter_test:

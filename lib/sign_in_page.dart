@@ -4,12 +4,22 @@ import 'api.dart';
 import 'l10n.dart';
 import 'logo.dart';
 import 'theme.dart';
+import 'turnstile.dart';
 import 'widgets.dart';
 
 class SignInPage extends StatefulWidget {
-  const SignInPage({super.key, required this.api, required this.onSignedIn});
+  const SignInPage({
+    super.key,
+    required this.api,
+    required this.onSignedIn,
+    this.solveTurnstile = turnstileInWebView,
+  });
   final OpenPakApi api;
   final Future<void> Function(String token) onSignedIn;
+
+  /// Runs the Turnstile check before signup and the reset mail, when the
+  /// server asks for one; tests put a stand-in here.
+  final TurnstileSolver solveTurnstile;
 
   @override
   State<SignInPage> createState() => _SignInPageState();
@@ -27,6 +37,12 @@ class _SignInPageState extends State<SignInPage> {
   /// starting again is one tap.
   String? _challenge;
 
+  /// Set when the password was right but the account was deleted and waits out
+  /// its grace period: the form then offers the restore. [_eraseAfter] is the
+  /// erasure date, when the server gave one.
+  bool _deletionPending = false;
+  DateTime? _eraseAfter;
+
   @override
   void dispose() {
     _email.dispose();
@@ -37,6 +53,7 @@ class _SignInPageState extends State<SignInPage> {
 
   void _startAgain({String? error}) => setState(() {
     _challenge = null;
+    _deletionPending = false;
     _code.clear();
     _error = error;
   });
@@ -69,20 +86,34 @@ class _SignInPageState extends State<SignInPage> {
     }
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit() => _signIn(widget.api.signIn);
+
+  /// Restore: reopens the account, then signs in exactly as the password step
+  /// does, so a two-factor account goes on to its code.
+  Future<void> _restore() => _signIn(widget.api.restoreSignIn);
+
+  Future<void> _signIn(Future<String> Function(String email, String password) call) async {
     final l = context.l10n;
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      final token = await widget.api.signIn(
+      final token = await call(
         _email.text.trim(),
         _password.text,
       );
       await widget.onSignedIn(token);
     } on TwoFactorRequired catch (c) {
-      setState(() => _challenge = c.challenge);
+      setState(() {
+        _deletionPending = false;
+        _challenge = c.challenge;
+      });
+    } on AccountDeletionPending catch (p) {
+      setState(() {
+        _deletionPending = true;
+        _eraseAfter = p.eraseAfter;
+      });
     } on ApiException catch (e) {
       // The server distinguishes wrong credentials from being rate limited,
       // and so should the message: one is worth retrying immediately.
@@ -111,13 +142,46 @@ class _SignInPageState extends State<SignInPage> {
       help: l.signInResetHelp,
     );
     if (v == null || v[0].isEmpty) return;
-    await _ask(() => widget.api.forgotPassword(v[0]), l.signInResetSent);
+    final human = await _humanCheck('/forgot-password');
+    if (human == null) return;
+    await _ask(() => widget.api.forgotPassword(v[0], turnstileToken: human.token), l.signInResetSent);
+  }
+
+  /// The Turnstile check, when the server wants one. Null means stop: the
+  /// person cancelled, the check went to the browser, or the server could not
+  /// be asked. Otherwise the record holds the token to send (null when none is
+  /// asked for). [websitePath] is the website's own form, for the browser.
+  Future<({String? token})?> _humanCheck(String websitePath) async {
+    final l = context.l10n;
+    AuthConfig cfg;
+    try {
+      cfg = await widget.api.authConfig();
+    } on ApiException {
+      // Asking failed on the server's side: send the form without an answer.
+      // A server that wanted one says so, translated, like any other refusal.
+      cfg = const AuthConfig();
+    } catch (_) {
+      if (mounted) showToast(context, l.commonNoConnection);
+      return null;
+    }
+    if (!cfg.turnstile) return (token: null);
+    if (!mounted) return null;
+    final base = Uri.parse(widget.api.baseUrl);
+    final token = await widget.solveTurnstile(
+      context,
+      widget: base.resolve(cfg.widgetPath),
+      websitePage: base.resolve(websitePath),
+      language: widget.api.language,
+    );
+    return token == null ? null : (token: token);
   }
 
   Future<void> _register() async {
     final l = context.l10n;
     final v = await showDialog<_Signup>(context: context, builder: (_) => const _RegisterDialog());
     if (v == null) return;
+    final human = await _humanCheck('/register');
+    if (human == null) return;
     await _ask(
       () => widget.api.register(
         handle: v.handle,
@@ -125,6 +189,7 @@ class _SignInPageState extends State<SignInPage> {
         email: v.email,
         password: v.password,
         birthday: v.birthday,
+        turnstileToken: human.token,
       ),
       l.signInCreateSent(v.email),
     );
@@ -163,7 +228,12 @@ class _SignInPageState extends State<SignInPage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  if (_challenge != null) ..._codeStep(context) else ..._passwordStep(context),
+                  if (_challenge != null)
+                    ..._codeStep(context)
+                  else if (_deletionPending)
+                    ..._restoreStep(context)
+                  else
+                    ..._passwordStep(context),
                 ],
               ),
             ),
@@ -201,6 +271,29 @@ class _SignInPageState extends State<SignInPage> {
     const SizedBox(height: 8),
     TextButton(onPressed: _busy ? null : _startAgain, child: Text(context.l10n.signInStartAgain)),
   ];
+
+  /// A deleted account in its grace period: restore it, or leave it to be
+  /// erased. Cancel only goes back to the form; nothing is sent.
+  List<Widget> _restoreStep(BuildContext context) {
+    final l = context.l10n;
+    final at = _eraseAfter;
+    return [
+      Text(l.restoreTitle, style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
+      const SizedBox(height: 8),
+      Text(at == null ? l.restoreBodyNoDate : l.restoreBody(shortDate(l, at)), textAlign: TextAlign.center),
+      const SizedBox(height: 8),
+      Text(l.restoreHelp, textAlign: TextAlign.center),
+      ..._errorLine(context),
+      const SizedBox(height: 24),
+      FilledButton(
+        key: const Key('restore-account'),
+        onPressed: _busy ? null : _restore,
+        child: _busy ? _spinner : Text(l.restoreButton),
+      ),
+      const SizedBox(height: 8),
+      TextButton(onPressed: _busy ? null : _startAgain, child: Text(l.commonCancel)),
+    ];
+  }
 
   static const _spinner = SizedBox(
     height: 20,

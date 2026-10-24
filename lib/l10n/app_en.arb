@@ -2164,5 +2164,63 @@
   "statusInDevelopment": "In development",
   "@statusInDevelopment": {
     "description": "Status pill of a network feature or console: being built, not ready for players."
+  },
+  "turnstileTitle": "Quick check",
+  "@turnstileTitle": {
+    "description": "Title of the dialog that shows the Cloudflare Turnstile check before signup or a password reset mail."
+  },
+  "turnstileHelp": "Cloudflare checks that a person is asking, not a bot. It usually passes by itself.",
+  "@turnstileHelp": {
+    "description": "Help text above the Turnstile check."
+  },
+  "turnstileLoadFailed": "The check could not load. Check your connection and try again.",
+  "@turnstileLoadFailed": {
+    "description": "The Turnstile page did not load in the dialog."
+  },
+  "turnstileRetry": "Try again",
+  "@turnstileRetry": {
+    "description": "Button that reloads the Turnstile check after it failed."
+  },
+  "turnstileInBrowser": "This device cannot show the check here, so openpak.org opened in your browser. Finish there.",
+  "@turnstileInBrowser": {
+    "description": "Snackbar where the app has no webview and sends the person to the website's own form."
+  },
+  "errorTurnstileFailed": "The check did not pass. Try again.",
+  "@errorTurnstileFailed": {
+    "description": "Error code turnstile_failed: the server refused or got no Turnstile answer."
+  },
+  "errorTurnstileUnavailable": "The check is not answering right now. Try again in a moment.",
+  "@errorTurnstileUnavailable": {
+    "description": "Error code turnstile_unavailable: Cloudflare did not answer the server."
+  },
+  "errorAccountErasureStarted": "The grace period is over and this account is being erased.",
+  "@errorAccountErasureStarted": {
+    "description": "Error code account_erasure_started: a deleted account's 30 days have passed."
+  },
+  "restoreTitle": "Restore your account?",
+  "@restoreTitle": {
+    "description": "Title of the sign-in step shown for a deleted account still in its 30-day grace period."
+  },
+  "restoreBody": "Your account is scheduled for deletion on {date}. Restore it?",
+  "@restoreBody": {
+    "description": "Sign-in step for a deleted account; date is the erasure date, already formatted.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Nov 22, 2026"
+      }
+    }
+  },
+  "restoreBodyNoDate": "Your account is scheduled for deletion. Restore it?",
+  "@restoreBodyNoDate": {
+    "description": "As restoreBody, when the server gave no date."
+  },
+  "restoreHelp": "Restore keeps your account and signs you in. Cancel leaves it to be deleted.",
+  "@restoreHelp": {
+    "description": "Explains the two buttons of the restore step."
+  },
+  "restoreButton": "Restore",
+  "@restoreButton": {
+    "description": "Button that restores a deleted account and signs in."
   }
 }

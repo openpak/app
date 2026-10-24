@@ -45,6 +45,32 @@ class TwoFactorRequired implements Exception {
   final String challenge;
 }
 
+/// POST /token answered 409 `account_deletion_pending`: the password was right,
+/// but the account was deleted and is waiting out its grace period. It can be
+/// reopened with [OpenPakApi.restoreSignIn] until [eraseAfter] (null when the
+/// server did not say).
+class AccountDeletionPending implements Exception {
+  AccountDeletionPending(this.eraseAfter);
+  final DateTime? eraseAfter;
+}
+
+/// GET /auth/config: whether signup and the reset mail want a Turnstile
+/// answer, and where the widget page is.
+class AuthConfig {
+  const AuthConfig({this.turnstile = false, this.siteKey = '', this.widgetPath = ''});
+  factory AuthConfig.fromJson(Map<String, dynamic> j) {
+    final t = (j['turnstile'] as Map?) ?? const {};
+    return AuthConfig(
+      turnstile: t['enabled'] == true,
+      siteKey: t['site_key'] as String? ?? '',
+      widgetPath: t['widget_path'] as String? ?? '/turnstile-widget',
+    );
+  }
+  final bool turnstile;
+  final String siteKey;
+  final String widgetPath;
+}
+
 /// How the website reads the one code field: six digits are from the
 /// authenticator app, anything else is a recovery code.
 ({String? code, String? recoveryCode}) splitSecondFactor(String typed) {
@@ -828,12 +854,32 @@ class OpenPakApi {
 
   /// POST /token — mints the bearer and keeps it on this instance. Throws
   /// [TwoFactorRequired] when the account asks for a code first.
-  Future<String> signIn(String email, String password) async {
+  ///
+  /// A deleted account in its grace period throws [AccountDeletionPending].
+  Future<String> signIn(String email, String password) => _signIn('/token', email, password);
+
+  /// POST /token/restore — reopens a deleted account within its grace period,
+  /// then answers like [signIn]: a two-factor account still throws
+  /// [TwoFactorRequired], redeemed with [signInSecondFactor] as usual.
+  Future<String> restoreSignIn(String email, String password) => _signIn('/token/restore', email, password);
+
+  Future<String> _signIn(String path, String email, String password) async {
     final r = await _http.post(
-      _uri('/token'),
+      _uri(path),
       headers: _headers(json: true, auth: false),
       body: jsonEncode({'email': email, 'password': password}),
     );
+    if (r.statusCode == 409) {
+      try {
+        final body = jsonDecode(r.body);
+        if (body is Map && (body['code'] == 'account_deletion_pending' || body['deletion_pending'] == true)) {
+          final at = body['erase_after'];
+          throw AccountDeletionPending(at is String ? DateTime.tryParse(at) : null);
+        }
+      } on FormatException {
+        // Not JSON: falls through to the ordinary error.
+      }
+    }
     return _keepToken(r, await _decode(r));
   }
 
@@ -1161,17 +1207,29 @@ class OpenPakApi {
     required String displayName,
     required String handle,
     required String birthday,
+    String? turnstileToken,
   }) => _post('/register', {
     'email': email,
     'password': password,
     'display_name': displayName,
     'handle': handle,
     'birthday': birthday,
+    if (turnstileToken != null) 'turnstile_token': turnstileToken,
   });
 
   /// POST /password/forgot — public; the mail links to the website's reset page.
-  Future<void> forgotPassword(String email) =>
-      _post('/password/forgot', {'email': email});
+  Future<void> forgotPassword(String email, {String? turnstileToken}) => _post('/password/forgot', {
+    'email': email,
+    if (turnstileToken != null) 'turnstile_token': turnstileToken,
+  });
+
+  /// GET /auth/config — public. A server older than the endpoint answers 404,
+  /// and wants no Turnstile answer either.
+  Future<AuthConfig> authConfig() async {
+    final r = await _http.get(_uri('/auth/config'), headers: _headers(auth: false));
+    if (r.statusCode == 404) return const AuthConfig();
+    return AuthConfig.fromJson(await _decode(r));
+  }
 
   /// POST /me/password — every other session and bearer ends; this one stays.
   Future<void> changePassword(String current, String next) => _post(

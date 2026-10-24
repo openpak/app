@@ -11,6 +11,23 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.22.0 — unreleased
+
+- **Turnstile on signup and the reset mail**, as on the website. The app asks
+  `GET /api/v1/auth/config` whether Turnstile is on; if so, a "Quick check" dialog shows
+  openpak.org's `/turnstile-widget` page in a webview (`webview_flutter`) and the token comes back
+  over the `OpenPakTurnstile` JavaScript channel, then goes with `POST /register` or
+  `/password/forgot` as `turnstile_token`. A failed, expired or unloadable check can be retried;
+  Cancel sends nothing. Where no webview exists the website's own form opens in the browser. A
+  server without the endpoint, or with Turnstile off, works as before. `turnstile_failed` and
+  `turnstile_unavailable` are translated.
+- **Restore a deleted account.** Signing in to an account in its 30-day grace period (409
+  `account_deletion_pending`) shows "Your account is scheduled for deletion on <date>. Restore
+  it?". Restore calls `POST /api/v1/token/restore` and signs in (a two-factor account then asks
+  for its code); Cancel goes back to the form and leaves the account to be deleted. A grace period
+  that has run out (`account_erasure_started`) says so.
+- New strings in all seven languages.
+
 ## v0.21.0 — unreleased
 
 - Signup asks for a date of birth, picked from a calendar, and sends it as `birthday` (YYYY-MM-DD).

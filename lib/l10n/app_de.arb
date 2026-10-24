@@ -468,5 +468,18 @@
   "signInBirthdayChoose": "Wähle dein Geburtsdatum",
   "signInTooYoung": "Du musst mindestens {age} Jahre alt sein, um ein OpenPak-Konto zu erstellen.",
   "errorBirthdayInvalid": "Gib ein gültiges Geburtsdatum ein.",
-  "statusInDevelopment": "In Entwicklung"
+  "statusInDevelopment": "In Entwicklung",
+  "turnstileTitle": "Kurze Prüfung",
+  "turnstileHelp": "Cloudflare prüft, dass ein Mensch fragt und kein Bot. Meist geht das von allein.",
+  "turnstileLoadFailed": "Die Prüfung konnte nicht geladen werden. Prüfe deine Verbindung und versuche es noch einmal.",
+  "turnstileRetry": "Noch einmal",
+  "turnstileInBrowser": "Dieses Gerät kann die Prüfung hier nicht zeigen, deshalb wurde openpak.org in deinem Browser geöffnet. Schließ es dort ab.",
+  "errorTurnstileFailed": "Die Prüfung war nicht erfolgreich. Versuche es noch einmal.",
+  "errorTurnstileUnavailable": "Die Prüfung antwortet gerade nicht. Versuche es gleich noch einmal.",
+  "errorAccountErasureStarted": "Die Frist ist abgelaufen und dieses Konto wird gelöscht.",
+  "restoreTitle": "Konto wiederherstellen?",
+  "restoreBody": "Dein Konto wird am {date} gelöscht. Wiederherstellen?",
+  "restoreBodyNoDate": "Dein Konto ist zur Löschung vorgemerkt. Wiederherstellen?",
+  "restoreHelp": "Wiederherstellen behält dein Konto und meldet dich an. Abbrechen lässt es löschen.",
+  "restoreButton": "Wiederherstellen"
 }
