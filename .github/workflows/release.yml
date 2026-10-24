@@ -7,32 +7,31 @@ on:
   push:
     tags: ['v*.*.*']
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build the APKs debug-signed, no signing and no release
+        type: boolean
+        default: false
 
 permissions:
   contents: write   # create the GitHub Release + upload the APKs
 
+env:
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+
 jobs:
   apk:
-    # The OpenPak self-hosted runner: GitHub-hosted minutes are not used for private repositories.
-    runs-on: [self-hosted, linux, podman]
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
-      # Scratch in the runner's own temp, not the machine's /tmp: /tmp is a RAM
-      # disk shared with every other build, and when it filled, the test compiler
-      # died and `flutter test` hung for hours instead of failing. Not inside the
-      # checkout either: an image build would take it into its context.
-      - name: Scratch in the runner's temp, not the machine's shared /tmp
-        run: |
-          mkdir -p "$RUNNER_TEMP/scratch"
-          echo "TMPDIR=$RUNNER_TEMP/scratch" >> "$GITHUB_ENV"
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'        # the AGP jlink step fails on newer JDKs
+          cache: gradle
 
       # Only platform-tools: the action's default also asks for the legacy 'tools' package,
-      # which current cmdline-tools no longer ship (hosted runners had it preinstalled).
+      # which current cmdline-tools no longer ship.
       - uses: android-actions/setup-android@v3
         with:
           packages: platform-tools
@@ -47,7 +46,10 @@ jobs:
 
       - run: flutter pub get
       - run: flutter test
+      # A real release refuses to fall back to the debug key; only a dry run (which
+      # publishes nothing) builds debug-signed.
       - name: Set up release signing
+        if: env.DRY_RUN != 'true'
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -70,17 +72,13 @@ jobs:
       # change in Flutter's defaults can't drop one. 32-bit x86 has no release engine.
       - run: flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
 
-      # The runner is a persistent machine: the keystore must not outlive the job.
+      # The keystore must not outlive the job.
       - name: Remove signing material
         if: always()
         run: rm -f android/app/openpak-release.jks android/key.properties
 
-      # Whatever the build left in its scratch goes with the job.
-      - name: Clear scratch
-        if: always()
-        run: rm -rf "$RUNNER_TEMP/scratch"
-
       - name: GitHub Release
+        if: env.DRY_RUN != 'true'
         uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/app-*-release.apk
