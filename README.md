@@ -21,6 +21,9 @@ OpenPak's Companion App.
   so opening the app never takes an invitation away from your console.
 - Titles: the latest news, what has a server, who is online per console
   network, and a request for the next game.
+- Diagnostics: describe a connection problem and Pakka reports a diagnosis
+  with the evidence behind it (needs a build pointed at a Pakka harness;
+  there is no public endpoint yet).
 - Saves: usage, each game's versions to restore, download or delete, and your
   own storage.
 - Chat with friends: tap one to open the thread.

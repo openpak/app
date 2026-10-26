@@ -13,6 +13,13 @@ of truth; this file is the readable summary.
 
 ## v0.22.0 — unreleased
 
+- **Pakka diagnostics (first slice).** The Titles tab offers "Diagnose a
+  connection problem" when the build points at a Pakka harness
+  (`--dart-define=PAKKA_BASE_URL=...`; unset by default, and then the entry
+  is hidden). The screen loads the harness's service checks and diagnoses
+  typed symptoms over `POST /v1/investigations`, showing the verdict, the
+  suggested next step and the cited evidence; failures read like every other
+  load failure. New strings in all seven languages.
 - **Turnstile on signup and the reset mail**, as on the website. The app asks
   `GET /api/v1/auth/config` whether Turnstile is on; if so, a "Quick check" dialog shows
   openpak.org's `/turnstile-widget` page in a webview (`webview_flutter`) and the token comes back
