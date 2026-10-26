@@ -2222,5 +2222,81 @@
   "restoreButton": "Restore",
   "@restoreButton": {
     "description": "Button that restores a deleted account and signs in."
+  },
+  "pakkaOpen": "Diagnose a connection problem",
+  "@pakkaOpen": {
+    "description": "Button on the Titles tab that opens Pakka's diagnostics screen."
+  },
+  "pakkaTitle": "Diagnostics",
+  "@pakkaTitle": {
+    "description": "Title of the Pakka diagnostics screen."
+  },
+  "pakkaIntro": "Describe the connection problem. Pakka checks the OpenPak services and reports what it finds.",
+  "@pakkaIntro": {
+    "description": "Explains the diagnostics screen above the symptoms field."
+  },
+  "pakkaSymptomsLabel": "What is happening?",
+  "@pakkaSymptomsLabel": {
+    "description": "Label of the field where the problem is described."
+  },
+  "pakkaSymptomsHint": "My console cannot connect…",
+  "@pakkaSymptomsHint": {
+    "description": "Example problem shown inside the empty symptoms field."
+  },
+  "pakkaDiagnose": "Diagnose",
+  "@pakkaDiagnose": {
+    "description": "Button that asks Pakka to diagnose the described problem."
+  },
+  "pakkaFinding": "Diagnosis",
+  "@pakkaFinding": {
+    "description": "Section heading above Pakka's diagnosis."
+  },
+  "pakkaEvidence": "Evidence",
+  "@pakkaEvidence": {
+    "description": "Section heading above the checks the diagnosis cites."
+  },
+  "pakkaRecommendedNext": "What to do next",
+  "@pakkaRecommendedNext": {
+    "description": "Heading above Pakka's suggested next step."
+  },
+  "pakkaChecks": "Service checks",
+  "@pakkaChecks": {
+    "description": "Section heading above the service check results."
+  },
+  "pakkaChecksEmpty": "No checks ran.",
+  "@pakkaChecksEmpty": {
+    "description": "Shown when the service checks come back with no results."
+  },
+  "pakkaDiagnosisLocalFailure": "A problem on your side",
+  "@pakkaDiagnosisLocalFailure": {
+    "description": "Diagnosis: the fault is in the player's own setup."
+  },
+  "pakkaDiagnosisServiceOutage": "An OpenPak service problem",
+  "@pakkaDiagnosisServiceOutage": {
+    "description": "Diagnosis: an OpenPak service is at fault, not the player."
+  },
+  "pakkaDiagnosisHealthy": "Everything looks fine",
+  "@pakkaDiagnosisHealthy": {
+    "description": "Diagnosis: the checks found nothing wrong."
+  },
+  "pakkaDiagnosisInsufficient": "Not enough evidence",
+  "@pakkaDiagnosisInsufficient": {
+    "description": "Diagnosis: the checks could not pin the problem down."
+  },
+  "pakkaOutcomePass": "Passed",
+  "@pakkaOutcomePass": {
+    "description": "A service check passed."
+  },
+  "pakkaOutcomeFail": "Failed",
+  "@pakkaOutcomeFail": {
+    "description": "A service check failed."
+  },
+  "pakkaOutcomeError": "Error",
+  "@pakkaOutcomeError": {
+    "description": "A service check errored rather than passing or failing."
+  },
+  "pakkaOutcomeSkipped": "Skipped",
+  "@pakkaOutcomeSkipped": {
+    "description": "A service check was skipped."
   }
 }

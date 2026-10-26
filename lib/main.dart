@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'api.dart';
 import 'crash_reports.dart';
 import 'l10n.dart';
+import 'pakka.dart';
 import 'shell.dart';
 import 'theme.dart';
 import 'session.dart';
@@ -14,6 +15,12 @@ const baseUrl = String.fromEnvironment(
   'OPENPAK_BASE_URL',
   defaultValue: 'https://openpak.org',
 );
+
+/// The Pakka harness this build diagnoses against. Empty until Pakka has a
+/// public endpoint; without it the app shows no diagnostics entry. Point a
+/// dev build at a local harness with
+/// `--dart-define=PAKKA_BASE_URL=http://10.0.2.2:24800`.
+const pakkaBaseUrl = String.fromEnvironment('PAKKA_BASE_URL', defaultValue: '');
 
 /// Unhandled errors are saved from the first frame on; nothing is sent
 /// until the person agrees (see crash_reports.dart).
@@ -34,6 +41,10 @@ class OpenPakApp extends StatefulWidget {
 class _OpenPakAppState extends State<OpenPakApp> {
   final _session = Session();
   final _api = OpenPakApi(baseUrl: baseUrl);
+
+  /// Null until Pakka is served somewhere this build can reach: no endpoint,
+  /// no diagnostics entry, rather than a button that cannot work.
+  final _pakka = pakkaBaseUrl.isEmpty ? null : PakkaApi(baseUrl: pakkaBaseUrl);
   final _navigator = GlobalKey<NavigatorState>();
   bool _restoring = true;
   bool _offering = false;
@@ -103,6 +114,7 @@ class _OpenPakAppState extends State<OpenPakApp> {
       // e-mails the website sends read in it too.
       builder: (context, child) {
         _api.language = Localizations.localeOf(context).toLanguageTag();
+        _pakka?.language = _api.language;
         crashReporter.locale = _api.language;
         return child!;
       },
@@ -110,7 +122,7 @@ class _OpenPakAppState extends State<OpenPakApp> {
           ? const Scaffold(body: Center(child: CircularProgressIndicator()))
           : _api.token == null
           ? SignInPage(api: _api, onSignedIn: _onSignedIn)
-          : Shell(api: _api, onSignedOut: _onSignedOut),
+          : Shell(api: _api, onSignedOut: _onSignedOut, pakka: _pakka),
     );
   }
 }

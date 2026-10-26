@@ -5,6 +5,7 @@ import 'api.dart';
 import 'friends_page.dart';
 import 'invitations_page.dart';
 import 'l10n.dart';
+import 'pakka.dart';
 import 'saves_page.dart';
 import 'theme.dart';
 import 'titles_page.dart';
@@ -13,9 +14,12 @@ import 'widgets.dart';
 /// The signed-in app: three destinations, each owning its own loading and
 /// refresh. Pages are kept alive so switching tabs does not refetch.
 class Shell extends StatefulWidget {
-  const Shell({super.key, required this.api, required this.onSignedOut});
+  const Shell({super.key, required this.api, required this.onSignedOut, this.pakka});
   final OpenPakApi api;
   final Future<void> Function() onSignedOut;
+
+  /// The diagnostics client, null when this build has no Pakka endpoint.
+  final PakkaApi? pakka;
 
   @override
   State<Shell> createState() => _ShellState();
@@ -26,7 +30,7 @@ class _ShellState extends State<Shell> {
   late final List<Widget> _pages = [
     FriendsPage(api: widget.api),
     InvitationsPage(api: widget.api),
-    TitlesPage(api: widget.api),
+    TitlesPage(api: widget.api, pakka: widget.pakka),
     SavesPage(api: widget.api),
     AccountPage(api: widget.api, onSignedOut: widget.onSignedOut),
   ];

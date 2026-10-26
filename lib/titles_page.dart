@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 
 import 'api.dart';
 import 'l10n.dart';
+import 'pakka.dart';
+import 'pakka_page.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -15,8 +17,11 @@ import 'widgets.dart';
 /// is internal; it is not shown here. The Network view is a read-only status
 /// matrix. Reachable signed out; the Request control only acts with a bearer.
 class TitlesPage extends StatefulWidget {
-  const TitlesPage({super.key, required this.api});
+  const TitlesPage({super.key, required this.api, this.pakka});
   final OpenPakApi api;
+
+  /// The diagnostics client, null when this build has no Pakka endpoint.
+  final PakkaApi? pakka;
 
   @override
   State<TitlesPage> createState() => TitlesPageState();
@@ -99,6 +104,7 @@ class TitlesPageState extends State<TitlesPage> {
               children: [
                 _latestNews(),
                 _onlineNow(),
+                if (widget.pakka != null) _diagnoseEntry(widget.pakka!),
                 _segmented(),
                 const SizedBox(height: 12),
                 _controls(served),
@@ -313,6 +319,19 @@ class TitlesPageState extends State<TitlesPage> {
           );
         },
       );
+
+  /// Pakka's diagnostics, under the network status they explain: something
+  /// is wrong, here is where to ask. Absent without a Pakka endpoint.
+  Widget _diagnoseEntry(PakkaApi pakka) => Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: OutlinedButton.icon(
+      onPressed: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => PakkaPage(pakka: pakka))),
+      icon: const Icon(Icons.troubleshoot_outlined),
+      label: Text(context.l10n.pakkaOpen),
+    ),
+  );
 
   Widget _segmented() => SegmentedButton<String>(
     segments: [
