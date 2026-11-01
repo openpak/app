@@ -4,6 +4,7 @@ import 'account_details_page.dart';
 import 'api.dart';
 import 'crash_reports.dart';
 import 'l10n.dart';
+import 'pakka_page.dart';
 import 'parental_controls_page.dart';
 import 'theme.dart';
 import 'two_factor_page.dart';
@@ -40,11 +41,14 @@ class _AccountPageState extends State<AccountPage> {
       widget.api.sessions(),
       widget.api.friends().catchError((_) => <Friend>[]),
       widget.api.friendRequests().catchError((_) => FriendRequests(incoming: [], outgoing: [])),
+      // Fail closed: a state that cannot be fetched means no way in to Pakka.
+      widget.api.pakkaState().then((s) => s.visible, onError: (_) => false),
     ]).then((r) => (
       r[0] as Account,
       r[1] as List<WebSession>,
       r[2] as List<Friend>,
       r[3] as FriendRequests,
+      r[4] as bool,
     ));
   });
 
@@ -65,7 +69,7 @@ class _AccountPageState extends State<AccountPage> {
             if (snap.hasError) {
               return LoadFailure(snap.error);
             }
-            final (me, sessions, friends, requests) = snap.data!;
+            final (me, sessions, friends, requests, pakka) = snap.data!;
             final incoming = requests.incoming;
             // A Column rather than a ListView: the section nav scrolls to a
             // section by its key, and a lazy list has not built the far ones.
@@ -100,6 +104,20 @@ class _AccountPageState extends State<AccountPage> {
                   ],
                   ),
                 ),
+                if (pakka) ...[
+                  const SizedBox(height: 12),
+                  Panel(
+                    child: ListTile(
+                      leading: const PakkaAvatar(size: 36),
+                      title: Text(l.pakkaTitle),
+                      subtitle: Text(l.pakkaAccountSub, style: TextStyle(color: t.muted)),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => PakkaPage(api: widget.api)),
+                      ),
+                    ),
+                  ),
+                ],
                 if (incoming.isNotEmpty) ...[
                   const SizedBox(height: 20),
                   SectionLabel(l.friendsIncoming, key: _requests, trailing: '${incoming.length}'),
@@ -609,7 +627,7 @@ class _CodeWell extends StatelessWidget {
   }
 }
 
-typedef _AccountData = (Account, List<WebSession>, List<Friend>, FriendRequests);
+typedef _AccountData = (Account, List<WebSession>, List<Friend>, FriendRequests, bool);
 
 /// The site's section nav on a phone: a row of pill links that stays put
 /// under the header and scrolls sideways; a tap brings the section into view.
