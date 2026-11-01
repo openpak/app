@@ -1,7 +1,7 @@
 name: openpak
 description: OpenPak companion app — your account, friends and invitations.
 publish_to: none
-version: 0.23.0+39
+version: 0.24.0+40
 
 environment:
   sdk: ^3.9.0
@@ -54,6 +54,8 @@ flutter:
     # launcher icons (see README); a test fails if the two ever differ.
     - assets/icon.svg
     - assets/consoles/
+    # The official Pakka mark (website brand site-marks/pakka-512.png), the assistant's avatar.
+    - assets/pakka.png
   # The UI face (OFL.txt sits beside the files). Static instances, Latin
   # subset: the site ships the same cut, and a glyph outside it falls back to
   # the system font. See CREDITS.md.

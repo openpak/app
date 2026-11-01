@@ -11,6 +11,17 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.24.0 — 2026-11-02
+
+- **Pakka, the OpenPak assistant.** A chat with Pakka, our AI assistant, for setup, connection
+  problems and your account, under Account. Replies stream in as they are written, with a
+  "Pakka is typing" / "Looking that up" state; chats are kept in a history where each can be
+  deleted, and are removed after 30 days. Before the first message a data-use notice must be
+  accepted (it stays under "Data use", where consent can be withdrawn); Pakka runs on a Meta AI
+  model, so chats are sent to Meta under Meta's terms. Pakka is for players aged 18 and over: the
+  entry is hidden on child, supervised, under-18 and unknown-age accounts, and whenever the
+  server cannot say. A "Need a person? Open a support ticket" button is always at hand.
+
 ## v0.23.0 — 2026-11-01
 
 - **Update prompt.** On start, once per app session, the app asks GitHub for the latest
