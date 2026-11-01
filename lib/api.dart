@@ -795,6 +795,109 @@ class VoiceRoom {
   );
 }
 
+/// GET /pakka/state. [eligible] false (a child, supervised, under-18 or
+/// unknown-age account) means Pakka stays invisible; [available] false means
+/// the deployment has it switched off.
+class PakkaState {
+  const PakkaState({
+    this.available = false,
+    this.eligible = false,
+    this.consent = false,
+    this.noticeVersion = '',
+    this.retentionDays = 30,
+    this.dailyCap = 0,
+    this.maxChars = 2000,
+  });
+  factory PakkaState.fromJson(Map<String, dynamic> j) => PakkaState(
+    available: j['available'] == true,
+    eligible: j['eligible'] == true,
+    consent: j['consent'] == true,
+    noticeVersion: j['notice_version'] as String? ?? '',
+    retentionDays: (j['retention_days'] as num?)?.toInt() ?? 30,
+    dailyCap: (j['daily_cap'] as num?)?.toInt() ?? 0,
+    maxChars: (j['max_chars'] as num?)?.toInt() ?? 2000,
+  );
+  final bool available, eligible, consent;
+  final String noticeVersion;
+  final int retentionDays, dailyCap, maxChars;
+
+  /// Whether the app may show any way in to Pakka.
+  bool get visible => available && eligible;
+}
+
+class PakkaConversation {
+  const PakkaConversation({required this.id, this.title = '', this.updated});
+  factory PakkaConversation.fromJson(Map<String, dynamic> j) => PakkaConversation(
+    id: '${j['id']}',
+    title: j['title'] as String? ?? '',
+    updated: DateTime.tryParse(j['updated'] as String? ?? ''),
+  );
+  final String id, title;
+  final DateTime? updated;
+}
+
+class PakkaMessage {
+  const PakkaMessage({required this.id, required this.fromPakka, required this.text});
+  factory PakkaMessage.fromJson(Map<String, dynamic> j) => PakkaMessage(
+    id: '${j['id']}',
+    fromPakka: j['role'] == 'assistant',
+    text: j['text'] as String? ?? '',
+  );
+  final String id;
+  final bool fromPakka;
+  final String text;
+}
+
+/// One server-sent event of a Pakka reply: [kind] is start, tool, delta,
+/// done or error; [text] is a delta's text, a tool's name, a done's message
+/// id or an error's code.
+class PakkaEvent {
+  const PakkaEvent(this.kind, [this.text = '']);
+  final String kind;
+  final String text;
+}
+
+/// Reads a text/event-stream body into events. Chunks may split anywhere,
+/// including inside a UTF-8 character; events end at a blank line.
+Stream<PakkaEvent> parsePakkaEvents(Stream<List<int>> body) async* {
+  var buf = '';
+  await for (final chunk in body.cast<List<int>>().transform(utf8.decoder)) {
+    buf = (buf + chunk).replaceAll('\r\n', '\n');
+    int end;
+    while ((end = buf.indexOf('\n\n')) >= 0) {
+      final ev = _pakkaEvent(buf.substring(0, end));
+      buf = buf.substring(end + 2);
+      if (ev != null) yield ev;
+    }
+  }
+  final ev = _pakkaEvent(buf);
+  if (ev != null) yield ev;
+}
+
+PakkaEvent? _pakkaEvent(String block) {
+  var name = '';
+  final data = <String>[];
+  for (final line in block.split('\n')) {
+    if (line.startsWith('event:')) name = line.substring(6).trim();
+    if (line.startsWith('data:')) data.add(line.substring(5).trimLeft());
+  }
+  if (name.isEmpty) return null;
+  var text = '';
+  try {
+    final j = jsonDecode(data.join('\n'));
+    if (j is Map) {
+      text = switch (name) {
+        'delta' => j['text'],
+        'tool' => j['name'],
+        'done' => j['message_id'],
+        'error' => j['code'],
+        _ => '',
+      }?.toString() ?? '';
+    }
+  } catch (_) {}
+  return PakkaEvent(name, text);
+}
+
 class OpenPakApi {
   OpenPakApi({required this.baseUrl, http.Client? client, this.token})
     : _http = client ?? http.Client();
@@ -1460,6 +1563,63 @@ class OpenPakApi {
   /// POST /me/parental-controls/unlock — the account password again, where the
   /// phone has no lock of its own to ask. 204 when right, 403 when not.
   Future<void> parentalUnlock(String password) => _post('/me/parental-controls/unlock', {'password': password});
+
+  // ── Pakka, the assistant: /pakka/* ────────────────────────────────────
+
+  /// GET /pakka/state.
+  Future<PakkaState> pakkaState() async =>
+      PakkaState.fromJson(await _decode(await _http.get(_uri('/pakka/state'), headers: _headers())));
+
+  /// POST /pakka/consent — accepts the data-use notice.
+  Future<void> pakkaAccept() => _post('/pakka/consent', const {});
+
+  /// DELETE /pakka/consent — withdraws it.
+  Future<void> pakkaWithdraw() async =>
+      _decode(await _http.delete(_uri('/pakka/consent'), headers: _headers()));
+
+  /// GET /pakka/conversations — newest first.
+  Future<List<PakkaConversation>> pakkaConversations() async {
+    final body = await _decode(await _http.get(_uri('/pakka/conversations'), headers: _headers()));
+    return [
+      for (final c in (body['conversations'] as List? ?? const []).whereType<Map<String, dynamic>>())
+        PakkaConversation.fromJson(c),
+    ];
+  }
+
+  /// POST /pakka/conversations.
+  Future<PakkaConversation> pakkaCreate() async => PakkaConversation.fromJson(
+    await _decode(await _http.post(_uri('/pakka/conversations'), headers: _headers(json: true), body: '{}')),
+  );
+
+  /// GET /pakka/conversations/{id} — the messages, oldest first.
+  Future<List<PakkaMessage>> pakkaMessages(String id) async {
+    final body = await _decode(
+      await _http.get(_uri('/pakka/conversations/${Uri.encodeComponent(id)}'), headers: _headers()),
+    );
+    return [
+      for (final m in (body['messages'] as List? ?? const []).whereType<Map<String, dynamic>>())
+        PakkaMessage.fromJson(m),
+    ];
+  }
+
+  /// DELETE /pakka/conversations/{id}.
+  Future<void> pakkaDelete(String id) async => _decode(
+    await _http.delete(_uri('/pakka/conversations/${Uri.encodeComponent(id)}'), headers: _headers()),
+  );
+
+  /// POST /pakka/conversations/{id}/messages — streams the reply. A refusal
+  /// before the stream starts throws [ApiException]; a failure inside it
+  /// arrives as an `error` event.
+  Stream<PakkaEvent> pakkaSend(String id, String text) async* {
+    final req = http.Request('POST', _uri('/pakka/conversations/${Uri.encodeComponent(id)}/messages'))
+      ..headers.addAll({..._headers(json: true), 'Accept': 'text/event-stream'})
+      ..body = jsonEncode({'text': text});
+    final res = await _http.send(req);
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      await _decode(await http.Response.fromStream(res));
+    }
+    yield* parsePakkaEvents(res.stream);
+  }
 
   Future<void> _post(String path, Map<String, dynamic> body) async {
     await _decode(

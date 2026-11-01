@@ -2260,5 +2260,149 @@
   "updateAllowInstall": "Allow OpenPak to install apps in the settings that just opened, then start the update again.",
   "@updateAllowInstall": {
     "description": "Shown after opening Android's 'install unknown apps' settings for OpenPak."
+  },
+  "pakkaTitle": "Pakka",
+  "@pakkaTitle": {
+    "description": "Name of the Pakka assistant; the screen title and the Account entry."
+  },
+  "pakkaAccountSub": "Ask Pakka",
+  "@pakkaAccountSub": {
+    "description": "Account entry for the Pakka assistant (subtitle)."
+  },
+  "pakkaAi": "Pakka is an AI assistant and can make mistakes.",
+  "@pakkaAi": {
+    "description": "Footer on the Pakka screen: the AI disclaimer."
+  },
+  "pakkaRetention": "Chats are deleted after 30 days, or when you delete them.",
+  "@pakkaRetention": {
+    "description": "Footer on the Pakka screen: how long chats are kept."
+  },
+  "pakkaNew": "New chat",
+  "@pakkaNew": {
+    "description": "Button: start a new Pakka chat."
+  },
+  "pakkaHistory": "Your chats",
+  "@pakkaHistory": {
+    "description": "Heading of the list of past Pakka chats."
+  },
+  "pakkaEmpty": "No chats yet.",
+  "@pakkaEmpty": {
+    "description": "Shown when there are no past Pakka chats."
+  },
+  "pakkaUntitled": "New chat",
+  "@pakkaUntitled": {
+    "description": "Title of a chat that has none yet."
+  },
+  "pakkaDelete": "Delete chat",
+  "@pakkaDelete": {
+    "description": "Action: delete a Pakka chat."
+  },
+  "pakkaDeleteConfirm": "Delete this chat? This cannot be undone.",
+  "@pakkaDeleteConfirm": {
+    "description": "Confirmation question before deleting a Pakka chat."
+  },
+  "pakkaDeleted": "Chat deleted.",
+  "@pakkaDeleted": {
+    "description": "Toast after a Pakka chat was deleted."
+  },
+  "pakkaPlaceholder": "Ask Pakka a question",
+  "@pakkaPlaceholder": {
+    "description": "Hint in the Pakka message field."
+  },
+  "pakkaSend": "Send",
+  "@pakkaSend": {
+    "description": "Tooltip of the send button on the Pakka screen."
+  },
+  "pakkaTyping": "Pakka is typing",
+  "@pakkaTyping": {
+    "description": "Shown while Pakka is writing a reply."
+  },
+  "pakkaLooking": "Looking that up",
+  "@pakkaLooking": {
+    "description": "Shown while Pakka looks something up."
+  },
+  "pakkaError": "Pakka could not answer. Try again in a moment.",
+  "@pakkaError": {
+    "description": "Shown when Pakka could not answer (also error code model_error)."
+  },
+  "pakkaRetry": "Try again",
+  "@pakkaRetry": {
+    "description": "Button: try the failed message again."
+  },
+  "errorPakkaDaily": "You have used today's messages. Pakka is back tomorrow.",
+  "@errorPakkaDaily": {
+    "description": "Error code daily_cap: the day's Pakka messages are used up."
+  },
+  "errorPakkaBusy": "Pakka is busy. Try again in a moment.",
+  "@errorPakkaBusy": {
+    "description": "Error code busy: a reply is already being written."
+  },
+  "errorPakkaTooLong": "That message is too long.",
+  "@errorPakkaTooLong": {
+    "description": "Error code bad_message: the message is not acceptable (too long)."
+  },
+  "errorPakkaConversationLimit": "Delete an old chat to start a new one.",
+  "@errorPakkaConversationLimit": {
+    "description": "Error code conversation_limit."
+  },
+  "errorPakkaConsentRequired": "Accept the data-use notice to chat with Pakka.",
+  "@errorPakkaConsentRequired": {
+    "description": "Error code consent_required."
+  },
+  "errorPakkaUnavailable": "Pakka is not available right now.",
+  "@errorPakkaUnavailable": {
+    "description": "Error code unavailable: Pakka is not answering."
+  },
+  "pakkaTicket": "Need a person? Open a support ticket",
+  "@pakkaTicket": {
+    "description": "Button: open a support ticket to talk to a person."
+  },
+  "pakkaWelcome": "Hi, I am Pakka. Ask me about OpenPak, whether services are up, or about your own consoles, friends and Rewards. I cannot change anything on your account.",
+  "@pakkaWelcome": {
+    "description": "Empty state of a Pakka chat: Pakka introduces itself."
+  },
+  "pakkaOffTitle": "Pakka isn't available on this account",
+  "@pakkaOffTitle": {
+    "description": "Shown when Pakka is not available on this account."
+  },
+  "pakkaOffBody": "Pakka cannot be used with this account. For help, open a support ticket.",
+  "@pakkaOffBody": {
+    "description": "Body of the page shown when Pakka is not available on this account."
+  },
+  "pakkaNoticeView": "Data use",
+  "@pakkaNoticeView": {
+    "description": "App bar action: show the data-use notice."
+  },
+  "pakkaNoticeClose": "Close",
+  "@pakkaNoticeClose": {
+    "description": "Button: close the data-use notice."
+  },
+  "pakkaNoticeTitle": "Before you chat with Pakka",
+  "@pakkaNoticeTitle": {
+    "description": "Title of the Pakka data-use notice."
+  },
+  "pakkaNoticeBody": "Pakka is powered by a Meta AI model. What you type is sent to Meta to generate replies and may be used by Meta to train and improve its models, under Meta's terms. OpenPak does not train on your chats. Do not share passwords or personal details. Pakka is for players aged 18 and over.",
+  "@pakkaNoticeBody": {
+    "description": "Body of the Pakka data-use notice."
+  },
+  "pakkaNoticeMeta": "Meta's terms",
+  "@pakkaNoticeMeta": {
+    "description": "Link to Meta's terms."
+  },
+  "pakkaNoticePrivacy": "How OpenPak handles chats",
+  "@pakkaNoticePrivacy": {
+    "description": "Link to how OpenPak handles chats."
+  },
+  "pakkaNoticeAccept": "I understand, start chatting",
+  "@pakkaNoticeAccept": {
+    "description": "Button: accept the data-use notice."
+  },
+  "pakkaNoticeWithdraw": "Withdraw and stop chatting",
+  "@pakkaNoticeWithdraw": {
+    "description": "Button: withdraw consent and stop chatting."
+  },
+  "pakkaNoticeAccepted": "Thanks. You can chat with Pakka now.",
+  "@pakkaNoticeAccepted": {
+    "description": "Toast after accepting the data-use notice."
   }
 }
