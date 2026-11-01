@@ -2222,5 +2222,43 @@
   "restoreButton": "Restore",
   "@restoreButton": {
     "description": "Button that restores a deleted account and signs in."
+  },
+  "updateTitle": "Update available",
+  "@updateTitle": {
+    "description": "Title of the dialog offering a newer app version."
+  },
+  "updateBody": "OpenPak {version} is available. You have {current}.",
+  "@updateBody": {
+    "description": "Body of the update dialog; version is the new one, current the running one.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "0.23.0"
+      },
+      "current": {
+        "type": "String",
+        "example": "0.22.0"
+      }
+    }
+  },
+  "updateNow": "Update",
+  "@updateNow": {
+    "description": "Button that starts the update."
+  },
+  "updateLater": "Later",
+  "@updateLater": {
+    "description": "Button that postpones the update prompt until the next start."
+  },
+  "updateDownloading": "Downloading the update…",
+  "@updateDownloading": {
+    "description": "Title of the progress dialog while the update APK downloads."
+  },
+  "updateFailed": "The update could not be downloaded or installed. Try again later.",
+  "@updateFailed": {
+    "description": "Shown when the update could not be downloaded, verified or installed."
+  },
+  "updateAllowInstall": "Allow OpenPak to install apps in the settings that just opened, then start the update again.",
+  "@updateAllowInstall": {
+    "description": "Shown after opening Android's 'install unknown apps' settings for OpenPak."
   }
 }

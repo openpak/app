@@ -11,7 +11,18 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
-## v0.22.0 — unreleased
+## v0.23.0 — 2026-11-01
+
+- **Update prompt.** On start, once per app session, the app asks GitHub for the latest
+  `openpak/app` release. When it is newer, a dialog shows the version and the release notes with
+  Update and Later; Later is not asked again until the next start. On Android, Update downloads
+  the APK for the phone's ABI, checks its size and SHA-256 against the release, and hands it to the
+  system installer (needs "install unknown apps" allowed for OpenPak; the settings page opens when
+  it is not). Elsewhere Update opens the release page. A network failure shows nothing.
+- v0.21.0 and v0.22.0 below were never tagged; they ship in this release. The release workflow
+  now publishes this CHANGELOG section as the release notes.
+
+## v0.22.0 — shipped in v0.23.0
 
 - **Turnstile on signup and the reset mail**, as on the website. The app asks
   `GET /api/v1/auth/config` whether Turnstile is on; if so, a "Quick check" dialog shows
@@ -28,7 +39,7 @@ of truth; this file is the readable summary.
   that has run out (`account_erasure_started`) says so.
 - New strings in all seven languages.
 
-## v0.21.0 — unreleased
+## v0.21.0 — shipped in v0.23.0
 
 - Signup asks for a date of birth, picked from a calendar, and sends it as `birthday` (YYYY-MM-DD).
   Under 16 the dialog says so and Create stays off; the server's age and date refusals are shown

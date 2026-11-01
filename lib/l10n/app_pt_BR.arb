@@ -481,5 +481,12 @@
   "restoreBody": "Sua conta será excluída em {date}. Restaurar?",
   "restoreBodyNoDate": "Sua conta está programada para exclusão. Restaurar?",
   "restoreHelp": "Restaurar mantém sua conta e faz login. Cancelar deixa que ela seja excluída.",
-  "restoreButton": "Restaurar"
+  "restoreButton": "Restaurar",
+  "updateTitle": "Atualização disponível",
+  "updateBody": "O OpenPak {version} está disponível. Você está com a {current}.",
+  "updateNow": "Atualizar",
+  "updateLater": "Mais tarde",
+  "updateDownloading": "Baixando a atualização…",
+  "updateFailed": "Não foi possível baixar ou instalar a atualização. Tente novamente mais tarde.",
+  "updateAllowInstall": "Permita que o OpenPak instale apps nas configurações que acabaram de abrir e inicie a atualização novamente."
 }

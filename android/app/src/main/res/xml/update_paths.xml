@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The only place the updater shares from: the APK it just downloaded and verified. -->
+<paths>
+    <cache-path name="updates" path="updates/" />
+</paths>

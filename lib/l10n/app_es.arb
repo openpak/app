@@ -481,5 +481,12 @@
   "restoreBody": "Tu cuenta se eliminará el {date}. ¿Quieres restaurarla?",
   "restoreBodyNoDate": "Tu cuenta está programada para eliminarse. ¿Quieres restaurarla?",
   "restoreHelp": "Restaurar conserva tu cuenta e inicia sesión. Cancelar deja que se elimine.",
-  "restoreButton": "Restaurar"
+  "restoreButton": "Restaurar",
+  "updateTitle": "Actualización disponible",
+  "updateBody": "OpenPak {version} está disponible. Tienes la {current}.",
+  "updateNow": "Actualizar",
+  "updateLater": "Más tarde",
+  "updateDownloading": "Descargando la actualización…",
+  "updateFailed": "No se pudo descargar o instalar la actualización. Inténtalo de nuevo más tarde.",
+  "updateAllowInstall": "Permite que OpenPak instale aplicaciones en los ajustes que se acaban de abrir y vuelve a iniciar la actualización."
 }

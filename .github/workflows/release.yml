@@ -77,17 +77,26 @@ jobs:
         if: always()
         run: rm -f android/app/openpak-release.jks android/key.properties
 
+      # The release body is this version's CHANGELOG section: the in-app updater
+      # shows it as the release notes. APK names (app-<abi>-release.apk) are what
+      # the updater looks for; GitHub publishes each asset's SHA-256 digest, which
+      # it checks the download against. Do not rename the assets.
+      - name: Release notes
+        if: env.DRY_RUN != 'true'
+        run: |
+          awk -v tag="${GITHUB_REF_NAME}" '
+            $1 == "##" && $2 == tag { on = 1; next }
+            $1 == "##" && on { exit }
+            on { print }' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
+            echo "::error::CHANGELOG.md has no '## ${GITHUB_REF_NAME}' section"
+            exit 1
+          fi
+
       - name: GitHub Release
         if: env.DRY_RUN != 'true'
         uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/app-*-release.apk
           fail_on_unmatched_files: true
-          body: |
-            OpenPak companion app ${{ github.ref_name }}.
-
-            Sideload APKs, signed with the OpenPak release key (updates install
-            cleanly over previous OpenPak-signed versions).
-            Install the one for your device: arm64-v8a (most phones),
-            armeabi-v7a (older 32-bit ARM phones), x86_64 (emulators, Chromebooks), e.g.:
-              adb install app-arm64-v8a-release.apk
+          body_path: ${{ runner.temp }}/notes.md

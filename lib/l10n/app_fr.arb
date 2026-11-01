@@ -481,5 +481,12 @@
   "restoreBody": "Ton compte sera supprimé le {date}. Le restaurer ?",
   "restoreBodyNoDate": "Ton compte doit être supprimé. Le restaurer ?",
   "restoreHelp": "Restaurer garde ton compte et te connecte. Annuler le laisse être supprimé.",
-  "restoreButton": "Restaurer"
+  "restoreButton": "Restaurer",
+  "updateTitle": "Mise à jour disponible",
+  "updateBody": "OpenPak {version} est disponible. Vous avez la {current}.",
+  "updateNow": "Mettre à jour",
+  "updateLater": "Plus tard",
+  "updateDownloading": "Téléchargement de la mise à jour…",
+  "updateFailed": "La mise à jour n'a pas pu être téléchargée ou installée. Réessayez plus tard.",
+  "updateAllowInstall": "Autorisez OpenPak à installer des applications dans les réglages qui viennent de s'ouvrir, puis relancez la mise à jour."
 }

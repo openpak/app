@@ -26,4 +26,13 @@ void main() {
     final plist = File('ios/Runner/Info.plist').readAsStringSync();
     expect(plist.contains('NSMicrophoneUsageDescription'), isTrue);
   });
+
+  // The updater hands its APK to the system installer through a FileProvider;
+  // without these, Update fails only on a real phone.
+  test('the updater can install: permission and file provider are declared', () {
+    final manifest = File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+    expect(manifest.contains('android.permission.REQUEST_INSTALL_PACKAGES'), isTrue);
+    expect(manifest.contains(r'${applicationId}.updates'), isTrue);
+    expect(File('android/app/src/main/res/xml/update_paths.xml').existsSync(), isTrue);
+  });
 }

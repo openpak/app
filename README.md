@@ -42,6 +42,11 @@ OpenPak's Companion App.
    The APKs are signed with the OpenPak release key, so each version installs
    over the last.
 
+The app checks for a newer release once when it starts and offers to install it
+(Android: downloads the APK, verifies its SHA-256 and opens the system installer;
+you must allow "install unknown apps" for OpenPak). To try it from a current
+build: `flutter run --dart-define=UPDATE_CURRENT_VERSION=0.1.0`.
+
 There is no iOS build on Releases; see [notes](docs/notes.md).
 
 ## Build

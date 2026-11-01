@@ -1,7 +1,7 @@
 name: openpak
 description: OpenPak companion app — your account, friends and invitations.
 publish_to: none
-version: 0.22.0+38
+version: 0.23.0+39
 
 environment:
   sdk: ^3.9.0
@@ -36,6 +36,8 @@ dependencies:
   # The Cloudflare Turnstile check on signup and password reset: the website's
   # /turnstile-widget page in a webview, its answer back over a JS channel.
   webview_flutter: ^4.14.1
+  # SHA-256 of the downloaded update APK, checked against the release's digest.
+  crypto: ^3.0.6
 
 dev_dependencies:
   flutter_test:

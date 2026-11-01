@@ -481,5 +481,12 @@
   "restoreBody": "Dein Konto wird am {date} gelöscht. Wiederherstellen?",
   "restoreBodyNoDate": "Dein Konto ist zur Löschung vorgemerkt. Wiederherstellen?",
   "restoreHelp": "Wiederherstellen behält dein Konto und meldet dich an. Abbrechen lässt es löschen.",
-  "restoreButton": "Wiederherstellen"
+  "restoreButton": "Wiederherstellen",
+  "updateTitle": "Update verfügbar",
+  "updateBody": "OpenPak {version} ist verfügbar. Du hast {current}.",
+  "updateNow": "Aktualisieren",
+  "updateLater": "Später",
+  "updateDownloading": "Update wird heruntergeladen…",
+  "updateFailed": "Das Update konnte nicht heruntergeladen oder installiert werden. Versuche es später erneut.",
+  "updateAllowInstall": "Erlaube OpenPak in den soeben geöffneten Einstellungen, Apps zu installieren, und starte das Update dann erneut."
 }

@@ -5,6 +5,7 @@ import 'crash_reports.dart';
 import 'l10n.dart';
 import 'shell.dart';
 import 'theme.dart';
+import 'updater.dart';
 import 'session.dart';
 import 'sign_in_page.dart';
 
@@ -35,6 +36,7 @@ class _OpenPakAppState extends State<OpenPakApp> {
   final _session = Session();
   final _api = OpenPakApi(baseUrl: baseUrl);
   final _navigator = GlobalKey<NavigatorState>();
+  final _updates = UpdateChecker();
   bool _restoring = true;
   bool _offering = false;
 
@@ -75,7 +77,21 @@ class _OpenPakAppState extends State<OpenPakApp> {
   Future<void> _restore() async {
     _api.token = await _session.read();
     if (mounted) setState(() => _restoring = false);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _offerCrashReports());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _offerCrashReports();
+      await _offerUpdate();
+    });
+  }
+
+  /// Once per app session (the checker refuses a second call): a newer release
+  /// is offered after any crash prompt. Failures are silent.
+  Future<void> _offerUpdate() async {
+    try {
+      final release = await _updates.check();
+      final context = _navigator.currentContext;
+      if (release == null || context == null || !context.mounted) return;
+      await offerUpdate(context, _updates, release);
+    } catch (_) {}
   }
 
   Future<void> _onSignedIn(String token) async {

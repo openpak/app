@@ -481,5 +481,12 @@
   "restoreBody": "Il tuo account sarà eliminato il {date}. Vuoi ripristinarlo?",
   "restoreBodyNoDate": "Il tuo account è programmato per l'eliminazione. Vuoi ripristinarlo?",
   "restoreHelp": "Ripristina mantiene l'account e ti fa accedere. Annulla lo lascia eliminare.",
-  "restoreButton": "Ripristina"
+  "restoreButton": "Ripristina",
+  "updateTitle": "Aggiornamento disponibile",
+  "updateBody": "OpenPak {version} è disponibile. Hai la {current}.",
+  "updateNow": "Aggiorna",
+  "updateLater": "Più tardi",
+  "updateDownloading": "Download dell'aggiornamento…",
+  "updateFailed": "Impossibile scaricare o installare l'aggiornamento. Riprova più tardi.",
+  "updateAllowInstall": "Consenti a OpenPak di installare app nelle impostazioni appena aperte, poi riavvia l'aggiornamento."
 }
