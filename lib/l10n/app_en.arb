@@ -2472,5 +2472,461 @@
   "hubHelp": "Help and community",
   "@hubHelp": {
     "description": "Account hub group: support and region node."
+  },
+  "supportSub": "Ask the OpenPak team for help with your account, a console, an emulator or the app. Every request is a thread you can come back to.",
+  "@supportSub": {
+    "description": "Intro line under the Help (support) page title."
+  },
+  "supportYours": "Your requests",
+  "@supportYours": {
+    "description": "Section label: the help requests this person opened."
+  },
+  "supportNew": "New request",
+  "@supportNew": {
+    "description": "Section label and button: open a new help request."
+  },
+  "supportNewSub": "Say what happened, on which console or emulator, and what you already tried.",
+  "@supportNewSub": {
+    "description": "Hint under the new help request heading."
+  },
+  "supportSubject": "Subject",
+  "@supportSubject": {
+    "description": "Field label: subject of a help request."
+  },
+  "supportTopic": "Topic",
+  "@supportTopic": {
+    "description": "Field label: topic (category) of a help request."
+  },
+  "supportMessage": "Message",
+  "@supportMessage": {
+    "description": "Field label: the message of a help request."
+  },
+  "supportAttachmentLabel": "Attachment (optional)",
+  "@supportAttachmentLabel": {
+    "description": "Field label: optional attachment."
+  },
+  "supportAttachmentHint": "One file up to 10 MB: a screenshot, a log, a crash report.",
+  "@supportAttachmentHint": {
+    "description": "Hint under the attachment: size limit and what to attach."
+  },
+  "supportNoEmail": "Answers appear here and in the OpenPak app; no email is sent.",
+  "@supportNoEmail": {
+    "description": "Note: answers show in the app and no email is sent."
+  },
+  "supportSend": "Send",
+  "@supportSend": {
+    "description": "Button: send the help request."
+  },
+  "supportStatusOpen": "Waiting for the team",
+  "@supportStatusOpen": {
+    "description": "Ticket status pill: waiting for the OpenPak team."
+  },
+  "supportStatusWaiting": "Answered",
+  "@supportStatusWaiting": {
+    "description": "Ticket status pill: the team answered."
+  },
+  "supportStatusClosed": "Closed",
+  "@supportStatusClosed": {
+    "description": "Ticket status pill: closed."
+  },
+  "supportCatAccount": "Account and sign-in",
+  "@supportCatAccount": {
+    "description": "Help topic."
+  },
+  "supportCatNetwork": "Network and online play",
+  "@supportCatNetwork": {
+    "description": "Help topic."
+  },
+  "supportCatSwitch": "Switch",
+  "@supportCatSwitch": {
+    "description": "Help topic."
+  },
+  "supportCatWiiu3ds": "Wii U and 3DS",
+  "@supportCatWiiu3ds": {
+    "description": "Help topic."
+  },
+  "supportCatEmulator": "Emulator",
+  "@supportCatEmulator": {
+    "description": "Help topic."
+  },
+  "supportCatSaves": "Cloud saves",
+  "@supportCatSaves": {
+    "description": "Help topic."
+  },
+  "supportCatApp": "The OpenPak app",
+  "@supportCatApp": {
+    "description": "Help topic."
+  },
+  "supportCatOther": "Something else",
+  "@supportCatOther": {
+    "description": "Help topic."
+  },
+  "supportStaff": "OpenPak team",
+  "@supportStaff": {
+    "description": "Author label on a ticket message written by the team."
+  },
+  "supportYou": "You",
+  "@supportYou": {
+    "description": "Author label on a ticket message written by the person."
+  },
+  "supportReply": "Reply",
+  "@supportReply": {
+    "description": "Label and button: reply in a ticket."
+  },
+  "supportReopen": "Reply to reopen this request",
+  "@supportReopen": {
+    "description": "Hint on a closed ticket: replying reopens it."
+  },
+  "supportInvalid": "Fill in a subject (up to 200 characters), a topic and a message.",
+  "@supportInvalid": {
+    "description": "Error: the help request form is incomplete."
+  },
+  "supportTooLarge": "The attachment is larger than 10 MB.",
+  "@supportTooLarge": {
+    "description": "Error: the attachment is over 10 MB."
+  },
+  "supportNoFiles": "Attachments are not available here; send the message without one.",
+  "@supportNoFiles": {
+    "description": "Error: this server takes no attachments."
+  },
+  "supportOpened": "Your request is open. The team will answer here.",
+  "@supportOpened": {
+    "description": "Toast after opening a ticket."
+  },
+  "supportReplied": "Sent.",
+  "@supportReplied": {
+    "description": "Toast after sending a reply."
+  },
+  "supportPakkaCta": "Chat with Pakka, our AI assistant, about setup, connection problems and your account.",
+  "@supportPakkaCta": {
+    "description": "Card on the Help page that points to Pakka, the assistant."
+  },
+  "discordTitle": "Discord",
+  "@discordTitle": {
+    "description": "Row title in Linked platforms."
+  },
+  "discordHelp": "Link your Discord account so Pakka, the assistant on the OpenPak Discord server, knows which OpenPak account it is talking to and can apply the same rules as on the website. OpenPak only reads your Discord user id and name.",
+  "@discordHelp": {
+    "description": "Explains what linking Discord does."
+  },
+  "discordLink": "Link Discord",
+  "@discordLink": {
+    "description": "Button: link Discord."
+  },
+  "discordUnlink": "Unlink Discord",
+  "@discordUnlink": {
+    "description": "Button and dialog title: unlink Discord."
+  },
+  "discordLinkedHelp": "Pakka on Discord uses this link to apply your account's rules. Unlink it and Pakka no longer answers you there.",
+  "@discordLinkedHelp": {
+    "description": "Explains what an existing Discord link does."
+  },
+  "discordRemoved": "Discord unlinked.",
+  "@discordRemoved": {
+    "description": "Toast after unlinking Discord."
+  },
+  "operatorIntro": "A region node relays game traffic for players near it, so rooms hosted there feel local. Accounts, friends and matchmaking stay with OpenPak. Read the",
+  "@operatorIntro": {
+    "description": "Intro of the region node page; the operator terms link follows it."
+  },
+  "operatorTermsLink": "operator terms",
+  "@operatorTermsLink": {
+    "description": "Link text: the operator terms."
+  },
+  "operatorDoneApplied": "Application sent. We will review it and you will see the answer here.",
+  "@operatorDoneApplied": {
+    "description": "Toast after sending a node application."
+  },
+  "operatorDoneWaitlist": "You are on the waitlist. We will write when OpenPak wants nodes there.",
+  "@operatorDoneWaitlist": {
+    "description": "Toast after joining the waitlist."
+  },
+  "operatorDoneReplied": "Reply sent. Your application is back in review.",
+  "@operatorDoneReplied": {
+    "description": "Toast after answering the team's question."
+  },
+  "operatorUnavailable": "Applications are not available right now.",
+  "@operatorUnavailable": {
+    "description": "Shown when applications are switched off."
+  },
+  "operatorReqTitle": "Minimums",
+  "@operatorReqTitle": {
+    "description": "Section: minimum requirements."
+  },
+  "operatorReqNode": "Per node, all servers together",
+  "@operatorReqNode": {
+    "description": "Requirement line label: per node."
+  },
+  "operatorReqCores": "cores",
+  "@operatorReqCores": {
+    "description": "Unit: CPU cores."
+  },
+  "operatorReqServer": "Per server",
+  "@operatorReqServer": {
+    "description": "Requirement line label: per server."
+  },
+  "operatorReqIpv4": "its own public IPv4 (no CGNAT; IPv6 wanted)",
+  "@operatorReqIpv4": {
+    "description": "Requirement: public IPv4."
+  },
+  "operatorReqSymmetric": "symmetric",
+  "@operatorReqSymmetric": {
+    "description": "Word after a bandwidth figure: symmetric."
+  },
+  "operatorReqAvailability": "Availability target",
+  "@operatorReqAvailability": {
+    "description": "Requirement line label: availability target."
+  },
+  "operatorReqNote": "Your servers report their hardware and run a daily bandwidth test once they join. Those reports are self-declared, and approval stays a decision by a person at OpenPak.",
+  "@operatorReqNote": {
+    "description": "Note under the requirements."
+  },
+  "operatorApps": "Your applications",
+  "@operatorApps": {
+    "description": "Section: this person's applications."
+  },
+  "operatorStatusPending": "In review",
+  "@operatorStatusPending": {
+    "description": "Application status."
+  },
+  "operatorStatusInfo": "Question for you",
+  "@operatorStatusInfo": {
+    "description": "Application status: the team asked a question."
+  },
+  "operatorStatusApproved": "Approved",
+  "@operatorStatusApproved": {
+    "description": "Application status."
+  },
+  "operatorStatusRejected": "Not accepted",
+  "@operatorStatusRejected": {
+    "description": "Application status."
+  },
+  "operatorStatusWaitlist": "On the waitlist",
+  "@operatorStatusWaitlist": {
+    "description": "Application status."
+  },
+  "operatorReason": "Reason",
+  "@operatorReason": {
+    "description": "Label before the team's reason for rejecting."
+  },
+  "operatorQuestion": "Question",
+  "@operatorQuestion": {
+    "description": "Label before the team's question."
+  },
+  "operatorReplyLabel": "Your answer",
+  "@operatorReplyLabel": {
+    "description": "Field label: the answer to the team's question."
+  },
+  "operatorReplySend": "Send answer",
+  "@operatorReplySend": {
+    "description": "Button: send the answer."
+  },
+  "operatorApply": "Apply",
+  "@operatorApply": {
+    "description": "Section label: the application form."
+  },
+  "operatorLocation": "Location",
+  "@operatorLocation": {
+    "description": "Field label: location."
+  },
+  "operatorLocationHint": "Only locations where OpenPak wants nodes are listed.",
+  "@operatorLocationHint": {
+    "description": "Hint: only wanted locations are listed."
+  },
+  "operatorCity": "City",
+  "@operatorCity": {
+    "description": "Field label: city."
+  },
+  "operatorProvider": "Hosting provider",
+  "@operatorProvider": {
+    "description": "Field label: hosting provider."
+  },
+  "operatorEmail": "Contact email (operations and security)",
+  "@operatorEmail": {
+    "description": "Field label: contact email."
+  },
+  "operatorServers": "Planned servers",
+  "@operatorServers": {
+    "description": "Heading: planned servers."
+  },
+  "operatorServersHint": "A node can be split across servers. Leave a server's cores empty to skip it.",
+  "@operatorServersHint": {
+    "description": "Hint under planned servers."
+  },
+  "operatorServer": "Server",
+  "@operatorServer": {
+    "description": "Word Server, followed by its number."
+  },
+  "operatorServerCores": "CPU cores",
+  "@operatorServerCores": {
+    "description": "Field label."
+  },
+  "operatorServerRam": "RAM (GB)",
+  "@operatorServerRam": {
+    "description": "Field label."
+  },
+  "operatorServerDisk": "Storage (GB)",
+  "@operatorServerDisk": {
+    "description": "Field label."
+  },
+  "operatorServerSsd": "NVMe or SSD storage",
+  "@operatorServerSsd": {
+    "description": "Checkbox label."
+  },
+  "operatorServerBandwidth": "Bandwidth (Mbps, symmetric)",
+  "@operatorServerBandwidth": {
+    "description": "Field label."
+  },
+  "operatorServerIpv6": "Has IPv6",
+  "@operatorServerIpv6": {
+    "description": "Checkbox label."
+  },
+  "operatorServerRoles": "Roles",
+  "@operatorServerRoles": {
+    "description": "Label of the role chips."
+  },
+  "operatorRolePhoton": "Photon game server",
+  "@operatorRolePhoton": {
+    "description": "Server role."
+  },
+  "operatorRoleTurn": "TURN relay",
+  "@operatorRoleTurn": {
+    "description": "Server role."
+  },
+  "operatorRoleStun": "STUN",
+  "@operatorRoleStun": {
+    "description": "Server role."
+  },
+  "operatorRoleNplnRelay": "NPLN relay",
+  "@operatorRoleNplnRelay": {
+    "description": "Server role."
+  },
+  "operatorNotes": "Anything else we should know",
+  "@operatorNotes": {
+    "description": "Field label: notes."
+  },
+  "operatorAccept": "I accept the",
+  "@operatorAccept": {
+    "description": "Checkbox text before the terms link."
+  },
+  "operatorSubmit": "Send application",
+  "@operatorSubmit": {
+    "description": "Button: send the application."
+  },
+  "operatorWaitlist": "Join the waitlist",
+  "@operatorWaitlist": {
+    "description": "Section label: waitlist."
+  },
+  "operatorNotWanted": "OpenPak is not looking for nodes there yet. Leave your country and we will write when that changes.",
+  "@operatorNotWanted": {
+    "description": "Explains the waitlist."
+  },
+  "operatorCountry": "Country (two letters)",
+  "@operatorCountry": {
+    "description": "Field label: two letter country."
+  },
+  "operatorWaitlistJoin": "Join the waitlist",
+  "@operatorWaitlistJoin": {
+    "description": "Button: join the waitlist."
+  },
+  "operatorBack": "Back to the application",
+  "@operatorBack": {
+    "description": "Link: back to the application form."
+  },
+  "detailsMotto": "Motto",
+  "@detailsMotto": {
+    "description": "Field label: motto."
+  },
+  "detailsBio": "Bio",
+  "@detailsBio": {
+    "description": "Field label: bio."
+  },
+  "detailsAboutSaved": "Saved.",
+  "@detailsAboutSaved": {
+    "description": "Toast after saving motto and bio."
+  },
+  "detailsSaveAbout": "Save",
+  "@detailsSaveAbout": {
+    "description": "Button: save motto and bio."
+  },
+  "operatorApprovedNext": "The node is created. We will send you its key privately; then each server joins with it.",
+  "@operatorApprovedNext": {
+    "description": "Under an approved application: what happens next."
+  },
+  "supportEmpty": "No help requests yet. Open one below and the team will answer here.",
+  "@supportEmpty": {
+    "description": "Help page when the person has not opened a request yet."
+  },
+  "supportUnavailable": "Help requests are not available right now. Please try again later.",
+  "@supportUnavailable": {
+    "description": "Shown when help requests are switched off on the server."
+  },
+  "supportAttach": "Attach a screenshot",
+  "@supportAttach": {
+    "description": "Button: attach a screenshot to a help message."
+  },
+  "supportAttachRemove": "Remove attachment",
+  "@supportAttachRemove": {
+    "description": "Tooltip: remove the chosen attachment."
+  },
+  "supportMessageCount": "{count, plural, =1{1 message} other{{count} messages}}",
+  "@supportMessageCount": {
+    "description": "Under a ticket: how many messages its thread has.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "supportUpdated": "Updated {date}",
+  "@supportUpdated": {
+    "description": "Under a ticket: when it last changed.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Oct 18, 2026"
+      }
+    }
+  },
+  "supportDownloadFailed": "The file could not be downloaded.",
+  "@supportDownloadFailed": {
+    "description": "Toast: a ticket attachment could not be fetched."
+  },
+  "supportMoreHelp": "More help and answers",
+  "@supportMoreHelp": {
+    "description": "Link on the Help page to the project's support page in the browser."
+  },
+  "supportShareFile": "Save or share",
+  "@supportShareFile": {
+    "description": "Button in the picture preview: save or share the file."
+  },
+  "operatorNotListed": "Not listed? Join the waitlist",
+  "@operatorNotListed": {
+    "description": "Button on the application form: my country is not in the list, use the waitlist."
+  },
+  "operatorAddServer": "Add a server",
+  "@operatorAddServer": {
+    "description": "Button: add another planned server row."
+  },
+  "operatorRemoveServer": "Remove this server",
+  "@operatorRemoveServer": {
+    "description": "Tooltip: remove this planned server row."
+  },
+  "discordLinkNote": "Linking finishes in your browser, on the OpenPak website. Sign in there if asked, then come back and pull down to refresh.",
+  "@discordLinkNote": {
+    "description": "Under the Link Discord button: the round trip ends in the browser."
+  },
+  "detailsAbout": "About you",
+  "@detailsAbout": {
+    "description": "Section label on the details page: motto and bio."
+  },
+  "countryKr": "South Korea",
+  "@countryKr": {
+    "description": "Country name in the country dropdown (ISO code KR)."
+  },
+  "errorInvalidApplication": "The application was not accepted.",
+  "@errorInvalidApplication": {
+    "description": "Error: the node application was not accepted."
   }
 }
