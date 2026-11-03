@@ -524,5 +524,22 @@
   "pakkaNoticePrivacy": "Wie OpenPak mit Chats umgeht",
   "pakkaNoticeAccept": "Verstanden, Chat starten",
   "pakkaNoticeWithdraw": "Widerrufen und nicht mehr chatten",
-  "pakkaNoticeAccepted": "Danke. Du kannst jetzt mit Pakka chatten."
+  "pakkaNoticeAccepted": "Danke. Du kannst jetzt mit Pakka chatten.",
+  "rewardsTitle": "Belohnungen",
+  "trophiesTitle": "Trophäen",
+  "activityTitle": "Spielaktivität",
+  "rankingsTitle": "Ranglisten",
+  "sitesTitle": "Open-Seiten",
+  "supportTitle": "Hilfe",
+  "operatorTitle": "Einen Regionalknoten betreiben",
+  "hubRewardsSub": "Punkte, Missionen, Shop und Designs",
+  "hubTrophiesSub": "Was du in Spielen erreicht hast",
+  "hubActivitySub": "Was du gespielt hast und wie lange",
+  "hubRankingsSub": "Bestenlisten für jedes Spiel",
+  "hubSitesSub": "OpenVerse, OpenKart, OpenSplat und OpenMaker",
+  "hubSupportSub": "Hilfe anfragen und deine Tickets verfolgen",
+  "hubOperatorSub": "Einen Server für Spieler in deiner Nähe betreiben",
+  "hubPlay": "Spielen",
+  "hubExplore": "Entdecken",
+  "hubHelp": "Hilfe und Community"
 }

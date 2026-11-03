@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'account_details_page.dart';
+import 'account_hub.dart';
 import 'api.dart';
 import 'crash_reports.dart';
 import 'l10n.dart';
@@ -118,6 +119,8 @@ class _AccountPageState extends State<AccountPage> {
                     ),
                   ),
                 ],
+                const SizedBox(height: 12),
+                AccountHub(api: widget.api),
                 if (incoming.isNotEmpty) ...[
                   const SizedBox(height: 20),
                   SectionLabel(l.friendsIncoming, key: _requests, trailing: '${incoming.length}'),

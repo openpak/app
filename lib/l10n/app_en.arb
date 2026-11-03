@@ -2404,5 +2404,73 @@
   "pakkaNoticeAccepted": "Thanks. You can chat with Pakka now.",
   "@pakkaNoticeAccepted": {
     "description": "Toast after accepting the data-use notice."
+  },
+  "rewardsTitle": "Rewards",
+  "@rewardsTitle": {
+    "description": "Rewards page title and Account entry."
+  },
+  "trophiesTitle": "Trophies",
+  "@trophiesTitle": {
+    "description": "Trophies page title and Account entry."
+  },
+  "activityTitle": "Play activity",
+  "@activityTitle": {
+    "description": "Play activity page title and Account entry."
+  },
+  "rankingsTitle": "Rankings",
+  "@rankingsTitle": {
+    "description": "Rankings page title and Account entry."
+  },
+  "sitesTitle": "Open sites",
+  "@sitesTitle": {
+    "description": "Open sites page title and Account entry."
+  },
+  "supportTitle": "Help",
+  "@supportTitle": {
+    "description": "Help tickets page title and Account entry."
+  },
+  "operatorTitle": "Run a region node",
+  "@operatorTitle": {
+    "description": "Region node operator page title and Account entry."
+  },
+  "hubRewardsSub": "Points, missions, shop and themes",
+  "@hubRewardsSub": {
+    "description": "Account entry subtitle for Rewards."
+  },
+  "hubTrophiesSub": "What you have earned in games",
+  "@hubTrophiesSub": {
+    "description": "Account entry subtitle for Trophies."
+  },
+  "hubActivitySub": "What you played and for how long",
+  "@hubActivitySub": {
+    "description": "Account entry subtitle for Play activity."
+  },
+  "hubRankingsSub": "Leaderboards for every game",
+  "@hubRankingsSub": {
+    "description": "Account entry subtitle for Rankings."
+  },
+  "hubSitesSub": "OpenVerse, OpenKart, OpenSplat and OpenMaker",
+  "@hubSitesSub": {
+    "description": "Account entry subtitle for Open sites."
+  },
+  "hubSupportSub": "Ask for help and follow your tickets",
+  "@hubSupportSub": {
+    "description": "Account entry subtitle for Help."
+  },
+  "hubOperatorSub": "Host a server for players near you",
+  "@hubOperatorSub": {
+    "description": "Account entry subtitle for the region node operator."
+  },
+  "hubPlay": "Play",
+  "@hubPlay": {
+    "description": "Account hub group: rewards, trophies, activity, rankings."
+  },
+  "hubExplore": "Explore",
+  "@hubExplore": {
+    "description": "Account hub group: Open sites."
+  },
+  "hubHelp": "Help and community",
+  "@hubHelp": {
+    "description": "Account hub group: support and region node."
   }
 }

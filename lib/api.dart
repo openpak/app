@@ -11,6 +11,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
+// The newer areas live in their own files; parts share this library's private members.
+part 'api_rewards.dart';
+part 'api_play.dart';
+part 'api_account.dart';
+
 /// Thrown for any non-success reply. [unauthorized] is separated because it is
 /// the one the UI must act on: the token died, so the person is signed out.
 ///
