@@ -85,6 +85,11 @@ String apiErrorText(AppLocalizations l, ApiException e) {
     'already_owned' => l.rewardsErrOwned,
     'rewards_frozen' => l.rewardsErrFrozen,
     'rewards_unavailable' => l.rewardsUnavailable,
+    'tickets_unavailable' => l.supportUnavailable,
+    'attachment_too_large' => l.supportTooLarge,
+    'attachments_unavailable' => l.supportNoFiles,
+    'operator_unavailable' => l.operatorUnavailable,
+    'invalid_application' => l.errorInvalidApplication,
     _ => null,
   };
   if (byCode != null) return byCode;

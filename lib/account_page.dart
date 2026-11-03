@@ -4,6 +4,7 @@ import 'account_details_page.dart';
 import 'account_hub.dart';
 import 'api.dart';
 import 'crash_reports.dart';
+import 'discord_row.dart';
 import 'l10n.dart';
 import 'pakka_page.dart';
 import 'parental_controls_page.dart';
@@ -170,6 +171,7 @@ class _AccountPageState extends State<AccountPage> {
                           title: Text(l.accountLinkWfc),
                           onTap: _linkWfc,
                         ),
+                      DiscordRow(api: widget.api),
                     ],
                   ),
                 ),

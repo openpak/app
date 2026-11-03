@@ -23,10 +23,25 @@ class AccountDetailsPage extends StatefulWidget {
 class _AccountDetailsPageState extends State<AccountDetailsPage> {
   late Account _me = widget.account;
   late final _name = TextEditingController(text: _me.displayName);
+  final _motto = TextEditingController(), _bio = TextEditingController();
   bool _dirty = false;
 
   @override
+  void initState() {
+    super.initState();
+    // The account document carries the motto and bio; a failed fetch leaves
+    // the fields empty rather than the page in an error.
+    widget.api.profileText().then((p) {
+      if (!mounted) return;
+      _motto.text = p.motto;
+      _bio.text = p.bio;
+    }, onError: (_) {});
+  }
+
+  @override
   void dispose() {
+    _motto.dispose();
+    _bio.dispose();
     _name.dispose();
     super.dispose();
   }
@@ -109,6 +124,39 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
                         l.detailsNameSaved,
                       ),
                       child: Text(l.detailsSaveName),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SectionLabel(l.detailsAbout),
+            Panel(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                      controller: _motto,
+                      maxLength: 21,
+                      decoration: InputDecoration(labelText: l.detailsMotto),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _bio,
+                      maxLength: 499,
+                      minLines: 3,
+                      maxLines: 6,
+                      decoration: InputDecoration(labelText: l.detailsBio, alignLabelWithHint: true),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: () => _save(
+                        () => widget.api.saveProfileText(motto: _motto.text.trim(), bio: _bio.text.trim()),
+                        l.detailsAboutSaved,
+                      ),
+                      child: Text(l.detailsSaveAbout),
                     ),
                   ],
                 ),
@@ -267,7 +315,7 @@ class _AccountDetailsPageState extends State<AccountDetailsPage> {
 /// The ISO codes the site offers, kept short: the console cares about the code,
 /// and a full list belongs behind a search field rather than in a dropdown.
 const countries = ['IE', 'GB', 'US', 'CA', 'AU', 'NZ', 'FR', 'DE', 'ES', 'IT', 'PT',
-    'NL', 'BE', 'SE', 'NO', 'DK', 'FI', 'PL', 'BR', 'MX', 'JP'];
+    'NL', 'BE', 'SE', 'NO', 'DK', 'FI', 'PL', 'BR', 'MX', 'JP', 'KR'];
 
 /// A country's name in the app's language.
 String countryName(AppLocalizations l, String code) => switch (code) {
@@ -292,5 +340,6 @@ String countryName(AppLocalizations l, String code) => switch (code) {
   'BR' => l.countryBr,
   'MX' => l.countryMx,
   'JP' => l.countryJp,
+  'KR' => l.countryKr,
   _ => code,
 };
