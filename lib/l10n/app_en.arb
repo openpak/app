@@ -2472,5 +2472,407 @@
   "hubHelp": "Help and community",
   "@hubHelp": {
     "description": "Account hub group: support and region node."
+  },
+  "rewardsPreview": "Preview",
+  "@rewardsPreview": {
+    "description": "Rewards: preview"
+  },
+  "rewardsPreviewName": "Previewing {name}",
+  "@rewardsPreviewName": {
+    "description": "Rewards: preview name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardsPreviewBuy": "Buy {n} pts",
+  "@rewardsPreviewBuy": {
+    "description": "Rewards: preview buy",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsPreviewStop": "Stop preview",
+  "@rewardsPreviewStop": {
+    "description": "Rewards: preview stop"
+  },
+  "rewardsPreviewFailed": "This theme could not be loaded.",
+  "@rewardsPreviewFailed": {
+    "description": "Rewards: preview failed"
+  },
+  "rewardsSlots": "Equipped now",
+  "@rewardsSlots": {
+    "description": "Rewards: slots"
+  },
+  "rewardsSlotNone": "Nothing equipped",
+  "@rewardsSlotNone": {
+    "description": "Rewards: slot none"
+  },
+  "rewardsPlaytime": "Time played",
+  "@rewardsPlaytime": {
+    "description": "Rewards: playtime"
+  },
+  "rewardsUnavailable": "Rewards are not available right now.",
+  "@rewardsUnavailable": {
+    "description": "Rewards: unavailable"
+  },
+  "rewardsUnavailableHint": "Your points and items are safe. Please try again in a moment.",
+  "@rewardsUnavailableHint": {
+    "description": "Rewards: unavailable hint"
+  },
+  "rewardsRetry": "Try again",
+  "@rewardsRetry": {
+    "description": "Rewards: retry"
+  },
+  "rewardsBalance": "Pak Points",
+  "@rewardsBalance": {
+    "description": "Rewards: balance"
+  },
+  "rewardsEarned": "Earned in total",
+  "@rewardsEarned": {
+    "description": "Rewards: earned"
+  },
+  "rewardsOwnedCount": "Items you own",
+  "@rewardsOwnedCount": {
+    "description": "Rewards: owned count"
+  },
+  "rewardsToday": "Play points today",
+  "@rewardsToday": {
+    "description": "Rewards: today"
+  },
+  "rewardsTodayOf": "{points} of {cap}",
+  "@rewardsTodayOf": {
+    "description": "Rewards: today of",
+    "placeholders": {
+      "points": {
+        "type": "int"
+      },
+      "cap": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsTodayCap": "Daily limit reached. You can earn points again from midnight UTC.",
+  "@rewardsTodayCap": {
+    "description": "Rewards: today cap"
+  },
+  "rewardsTodayMore": "Keep playing online to earn up to {n} more today.",
+  "@rewardsTodayMore": {
+    "description": "Rewards: today more",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsNextClaimGo": "Claim now",
+  "@rewardsNextClaimGo": {
+    "description": "Rewards: next claim go"
+  },
+  "rewardsNextBuyGo": "Open the Shop",
+  "@rewardsNextBuyGo": {
+    "description": "Rewards: next buy go"
+  },
+  "rewardsFrozen": "Rewards are frozen for this account, so you cannot earn or spend points.",
+  "@rewardsFrozen": {
+    "description": "Rewards: frozen"
+  },
+  "rewardsPaused": "Earning is paused. You do not earn points and your showcase is hidden.",
+  "@rewardsPaused": {
+    "description": "Rewards: paused"
+  },
+  "rewardsPausedGo": "Resume in Settings",
+  "@rewardsPausedGo": {
+    "description": "Rewards: paused go"
+  },
+  "rewardsTabs": "Rewards sections",
+  "@rewardsTabs": {
+    "description": "Rewards: tabs"
+  },
+  "rewardsTabMissions": "Missions",
+  "@rewardsTabMissions": {
+    "description": "Rewards: tab missions"
+  },
+  "rewardsTabShop": "Shop",
+  "@rewardsTabShop": {
+    "description": "Rewards: tab shop"
+  },
+  "rewardsTabCollection": "My items",
+  "@rewardsTabCollection": {
+    "description": "Rewards: tab collection"
+  },
+  "rewardsTabSettings": "Settings",
+  "@rewardsTabSettings": {
+    "description": "Rewards: tab settings"
+  },
+  "rewardsMReady": "Ready to claim",
+  "@rewardsMReady": {
+    "description": "Rewards: m ready"
+  },
+  "rewardsMProgress": "In progress",
+  "@rewardsMProgress": {
+    "description": "Rewards: m progress"
+  },
+  "rewardsMDone": "Completed",
+  "@rewardsMDone": {
+    "description": "Rewards: m done"
+  },
+  "rewardsMNone": "Nothing to claim yet. Keep playing and your progress fills up here.",
+  "@rewardsMNone": {
+    "description": "Rewards: m none"
+  },
+  "rewardsMEmpty": "There are no missions right now. New ones will appear here.",
+  "@rewardsMEmpty": {
+    "description": "Rewards: m empty"
+  },
+  "rewardsClaim": "Claim",
+  "@rewardsClaim": {
+    "description": "Rewards: claim"
+  },
+  "rewardsClaimed": "Claimed",
+  "@rewardsClaimed": {
+    "description": "Rewards: claimed"
+  },
+  "rewardsLocked": "Locked",
+  "@rewardsLocked": {
+    "description": "Rewards: locked"
+  },
+  "rewardsTierEarned": "Earned",
+  "@rewardsTierEarned": {
+    "description": "Rewards: tier earned"
+  },
+  "rewardsTierPips": "{earned} of {total} tiers earned",
+  "@rewardsTierPips": {
+    "description": "Rewards: tier pips",
+    "placeholders": {
+      "earned": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsCompleted": "Completed",
+  "@rewardsCompleted": {
+    "description": "Rewards: completed"
+  },
+  "rewardsLadder": "All tiers",
+  "@rewardsLadder": {
+    "description": "Rewards: ladder"
+  },
+  "rewardsPts": "{n} pts",
+  "@rewardsPts": {
+    "description": "Rewards: pts",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsPoints": "{n} points",
+  "@rewardsPoints": {
+    "description": "Rewards: points",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsShopSub": "Spend your Pak Points on things that make your profile yours.",
+  "@rewardsShopSub": {
+    "description": "Rewards: shop sub"
+  },
+  "rewardsFilter": "Filter the Shop by type",
+  "@rewardsFilter": {
+    "description": "Rewards: filter"
+  },
+  "rewardsFilterAll": "All",
+  "@rewardsFilterAll": {
+    "description": "Rewards: filter all"
+  },
+  "rewardsEmptyShop": "Nothing is for sale right now. Check back soon.",
+  "@rewardsEmptyShop": {
+    "description": "Rewards: empty shop"
+  },
+  "rewardsLimited": "Limited",
+  "@rewardsLimited": {
+    "description": "Rewards: limited"
+  },
+  "rewardsDlgAsk": "Spend {cost} points on {name}?",
+  "@rewardsDlgAsk": {
+    "description": "Rewards: dlg ask",
+    "placeholders": {
+      "cost": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardsDlgPrice": "Price",
+  "@rewardsDlgPrice": {
+    "description": "Rewards: dlg price"
+  },
+  "rewardsDlgBalance": "Your balance",
+  "@rewardsDlgBalance": {
+    "description": "Rewards: dlg balance"
+  },
+  "rewardsDlgAfter": "Balance afterwards",
+  "@rewardsDlgAfter": {
+    "description": "Rewards: dlg after"
+  },
+  "rewardsDlgWhere": "Works on",
+  "@rewardsDlgWhere": {
+    "description": "Rewards: dlg where"
+  },
+  "rewardsDlgShort": "You need {n} more points.",
+  "@rewardsDlgShort": {
+    "description": "Rewards: dlg short",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsDlgLimited": "This item is limited. It may leave the Shop.",
+  "@rewardsDlgLimited": {
+    "description": "Rewards: dlg limited"
+  },
+  "rewardsDlgCancel": "Cancel",
+  "@rewardsDlgCancel": {
+    "description": "Rewards: dlg cancel"
+  },
+  "rewardsDlgClose": "Close",
+  "@rewardsDlgClose": {
+    "description": "Rewards: dlg close"
+  },
+  "rewardsDlgConfirm": "Redeem for {n} points",
+  "@rewardsDlgConfirm": {
+    "description": "Rewards: dlg confirm",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsDlgWorking": "Working...",
+  "@rewardsDlgWorking": {
+    "description": "Rewards: dlg working"
+  },
+  "rewardsCollectionSub": "Everything you own. Equip a badge or an icon to put it on your profile.",
+  "@rewardsCollectionSub": {
+    "description": "Rewards: collection sub"
+  },
+  "rewardsEmptyInventory": "You do not own anything yet. Finish missions or visit the Shop to get your first item.",
+  "@rewardsEmptyInventory": {
+    "description": "Rewards: empty inventory"
+  },
+  "rewardsEquip": "Equip",
+  "@rewardsEquip": {
+    "description": "Rewards: equip"
+  },
+  "rewardsUnequip": "Unequip",
+  "@rewardsUnequip": {
+    "description": "Rewards: unequip"
+  },
+  "rewardsEquipped": "Equipped",
+  "@rewardsEquipped": {
+    "description": "Rewards: equipped"
+  },
+  "rewardsSettings": "Settings",
+  "@rewardsSettings": {
+    "description": "Rewards: settings"
+  },
+  "rewardsSettingsSub": "Choose what other people can see, and whether you earn points.",
+  "@rewardsSettingsSub": {
+    "description": "Rewards: settings sub"
+  },
+  "rewardsShowcase": "Show my badge, icon and title on my public profile",
+  "@rewardsShowcase": {
+    "description": "Rewards: showcase"
+  },
+  "rewardsShowcaseHint": "Off by default. People who open your profile see what you have equipped.",
+  "@rewardsShowcaseHint": {
+    "description": "Rewards: showcase hint"
+  },
+  "rewardsPause": "Pause earning points",
+  "@rewardsPause": {
+    "description": "Rewards: pause"
+  },
+  "rewardsPauseHint": "While paused you earn no points and your showcase is hidden. Your balance and items stay.",
+  "@rewardsPauseHint": {
+    "description": "Rewards: pause hint"
+  },
+  "rewardsSave": "Save",
+  "@rewardsSave": {
+    "description": "Rewards: save"
+  },
+  "rewardsLedger": "Recent points",
+  "@rewardsLedger": {
+    "description": "Rewards: ledger"
+  },
+  "rewardsLedgerEmpty": "No points yet. What you earn and spend shows up here.",
+  "@rewardsLedgerEmpty": {
+    "description": "Rewards: ledger empty"
+  },
+  "rewardsComingSoon": "Coming soon",
+  "@rewardsComingSoon": {
+    "description": "Rewards: coming soon"
+  },
+  "rewardsMsgClaimedPts": "Claimed {n} points.",
+  "@rewardsMsgClaimedPts": {
+    "description": "Rewards: msg claimed pts",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsMsgRedeemed": "{name} is yours. You can find it in My items.",
+  "@rewardsMsgRedeemed": {
+    "description": "Rewards: msg redeemed",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardsMsgSaved": "Settings saved.",
+  "@rewardsMsgSaved": {
+    "description": "Rewards: msg saved"
+  },
+  "rewardsMsgEquipped": "{name} is equipped.",
+  "@rewardsMsgEquipped": {
+    "description": "Rewards: msg equipped",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardsMsgUnequipped": "Unequipped.",
+  "@rewardsMsgUnequipped": {
+    "description": "Rewards: msg unequipped"
+  },
+  "rewardsErrPoints": "You do not have enough points for that yet.",
+  "@rewardsErrPoints": {
+    "description": "Rewards: err points"
+  },
+  "rewardsErrOwned": "You already have that, or it is no longer for sale.",
+  "@rewardsErrOwned": {
+    "description": "Rewards: err owned"
+  },
+  "rewardsErrFrozen": "Rewards are frozen for this account.",
+  "@rewardsErrFrozen": {
+    "description": "Rewards: err frozen"
+  },
+  "rewardsErrFailed": "That did not work. Try again in a moment.",
+  "@rewardsErrFailed": {
+    "description": "Rewards: err failed"
   }
 }

@@ -7,6 +7,7 @@ import 'crash_reports.dart';
 import 'l10n.dart';
 import 'pakka_page.dart';
 import 'parental_controls_page.dart';
+import 'rewards_cards.dart';
 import 'theme.dart';
 import 'two_factor_page.dart';
 import 'widgets.dart';
@@ -485,14 +486,70 @@ class _AccountPageState extends State<AccountPage> {
 /// The website's profile card: the avatar and name on a flat tile, and the
 /// friend code in a well
 /// with its copy button — the code exists to be handed to someone else.
-class _ProfileCard extends StatelessWidget {
+class _ProfileCard extends StatefulWidget {
   const _ProfileCard({super.key, required this.api, required this.me, required this.onTap});
   final OpenPakApi api;
   final Account me;
   final VoidCallback onTap;
 
   @override
+  State<_ProfileCard> createState() => _ProfileCardState();
+}
+
+class _ProfileCardState extends State<_ProfileCard> {
+  /// The equipped badge and profile icon (site paths), from the Rewards call.
+  /// Loaded after the first frame and never reported: a deployment without
+  /// Rewards, a slow answer or a failure just leaves the avatar as it was.
+  String _badge = '', _icon = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEquipped();
+  }
+
+  Future<void> _loadEquipped() async {
+    try {
+      final v = await widget.api.rewards();
+      if (!mounted) return;
+      final badge = v.badge?.img ?? v.slot('badge')?.img ?? '';
+      final icon = v.slot('profile_icon')?.img ?? '';
+      if (badge != _badge || icon != _icon) {
+        setState(() {
+          _badge = badge;
+          _icon = icon;
+        });
+      }
+    } catch (_) {}
+  }
+
+  /// The avatar, with the equipped icon and badge as small round marks on it.
+  Widget _avatar(BuildContext context) {
+    final t = tokensOf(context);
+    Widget mark(String path) => DecoratedBox(
+      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: t.raised, width: 2)),
+      child: RewardsImage(api: widget.api, path: path, width: 26, circle: true),
+    );
+    final avatar = AccountAvatar(api: widget.api, account: widget.me, size: 64);
+    if (_badge.isEmpty && _icon.isEmpty) return avatar;
+    return SizedBox(
+      width: 64,
+      height: 64,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          avatar,
+          if (_icon.isNotEmpty) Positioned(left: -4, bottom: -4, child: mark(_icon)),
+          if (_badge.isNotEmpty) Positioned(right: -4, bottom: -4, child: mark(_badge)),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final me = widget.me;
+    final onTap = widget.onTap;
     final t = tokensOf(context);
     final l = context.l10n;
     return DecoratedBox(
@@ -518,7 +575,7 @@ class _ProfileCard extends StatelessWidget {
                     // name on a flat tile, the cover being a gradient it dropped.
                     Row(
                       children: [
-                        AccountAvatar(api: api, account: me, size: 64),
+                        _avatar(context),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(

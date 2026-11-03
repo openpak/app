@@ -81,6 +81,10 @@ String apiErrorText(AppLocalizations l, ApiException e) {
     'wfc_unavailable' => l.errorWfcUnavailable,
     'wrong_code' => l.errorWrongCode,
     'wrong_password' => l.errorWrongPassword,
+    'not_enough_points' => l.rewardsErrPoints,
+    'already_owned' => l.rewardsErrOwned,
+    'rewards_frozen' => l.rewardsErrFrozen,
+    'rewards_unavailable' => l.rewardsUnavailable,
     _ => null,
   };
   if (byCode != null) return byCode;

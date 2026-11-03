@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'api.dart';
 import 'crash_reports.dart';
 import 'l10n.dart';
+import 'rewards_theme.dart';
 import 'shell.dart';
-import 'theme.dart';
 import 'updater.dart';
 import 'session.dart';
 import 'sign_in_page.dart';
@@ -37,6 +39,7 @@ class _OpenPakAppState extends State<OpenPakApp> {
   final _api = OpenPakApi(baseUrl: baseUrl);
   final _navigator = GlobalKey<NavigatorState>();
   final _updates = UpdateChecker();
+  late final _themes = RewardsThemeController(_api, navigatorKey: _navigator);
   bool _restoring = true;
   bool _offering = false;
 
@@ -48,6 +51,7 @@ class _OpenPakAppState extends State<OpenPakApp> {
     // sign-in form instead of every tab failing to load forever.
     _api.onUnauthorized = () {
       _session.clear();
+      _themes.clear();
       if (mounted) setState(() {});
     };
     // A report saved while the app runs is offered right away; one saved
@@ -77,6 +81,8 @@ class _OpenPakAppState extends State<OpenPakApp> {
   Future<void> _restore() async {
     _api.token = await _session.read();
     if (mounted) setState(() => _restoring = false);
+    // The equipped theme arrives when it arrives; the first frame never waits.
+    if (_api.token != null) unawaited(_themes.load());
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _offerCrashReports();
       await _offerUpdate();
@@ -97,36 +103,46 @@ class _OpenPakAppState extends State<OpenPakApp> {
   Future<void> _onSignedIn(String token) async {
     await _session.write(token);
     setState(() {});
+    unawaited(_themes.load());
   }
 
   Future<void> _onSignedOut() async {
     await _api.signOut();
     await _session.clear();
+    _themes.clear();
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: _navigator,
-      title: 'OpenPak',
-      // The website's tokens, so the two are visibly one product.
-      theme: openPakLight(),
-      darkTheme: openPakDark(),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      // The language the app settled on goes with every call, so the account
-      // e-mails the website sends read in it too.
-      builder: (context, child) {
-        _api.language = Localizations.localeOf(context).toLanguageTag();
-        crashReporter.locale = _api.language;
-        return child!;
-      },
-      home: _restoring
-          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-          : _api.token == null
-          ? SignInPage(api: _api, onSignedIn: _onSignedIn)
-          : Shell(api: _api, onSignedOut: _onSignedOut),
+    return RewardsThemeScope(
+      controller: _themes,
+      child: ListenableBuilder(
+        listenable: _themes,
+        builder: (context, _) => MaterialApp(
+          navigatorKey: _navigator,
+          title: 'OpenPak',
+          // The website's tokens, so the two are visibly one product; an
+          // equipped (or previewed) Rewards theme re-colours all of it.
+          theme: _themes.light,
+          darkTheme: _themes.dark,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          // The language the app settled on goes with every call, so the account
+          // e-mails the website sends read in it too.
+          builder: (context, child) {
+            _api.language = Localizations.localeOf(context).toLanguageTag();
+            crashReporter.locale = _api.language;
+            // The preview bar lives here so it is on every page, pushed ones too.
+            return ThemePreviewHost(controller: _themes, child: child!);
+          },
+          home: _restoring
+              ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+              : _api.token == null
+              ? SignInPage(api: _api, onSignedIn: _onSignedIn)
+              : Shell(api: _api, onSignedOut: _onSignedOut),
+        ),
+      ),
     );
   }
 }

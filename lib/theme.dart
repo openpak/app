@@ -334,7 +334,106 @@ ThemeData _base(Brightness b, Color accent, Color paper, Color ink, Tokens t) {
   );
 }
 
-ThemeData openPakLight() =>
-    _base(Brightness.light, _accentLight, _paperLight, _inkLight, Tokens.light);
-ThemeData openPakDark() =>
-    _base(Brightness.dark, _accentDark, _paperDark, _inkDark, Tokens.dark);
+/// The tokens a Rewards theme may set (openpak-theme/1), named like the
+/// website's custom properties. The selection cursor is not one: it stays.
+const themeTokenNames = {
+  'paper', 'paper-2', 'raised', 'sunk', 'ink', 'ink-2', 'muted', 'faint', 'line', 'line-2',
+  'accent', 'accent-2', 'accent-weak', 'accent-line', 'on-accent',
+  'ok', 'ok-weak', 'ok-line', 'bad', 'bad-weak', 'bad-line', 'warn', 'warn-weak', 'warn-line',
+};
+
+/// A theme must carry these in both modes to be used at all (as on the site).
+const themeRequiredTokens = ['paper', 'ink', 'accent', 'on-accent'];
+
+// The same strict grammar the website checks: hex (#rgb #rgba #rrggbb
+// #rrggbbaa) or rgb()/rgba() with comma-separated numbers, nothing else.
+final _hexColour = RegExp(r'^#([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$', caseSensitive: false);
+const _byte = r'(25[0-5]|2[0-4]\d|1?\d?\d)';
+final _rgbColour = RegExp(
+  r'^rgba?\(\s*' + _byte + r'\s*,\s*' + _byte + r'\s*,\s*' + _byte + r'\s*(?:,\s*(0|1|0?\.\d{1,4}|1\.0{1,4})\s*)?\)$',
+  caseSensitive: false,
+);
+
+/// A colour from a theme token, or null for anything that is not a strict
+/// colour. Hex alpha is last (CSS), not first (Flutter).
+Color? parseThemeColor(String? raw) {
+  final v = raw?.trim();
+  if (v == null || v.isEmpty || v.length > 40) return null;
+  if (_hexColour.hasMatch(v)) {
+    var h = v.substring(1);
+    if (h.length <= 4) h = h.split('').map((c) => '$c$c').join();
+    final n = int.parse(h, radix: 16);
+    return h.length == 6 ? Color(0xFF000000 | n) : Color(((n & 0xFF) << 24) | (n >> 8));
+  }
+  final m = _rgbColour.firstMatch(v);
+  if (m == null) return null;
+  final a = m.group(4) == null ? 1.0 : double.parse(m.group(4)!);
+  return Color.fromRGBO(int.parse(m.group(1)!), int.parse(m.group(2)!), int.parse(m.group(3)!), a);
+}
+
+/// Only the known tokens whose value is a strict colour.
+Map<String, Color> validThemeTokens(Map<String, String>? raw) => {
+  if (raw != null)
+    for (final e in raw.entries)
+      if (themeTokenNames.contains(e.key))
+        if (parseThemeColor(e.value) case final c?) e.key: c,
+};
+
+/// Whether a theme's two modes both carry the required tokens as valid
+/// colours; anything else is shown as the default look.
+bool themeUsable(Map<String, String> light, Map<String, String> dark) {
+  final l = validThemeTokens(light), d = validThemeTokens(dark);
+  return themeRequiredTokens.every((k) => l.containsKey(k) && d.containsKey(k));
+}
+
+/// Tokens for a mode: the theme's valid values, the default for every token
+/// it leaves out or gets wrong. The selection cursor is always the default.
+Tokens tokensFromTheme(Brightness b, Map<String, String>? raw) {
+  final d = b == Brightness.dark ? Tokens.dark : Tokens.light;
+  final c = validThemeTokens(raw);
+  return Tokens(
+    paper2: c['paper-2'] ?? d.paper2,
+    raised: c['raised'] ?? d.raised,
+    sunk: c['sunk'] ?? d.sunk,
+    ink2: c['ink-2'] ?? d.ink2,
+    muted: c['muted'] ?? d.muted,
+    faint: c['faint'] ?? d.faint,
+    line: c['line'] ?? d.line,
+    line2: c['line-2'] ?? d.line2,
+    cardLine: b == Brightness.dark ? d.cardLine : (c['line'] ?? d.cardLine),
+    cursor: d.cursor,
+    cursor2: d.cursor2,
+    accent2: c['accent-2'] ?? d.accent2,
+    onAccent: c['on-accent'] ?? d.onAccent,
+    accentWeak: c['accent-weak'] ?? d.accentWeak,
+    accentLine: c['accent-line'] ?? d.accentLine,
+    ok: c['ok'] ?? d.ok,
+    okWeak: c['ok-weak'] ?? d.okWeak,
+    okLine: c['ok-line'] ?? d.okLine,
+    warn: c['warn'] ?? d.warn,
+    warnWeak: c['warn-weak'] ?? d.warnWeak,
+    warnLine: c['warn-line'] ?? d.warnLine,
+    bad: c['bad'] ?? d.bad,
+    badWeak: c['bad-weak'] ?? d.badWeak,
+    badLine: c['bad-line'] ?? d.badLine,
+    shadow: d.shadow,
+    shadowRaised: d.shadowRaised,
+  );
+}
+
+/// The app's ThemeData for a mode, optionally re-coloured by a Rewards
+/// theme's tokens (see [tokensFromTheme]). No tokens: the default look.
+ThemeData openPakTheme(Brightness b, [Map<String, String>? raw]) {
+  final dark = b == Brightness.dark;
+  final c = validThemeTokens(raw);
+  return _base(
+    b,
+    c['accent'] ?? (dark ? _accentDark : _accentLight),
+    c['paper'] ?? (dark ? _paperDark : _paperLight),
+    c['ink'] ?? (dark ? _inkDark : _inkLight),
+    tokensFromTheme(b, raw),
+  );
+}
+
+ThemeData openPakLight([Map<String, String>? tokens]) => openPakTheme(Brightness.light, tokens);
+ThemeData openPakDark([Map<String, String>? tokens]) => openPakTheme(Brightness.dark, tokens);
