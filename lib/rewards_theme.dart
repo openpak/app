@@ -147,6 +147,8 @@ class ThemePreviewHost extends StatelessWidget {
       // One structure with or without the bar, so the Navigator below is
       // never re-parented when a preview starts or stops.
       return Column(
+        // Stretch: the bar spans the screen, not just its own content.
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // The bar takes the bottom inset, so the page above must not.
           Expanded(child: MediaQuery.removePadding(context: context, removeBottom: p != null, child: child)),

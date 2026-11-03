@@ -150,22 +150,26 @@ class _RewardsPageState extends State<RewardsPage> {
       body: RefreshIndicator(
         edgeOffset: glassTop(context),
         onRefresh: _load,
-        child: _loading && v == null
-            ? const Center(child: CircularProgressIndicator())
-            : v == null
-            ? _failure(l)
-            : _body(context, l, v),
+        // A Builder: below the Scaffold, whose MediaQuery counts the glass
+        // bar in the top padding; this page's own context sees the status bar only.
+        child: Builder(
+          builder: (context) => _loading && v == null
+              ? const Center(child: CircularProgressIndicator())
+              : v == null
+              ? _failure(context, l)
+              : _body(context, l, v),
+        ),
       ),
     );
   }
 
-  Widget _failure(AppLocalizations l) {
+  Widget _failure(BuildContext context, AppLocalizations l) {
     final e = _error;
     final off = e is ApiException && (e.code == 'rewards_unavailable' || e.statusCode == 503);
     if (!off) return LoadFailure(e);
     final t = tokensOf(context);
     return ListView(
-      padding: pagePadding(context, top: 72),
+      padding: pagePadding(context, top: 24),
       children: [
         Text(l.rewardsUnavailable, textAlign: TextAlign.center, style: const TextStyle(fontFamily: uiFont, fontWeight: FontWeight.w800, fontSize: 17)),
         const SizedBox(height: 8),
@@ -332,7 +336,12 @@ class _RewardsPageState extends State<RewardsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value, style: const TextStyle(fontFamily: uiFont, fontWeight: FontWeight.w800, fontSize: 17)),
+              // Scaled down, not wrapped: a duration such as "42 Std. 15 Min." stays one line.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(value, maxLines: 1, style: const TextStyle(fontFamily: uiFont, fontWeight: FontWeight.w800, fontSize: 17)),
+              ),
               Text(label, style: TextStyle(color: t.muted, fontSize: 12.5)),
             ],
           ),

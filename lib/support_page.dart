@@ -187,6 +187,7 @@ class _SupportPageState extends State<SupportPage> {
                   for (final tk in list.tickets)
                     StateRow(
                       name: tk.subject,
+                      stacked: true,
                       pill: _statusLabel(l, tk.status),
                       state: _statusState(tk.status),
                       onTap: () => _openTicket(tk),

@@ -248,7 +248,8 @@ class EquipButton extends StatelessWidget {
         ? OutlinedButton.icon(
             onPressed: disabled ? null : onPressed,
             icon: const Icon(Icons.check, size: 18),
-            label: Text(l.rewardsEquipped),
+            // Scaled down rather than broken mid-word in a narrow card ("Ausgerüste-t").
+            label: FittedBox(fit: BoxFit.scaleDown, child: Text(l.rewardsEquipped, maxLines: 1, softWrap: false)),
           )
         : FilledButton(onPressed: disabled ? null : onPressed, child: Text(l.rewardsEquip));
   }

@@ -556,8 +556,12 @@ class StateRow extends StatefulWidget {
     this.trailing,
     this.onTap,
     this.expandedChild,
+    this.stacked = false,
   });
 
+  /// Name above pill (two lines for a long name) even without actions: for
+  /// rows whose name and status are both long words, as support tickets in German.
+  final bool stacked;
   final String name;
   final String pill;
   final RowState state;
@@ -593,6 +597,7 @@ class _StateRowState extends State<StateRow> {
     final name = Text(
       widget.name,
       style: const TextStyle(fontFamily: uiFont, fontWeight: FontWeight.w700),
+      maxLines: widget.stacked ? 2 : null,
       overflow: TextOverflow.ellipsis,
     );
     final pill = _Pill(
@@ -620,7 +625,7 @@ class _StateRowState extends State<StateRow> {
               Row(
                 children: [
                   if (widget.leading != null) ...[widget.leading!, const SizedBox(width: 12)],
-                  if (!hasActions) ...[
+                  if (!hasActions && !widget.stacked) ...[
                     Expanded(child: name),
                     const SizedBox(width: 10),
                     // Align, so the pill sits at the row's end (the site's
