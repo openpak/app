@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'api.dart';
 import 'l10n.dart';
 import 'theme.dart';
+import 'title_detail_page.dart';
 import 'widgets.dart';
 
 /// What works, what is asked for, and what to build next. Titles and network
@@ -26,6 +27,7 @@ class TitlesPageState extends State<TitlesPage> {
   late Future<List<CatalogItem>> _data;
   late Future<NetworkStatus> _online;
   late Future<List<NewsArticle>> _news;
+  late Future<List<CompanionTitle>> _companion;
 
   // View controls, all applied client-side over the one fetched list — the
   // same as the web page, and it keeps a filter change from hitting the server.
@@ -44,6 +46,8 @@ class TitlesPageState extends State<TitlesPage> {
     _data = widget.api.requests();
     _online = widget.api.status();
     _news = widget.api.news();
+    // Which games have rankings, stats or trades; without it a game just has no tabs.
+    _companion = widget.api.companionTitles().catchError((_) => <CompanionTitle>[]);
   });
 
   /// A request is optimistic: flip the row before the call, then let the
@@ -121,6 +125,7 @@ class TitlesPageState extends State<TitlesPage> {
                         showRequest: false,
                         signedIn: signedIn,
                         onRequest: () {},
+                        onTap: i.kind == 'title' ? () => _openTitle(i) : null,
                       )),
                 if (isTitle && requestable.isNotEmpty) ...[
                   const SizedBox(height: 20),
@@ -136,6 +141,17 @@ class TitlesPageState extends State<TitlesPage> {
             );
           },
         ),
+      ),
+    );
+  }
+
+  /// A game's page: status, its Open site and, when it has them, rankings, stats and trades.
+  Future<void> _openTitle(CatalogItem item) async {
+    final all = await _companion;
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => TitleDetailPage(api: widget.api, item: item, companion: companionFor(all, item)),
       ),
     );
   }
@@ -458,11 +474,13 @@ class _CatalogRow extends StatelessWidget {
     required this.showRequest,
     required this.signedIn,
     required this.onRequest,
+    this.onTap,
   });
   final CatalogItem item;
   final bool showRequest;
   final bool signedIn;
   final VoidCallback onRequest;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -477,7 +495,10 @@ class _CatalogRow extends StatelessWidget {
         border: Border.all(color: t.cardLine),
         boxShadow: t.shadow,
       ),
-      child: Padding(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(radiusCard),
+        child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
@@ -509,6 +530,7 @@ class _CatalogRow extends StatelessWidget {
               _StatusPill(label: statusLabel(context.l10n, item.status), color: pillInk, border: pillLine, bg: pillBg),
           ],
         ),
+      ),
       ),
     );
   }
