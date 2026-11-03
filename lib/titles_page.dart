@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'api.dart';
 import 'l10n.dart';
 import 'theme.dart';
+import 'title_art.dart';
 import 'title_detail_page.dart';
 import 'widgets.dart';
 
@@ -98,45 +99,79 @@ class TitlesPageState extends State<TitlesPage> {
             final served = all.where((i) => !(i.kind == 'title' && notStarted(i.status))).toList();
             final requestable = all.where((i) => i.kind == 'title' && notStarted(i.status)).toList()..sort(catalogOrder);
             final shown = filterCatalog(served, kind: _kind, search: _search, console: _console, status: _status);
-            return ListView(
-              padding: pagePadding(context, top: 12),
-              children: [
-                _latestNews(),
-                _onlineNow(),
-                _segmented(),
-                const SizedBox(height: 12),
-                _controls(served),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 8),
-                  child: Text(
-                    l.savesShowing(shown.length, served.where((i) => i.kind == _kind).length),
-                    style: TextStyle(color: tokensOf(context).muted, fontSize: 13),
-                  ),
+            final pad = pagePadding(context, top: 12);
+            final head = <Widget>[
+              _latestNews(),
+              _onlineNow(),
+              _segmented(),
+              const SizedBox(height: 12),
+              _controls(served),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 8),
+                child: Text(
+                  l.savesShowing(shown.length, served.where((i) => i.kind == _kind).length),
+                  style: TextStyle(color: tokensOf(context).muted, fontSize: 13),
                 ),
-                if (shown.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 48),
-                    child: Text(l.titlesNothingMatches, textAlign: TextAlign.center, style: TextStyle(color: tokensOf(context).muted)),
+              ),
+              if (shown.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 48),
+                  child: Text(l.titlesNothingMatches, textAlign: TextAlign.center, style: TextStyle(color: tokensOf(context).muted)),
+                ),
+            ];
+            final foot = <Widget>[
+              if (isTitle && requestable.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                FilledButton.icon(
+                  onPressed: () => _openRequestSheet(requestable, signedIn),
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: Text(l.titlesRequestGame),
+                ),
+                const SizedBox(height: 6),
+                Text(l.titlesRequestHint, style: TextStyle(fontSize: 12, color: tokensOf(context).muted)),
+              ],
+            ];
+            // Games are tiles, as on the website's titles grid; features stay rows.
+            return CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: pad.copyWith(bottom: 0),
+                  sliver: SliverList(delegate: SliverChildListDelegate(head)),
+                ),
+                if (isTitle)
+                  SliverPadding(
+                    padding: pad.copyWith(top: 0, bottom: 0),
+                    sliver: SliverGrid.builder(
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 190,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        mainAxisExtent: 238,
+                      ),
+                      itemCount: shown.length,
+                      itemBuilder: (_, n) => TitleTile(api: widget.api, item: shown[n], onTap: () => _openTitle(shown[n])),
+                    ),
                   )
                 else
-                  ...shown.map((i) => _CatalogRow(
-                        item: i,
+                  SliverPadding(
+                    padding: pad.copyWith(top: 0, bottom: 0),
+                    sliver: SliverList.builder(
+                      itemCount: shown.length,
+                      itemBuilder: (_, n) => _CatalogRow(
+                        item: shown[n],
                         showRequest: false,
                         signedIn: signedIn,
                         onRequest: () {},
-                        onTap: i.kind == 'title' ? () => _openTitle(i) : null,
-                      )),
-                if (isTitle && requestable.isNotEmpty) ...[
-                  const SizedBox(height: 20),
-                  FilledButton.icon(
-                    onPressed: () => _openRequestSheet(requestable, signedIn),
-                    icon: const Icon(Icons.add_circle_outline),
-                    label: Text(l.titlesRequestGame),
+                        onTap: null,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(l.titlesRequestHint, style: TextStyle(fontSize: 12, color: tokensOf(context).muted)),
-                ],
+                SliverPadding(
+                  padding: pad.copyWith(top: 0),
+                  sliver: SliverList(delegate: SliverChildListDelegate(foot)),
+                ),
               ],
             );
           },

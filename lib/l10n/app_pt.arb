@@ -796,5 +796,8 @@
   "countryKr": "Coreia do Sul",
   "errorInvalidApplication": "A candidatura não foi aceita.",
   "accountThisDevice": "Este dispositivo",
-  "sitesVerseCommunity": "Comunidade OpenVerse"
+  "sitesVerseCommunity": "Comunidade OpenVerse",
+  "rewardsGlanceReady": "{n, plural, =1{1 recompensa pronta para resgatar} other{{n} recompensas prontas para resgatar}}",
+  "rewardsGlanceNext": "Próximo: {name}",
+  "rewardsGlanceBalance": "{n} Pak Points"
 }

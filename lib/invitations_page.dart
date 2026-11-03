@@ -85,7 +85,11 @@ class _InvitationsPageState extends State<InvitationsPage> {
                     name: l.invitationsFrom(inv.from),
                     pill: inv.expired ? l.invitationsExpired : names[inv.titleId.toUpperCase()] ?? inv.titleId,
                     state: inv.expired ? RowState.idle : RowState.ok,
-                    leading: Avatar(name: inv.from, dim: inv.expired),
+                    leading: Avatar(
+                      name: inv.from,
+                      dim: inv.expired,
+                      avatarUrl: inv.fromAvatarUrl != null ? widget.api.absolute(inv.fromAvatarUrl!) : null,
+                    ),
                     trailing: TextButton(
                       onPressed: () => _decline(inv),
                       child: Text(l.commonDecline),

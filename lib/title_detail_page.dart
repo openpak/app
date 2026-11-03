@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'api.dart';
 import 'open_url.dart';
+import 'title_art.dart';
 import 'companion_widgets.dart';
 import 'l10n.dart';
 import 'open_sites.dart';
@@ -85,6 +86,8 @@ class _TitleDetailPageState extends State<TitleDetailPage> {
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
       child: Row(
         children: [
+          SizedBox(width: 72, height: 72, child: TitleArt(api: widget.api, item: item)),
+          const SizedBox(width: 14),
           if (item.console.isNotEmpty) ...[
             SvgPicture.asset(
               'assets/consoles/${consoleAsset(item.console, Theme.of(context).brightness)}.svg',

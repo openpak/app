@@ -70,7 +70,10 @@ class _ConversationsPageState extends State<ConversationsPage> {
                       for (final (i, c) in convs.indexed) ...[
                         if (i > 0) const Divider(height: 1),
                         ListTile(
-                          leading: Avatar(name: names[c.peer] ?? c.peer),
+                          leading: Avatar(
+                            name: names[c.peer] ?? c.peer,
+                            avatarUrl: c.avatarUrl != null ? widget.api.absolute(c.avatarUrl!) : null,
+                          ),
                           title: Text(names[c.peer] ?? c.peer),
                           subtitle: Text(
                             c.newest.from == c.peer ? chatLine(l, c.newest) : l.chatFromYou(chatLine(l, c.newest)),

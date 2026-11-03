@@ -796,5 +796,8 @@
   "countryKr": "Corea del Sur",
   "errorInvalidApplication": "La solicitud no fue aceptada.",
   "accountThisDevice": "Este dispositivo",
-  "sitesVerseCommunity": "Comunidad de OpenVerse"
+  "sitesVerseCommunity": "Comunidad de OpenVerse",
+  "rewardsGlanceReady": "{n, plural, =1{1 recompensa lista para canjear} other{{n} recompensas listas para canjear}}",
+  "rewardsGlanceNext": "Siguiente: {name}",
+  "rewardsGlanceBalance": "{n} Pak Points"
 }

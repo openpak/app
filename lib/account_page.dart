@@ -7,6 +7,7 @@ import 'crash_reports.dart';
 import 'discord_row.dart';
 import 'l10n.dart';
 import 'pakka_page.dart';
+import 'rewards_glance.dart';
 import 'parental_controls_page.dart';
 import 'rewards_cards.dart';
 import 'theme.dart';
@@ -15,8 +16,11 @@ import 'widgets.dart';
 
 /// Who you are, what is linked, how you sign in, and where you are signed in.
 class AccountPage extends StatefulWidget {
-  const AccountPage({super.key, required this.api, required this.onSignedOut});
+  const AccountPage({super.key, required this.api, required this.onSignedOut, this.glance});
   final OpenPakApi api;
+
+  /// The Rewards summary shared with the tab bar; the page makes its own when not given one.
+  final RewardsGlance? glance;
   final Future<void> Function() onSignedOut;
 
   @override
@@ -25,6 +29,7 @@ class AccountPage extends StatefulWidget {
 
 class _AccountPageState extends State<AccountPage> {
   late Future<_AccountData> _data;
+  late final RewardsGlance _glance = widget.glance ?? RewardsGlance();
 
   // One key per section, so the section nav can scroll to it.
   final _overview = GlobalKey(), _requests = GlobalKey(), _linked = GlobalKey();
@@ -37,6 +42,7 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   void _reload() => setState(() {
+    _glance.load(widget.api);
     // Friends and requests only feed the stat cards and the requests card:
     // unreachable, the page shows zeros rather than failing.
     _data = Future.wait([
@@ -93,6 +99,7 @@ class _AccountPageState extends State<AccountPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _ProfileCard(key: _overview, api: widget.api, me: me, onTap: () => _openDetails(me)),
+                RewardsSummaryCard(api: widget.api, glance: _glance),
                 const SizedBox(height: 12),
                 // IntrinsicHeight: the three cards match, sub line or not.
                 IntrinsicHeight(

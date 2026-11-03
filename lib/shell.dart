@@ -5,6 +5,7 @@ import 'api.dart';
 import 'friends_page.dart';
 import 'invitations_page.dart';
 import 'l10n.dart';
+import 'rewards_glance.dart';
 import 'saves_page.dart';
 import 'theme.dart';
 import 'titles_page.dart';
@@ -23,13 +24,36 @@ class Shell extends StatefulWidget {
 
 class _ShellState extends State<Shell> {
   int _index = 0;
+  final _glance = RewardsGlance();
   late final List<Widget> _pages = [
     FriendsPage(api: widget.api),
     InvitationsPage(api: widget.api),
     TitlesPage(api: widget.api),
     SavesPage(api: widget.api),
-    AccountPage(api: widget.api, onSignedOut: widget.onSignedOut),
+    AccountPage(api: widget.api, onSignedOut: widget.onSignedOut, glance: _glance),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _glance.load(widget.api); // the Account tab's count is known from the first screen, not after a visit
+  }
+
+  @override
+  void dispose() {
+    _glance.dispose();
+    super.dispose();
+  }
+
+  /// The Account tab's count of rewards ready to claim.
+  Widget _countBadge(Widget icon) => ListenableBuilder(
+    listenable: _glance,
+    builder: (_, __) => Badge(
+      isLabelVisible: _glance.ready > 0,
+      label: Text('${_glance.ready}'),
+      child: icon,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -69,8 +93,8 @@ class _ShellState extends State<Shell> {
             label: l.navSaves,
           ),
           NavigationDestination(
-            icon: NavWell(Icons.person_outline),
-            selectedIcon: NavWell(Icons.person, selected: true),
+            icon: _countBadge(const NavWell(Icons.person_outline)),
+            selectedIcon: _countBadge(const NavWell(Icons.person, selected: true)),
             label: l.navAccount,
           ),
         ],

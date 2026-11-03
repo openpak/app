@@ -173,7 +173,11 @@ class _VoicePageState extends State<VoicePage> {
                     for (final m in room.members)
                       ListTile(
                         dense: true,
-                        leading: Avatar(name: m.displayName, online: m.inVoice),
+                        leading: Avatar(
+                          name: m.displayName,
+                          online: m.inVoice,
+                          avatarUrl: m.avatarUrl != null ? widget.api.absolute(m.avatarUrl!) : null,
+                        ),
                         title: Text(m.displayName),
                         subtitle: Text(m.inVoice ? l.voiceInVoice : l.voiceNotInVoice),
                       ),

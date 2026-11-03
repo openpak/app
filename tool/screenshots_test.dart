@@ -21,6 +21,9 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:openpak/account_details_page.dart';
 import 'package:openpak/account_page.dart';
+import 'package:openpak/friends_page.dart';
+import 'package:openpak/shell.dart';
+import 'package:openpak/titles_page.dart';
 import 'package:openpak/activity_page.dart';
 import 'package:openpak/api.dart';
 import 'package:openpak/l10n.dart';
@@ -36,6 +39,7 @@ import 'package:openpak/trophies_page.dart';
 
 final _home = Platform.environment['HOME']!;
 final _out = Platform.environment['SHOTS_OUT'] ?? '$_home/REPOS/Openpak/research/app/parity';
+final _shotsTmp = Platform.environment['SHOTS_TMP'] ?? '$_home/REPOS/Openpak/scratch/parity/shots-tmp';
 final _assets = Platform.environment['SHOTS_ASSETS'] ?? '$_home/REPOS/Openpak/scratch/parity/shots-tmp/assets';
 final _flutterRoot = Platform.environment['FLUTTER_ROOT'] ?? '$_home/development/flutter';
 
@@ -381,18 +385,30 @@ class Fake {
       case '/me/friends':
         return _json({
           'friends': [
-            {'account_id': 'f1', 'display_name': 'Han', 'online': true},
-            {'account_id': 'f2', 'display_name': 'Chewie', 'online': true},
-            {'account_id': 'f3', 'display_name': 'Lando', 'online': false},
+            {'account_id': 'f1', 'display_name': 'Han', 'online': true, 'avatar_url': '/media/avatars/f1/256?v=1'},
+            {'account_id': 'f2', 'display_name': 'Chewie', 'online': true, 'avatar_url': '/media/avatars/f2/256'},
+            {'account_id': 'f3', 'display_name': 'Lando', 'online': false, 'avatar_url': '/media/avatars/f3/256'},
           ],
         });
       case '/me/friends/requests':
         return _json({
           'incoming': [
-            {'account_id': 'r1', 'display_name': 'Rey'},
+            {'account_id': 'r1', 'display_name': 'Rey', 'avatar_url': '/media/avatars/r1/256'},
           ],
           'outgoing': [],
         });
+      case '/me/blocked':
+        return _json({'blocked': [
+          {'account_id': 'bl1', 'display_name': 'Jabba', 'blocked_at': '2026-10-01T10:00:00Z', 'avatar_url': '/media/avatars/bl1/256'},
+        ]});
+      case '/status':
+        return _json({'networks': [{'namespace': 'switch', 'players': 12}, {'namespace': 'wfc', 'players': 4}], 'players_online': 16, 'titles': []});
+      case '/news':
+        return _json({'articles': []});
+      case '/companion/titles':
+        return _json({'titles': []});
+      case '/requests':
+        return _json({'items': jsonDecode(File('$_shotsTmp/titles_sel.json').readAsStringSync())});
       case '/pakka/state':
         return _json({'available': true, 'eligible': true, 'consent': true});
       case '/me/discord':
@@ -516,7 +532,11 @@ Future<void> _settle(WidgetTester tester) async {
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
     await tester.pump(const Duration(milliseconds: 120));
   }
-  await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 10));
+  try {
+    await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 3));
+  } catch (_) {
+    // The live dot pulses forever; frames have been pumped, which is all a picture needs.
+  }
   await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
   await tester.pump(const Duration(milliseconds: 120));
 }
@@ -643,6 +663,11 @@ void main() {
     await tester.drag(page, const Offset(0, -120));
     await _settle(tester);
   });
+  _screen('shell-account-tab', (api, l) => Shell(api: api, onSignedOut: () async {}), full: false, act: (tester, l, fake) async {
+    await _tap(tester, find.text(l.navAccount).last);
+  });
+  _screen('friends-list', (api, l) => FriendsPage(api: api), full: false);
+  _screen('titles-list', (api, l) => TitlesPage(api: api), full: false);
   _screen('account-details', (api, l) => AccountDetailsPage(api: api, account: Account(id: 'a1', displayName: l.t('Leia Organa', 'Leia Organa-Bundesverdienstkreuz'), country: 'DE', birthday: '1990-05-04', handle: 'leia')));
 
   // ---- rewards
@@ -685,7 +710,7 @@ void main() {
   _screen('rankings-board', (api, l) => RankingsPage(api: api), act: (tester, l, fake) => _tap(tester, find.text('Mario Kart Wii')));
   _screen('title-detail', (api, l) => TitleDetailPage(
     api: api,
-    item: CatalogItem(id: '1', kind: 'title', name: 'Mario Kart Wii', console: 'Wii', status: 'live', category: 'Racing', backend: 'wfc', verseUrl: 'https://verse.openpak.org/communities/1', notes: l.t('Online races, rankings and friend rooms.', 'Online-Rennen, Ranglisten und Freundesräume.')),
+    item: CatalogItem(id: '1', kind: 'title', name: 'Mario Kart Wii', console: 'Wii', status: 'live', category: 'Racing', backend: 'wfc', verseUrl: 'https://verse.openpak.org/communities/1', artUrl: '/static/art/titles/wii-mario-kart-wii.jpg', notes: l.t('Online races, rankings and friend rooms.', 'Online-Rennen, Ranglisten und Freundesräume.')),
     companion: CompanionTitle(slug: 'mkw', name: 'Mario Kart Wii', console: 'Wii', features: const ['rankings', 'listings', 'stats']),
   ));
   _screen('title-detail-rankings', (api, l) => TitleDetailPage(

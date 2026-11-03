@@ -80,6 +80,9 @@ void main() {
             ]
           })),
     );
+    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(wrap(api));
     await tester.pumpAndSettle();
     expect(find.text('Outbound'), findsOneWidget);
@@ -196,7 +199,7 @@ void main() {
     await tester.pumpAndSettle();
 
     articles = [];
-    await tester.fling(find.byType(ListView).first, const Offset(0, 400), 1000);
+    await tester.fling(find.byType(Scrollable).first, const Offset(0, 400), 1000);
     await tester.pumpAndSettle();
     expect(find.text('News'), findsNothing);
   });

@@ -159,12 +159,14 @@ class Account {
 /// Someone this account blocked. They cannot send requests, messages or
 /// invitations until unblocked.
 class BlockedAccount {
-  BlockedAccount({required this.accountId, required this.displayName, this.blockedAt});
+  BlockedAccount({required this.accountId, required this.displayName, this.blockedAt, this.avatarUrl});
   final String accountId;
   final String displayName;
+  final String? avatarUrl;
   final DateTime? blockedAt;
 
   factory BlockedAccount.fromJson(Map<String, dynamic> j) => BlockedAccount(
+    avatarUrl: j['avatar_url'] as String?,
     accountId: j['account_id'] as String? ?? '',
     displayName: j['display_name'] as String? ?? '',
     blockedAt: DateTime.tryParse(j['blocked_at'] as String? ?? ''),
@@ -262,8 +264,11 @@ class ChatMessage {
 }
 
 class Conversation {
-  Conversation({required this.peer, required this.newest});
+  Conversation({required this.peer, required this.newest, this.avatarUrl});
   final String peer;
+
+  /// The peer's picture, a site path; null from a server that does not say.
+  final String? avatarUrl;
   final ChatMessage newest;
 }
 
@@ -481,9 +486,11 @@ class Invitation {
     required this.from,
     required this.titleId,
     required this.expiresAt,
+    this.fromAvatarUrl,
   });
   final String id;
   final String from;
+  final String? fromAvatarUrl;
   final String titleId;
   final DateTime expiresAt;
 
@@ -492,6 +499,7 @@ class Invitation {
   factory Invitation.fromJson(Map<String, dynamic> j) => Invitation(
     id: j['invitation_id'] as String? ?? '',
     from: j['from'] as String? ?? '',
+    fromAvatarUrl: j['from_avatar_url'] as String?,
     titleId: j['title_id'] as String? ?? '',
     expiresAt:
         DateTime.tryParse(j['expires_at'] as String? ?? '') ?? DateTime.now(),
@@ -516,6 +524,7 @@ class CatalogItem {
     this.voted = false,
     this.titleId = '',
     this.verseUrl = '',
+    this.artUrl = '',
   });
 
   /// Kept as a String regardless of whether the server emits a JSON number or
@@ -539,6 +548,10 @@ class CatalogItem {
   /// The game's OpenVerse community, as the website's title page links it; empty when it has none.
   final String verseUrl;
 
+  /// The picture the website's titles page draws the game with (a Switch icon or a cover tile), a site
+  /// path; empty when it has none and the console's mark is drawn instead.
+  final String artUrl;
+
   bool get isTitle => kind == 'title';
 
   /// A row after a vote toggle: the count and voted flag change, the rest
@@ -556,6 +569,7 @@ class CatalogItem {
     voted: voted,
     titleId: titleId,
     verseUrl: verseUrl,
+    artUrl: artUrl,
   );
 
   factory CatalogItem.fromJson(Map<String, dynamic> j) => CatalogItem(
@@ -571,6 +585,7 @@ class CatalogItem {
     voted: j['voted'] as bool? ?? false,
     titleId: j['title_id'] as String? ?? '',
     verseUrl: j['verse_url'] as String? ?? '',
+    artUrl: j['art_url'] as String? ?? '',
   );
 }
 
@@ -772,7 +787,8 @@ class StorageConfig {
 
 /// Someone in a voice room: in the game with you, and maybe talking.
 class VoiceMember {
-  VoiceMember({required this.accountId, required this.displayName, this.inVoice = false});
+  VoiceMember({required this.accountId, required this.displayName, this.inVoice = false, this.avatarUrl});
+  final String? avatarUrl;
   final String accountId;
   final String displayName;
 
@@ -783,6 +799,7 @@ class VoiceMember {
     accountId: j['account_id'] as String? ?? '',
     displayName: j['display_name'] as String? ?? '',
     inVoice: j['in_voice'] == true,
+    avatarUrl: j['avatar_url'] as String?,
   );
 }
 
@@ -1391,6 +1408,7 @@ class OpenPakApi {
     final body = await _decode(await _http.get(_uri('/me/chat'), headers: _headers()));
     return ((body['conversations'] as List?) ?? const [])
         .map((e) => Conversation(
+              avatarUrl: e['peer_avatar_url'] as String?,
               peer: (e as Map)['peer'] as String? ?? '',
               newest: ChatMessage.fromJson(e['newest'] as Map<String, dynamic>? ?? const {}),
             ))

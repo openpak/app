@@ -796,5 +796,8 @@
   "countryKr": "Südkorea",
   "errorInvalidApplication": "Die Bewerbung wurde nicht angenommen.",
   "accountThisDevice": "Dieses Gerät",
-  "sitesVerseCommunity": "OpenVerse-Community"
+  "sitesVerseCommunity": "OpenVerse-Community",
+  "rewardsGlanceReady": "{n, plural, =1{1 Belohnung zum Einlösen bereit} other{{n} Belohnungen zum Einlösen bereit}}",
+  "rewardsGlanceNext": "Als Nächstes: {name}",
+  "rewardsGlanceBalance": "{n} Pak Points"
 }

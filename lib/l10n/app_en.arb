@@ -3632,5 +3632,32 @@
   "sitesVerseCommunity": "OpenVerse community",
   "@sitesVerseCommunity": {
     "description": "Button on a game page that opens the game's OpenVerse community."
+  },
+  "rewardsGlanceReady": "{n, plural, =1{1 reward ready to claim} other{{n} rewards ready to claim}}",
+  "@rewardsGlanceReady": {
+    "description": "Account Rewards card: how many rewards can be claimed now.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsGlanceNext": "Next: {name}",
+  "@rewardsGlanceNext": {
+    "description": "Account Rewards card: the mission being worked on.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardsGlanceBalance": "{n} Pak Points",
+  "@rewardsGlanceBalance": {
+    "description": "Account Rewards card: the balance.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   }
 }

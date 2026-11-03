@@ -210,7 +210,11 @@ class FriendsPageState extends State<FriendsPage> {
                     (b) => StateRow(
                       name: b.displayName,
                       pill: b.blockedAt == null ? l.friendsBlocked : l.friendsBlockedSince(shortDate(l, b.blockedAt!)),
-                      leading: Avatar(name: b.displayName, dim: true),
+                      leading: Avatar(
+                        name: b.displayName,
+                        dim: true,
+                        avatarUrl: b.avatarUrl != null ? widget.api.absolute(b.avatarUrl!) : null,
+                      ),
                       trailing: TextButton(
                         onPressed: () => _act(
                           () => widget.api.unblockAccount(b.accountId),

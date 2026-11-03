@@ -11,6 +11,13 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.25.2 — 2026-11-03
+
+- **Profile pictures everywhere.** Friends, requests, blocked, invitation senders, chat conversations and voice-room members show the account's picture (the website API now sends `avatar_url` on all of them).
+- **Game pictures.** Titles are a grid of tiles with the game's art (Switch icon or cover tile, from the website's own rule), the game page shows it in its header, and a game without art shows its console's mark on a quiet tile, never a broken image.
+- **Rewards are easy to find.** A Rewards card sits directly under the profile on Account (balance, how many rewards are ready, or the mission being worked on, with its art) and opens Rewards; the Account tab shows a count badge when rewards are ready to claim.
+- Needs website v0.80.2.
+
 ## v0.25.1 — 2026-11-03
 
 - Linked platforms: Wii U and 3DS console accounts are listed (not unlinkable, as on the website); the unlink action is a short "Unlink" / "Trennen" on every row, so nothing wraps or clips in any language.
