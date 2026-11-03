@@ -11,6 +11,16 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.25.0 — 2026-11-03
+
+- **Parity with openpak.org.** Everything personal lives in the Account area, grouped as cards (Play, Explore, Help and community), so the bottom bar stays at five.
+- **Rewards:** header with balance and today's play points, Missions (cards with art, ladders as tiles, claim), Recent points cards, Shop (unowned items only, "Coming soon" cards, confirm-to-buy), My items (equip), Settings. The equipped theme re-themes the whole app; Preview shows a bar with Buy/Equip/Stop. The equipped badge and profile icon show on the profile card.
+- **Trophies, Play activity and Rankings** (hub and boards). On each game: Overview, Rankings, My stats and Trades tabs, shown only when they have data, and an "Open <site>" button for OpenVerse, OpenKart, OpenSplat and OpenMaker. A Sites page lists them.
+- **Help** tickets (open, thread, reply, picture attachments) and **Run a region node** (requirements, applications, reply, waitlist, application form).
+- **Discord** row in Linked platforms, hidden while the server has no Discord credentials; linking opens the website.
+- Profile motto and bio; South Korea in the country list.
+- Needs website v0.80.0 (`/api/v1/me/rewards`, `/me/discord`, `/me/operator`).
+
 ## v0.24.0 — 2026-11-02
 
 - **Pakka, the OpenPak assistant.** A chat with Pakka, our AI assistant, for setup, connection
