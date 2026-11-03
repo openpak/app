@@ -2472,5 +2472,299 @@
   "hubHelp": "Help and community",
   "@hubHelp": {
     "description": "Account hub group: support and region node."
+  },
+  "companionTabOverview": "Overview",
+  "@companionTabOverview": {
+    "description": "Tab label: a game"
+  },
+  "companionTabRankings": "Rankings",
+  "@companionTabRankings": {
+    "description": "Tab label: a game"
+  },
+  "companionTabStats": "My stats",
+  "@companionTabStats": {
+    "description": "Tab label: the player own stats in a game"
+  },
+  "companionTabListings": "Trades",
+  "@companionTabListings": {
+    "description": "Tab label: trades or listings of a game"
+  },
+  "companionRankingsEmpty": "Nothing has been recorded on this board yet.",
+  "@companionRankingsEmpty": {
+    "description": "Empty board"
+  },
+  "companionRankingsAround": "Around you",
+  "@companionRankingsAround": {
+    "description": "Heading above the signed-in player slice of a board"
+  },
+  "companionRankingsUnavailable": "The rankings are not available right now. Try again in a moment.",
+  "@companionRankingsUnavailable": {
+    "description": "Rankings could not be loaded"
+  },
+  "companionRankingsPrev": "Previous",
+  "@companionRankingsPrev": {
+    "description": "Previous page of a board"
+  },
+  "companionRankingsNext": "Next",
+  "@companionRankingsNext": {
+    "description": "Next page of a board"
+  },
+  "companionRankingsUnranked": "You are not on this board yet.",
+  "@companionRankingsUnranked": {
+    "description": "The player is not on the board"
+  },
+  "companionStatsSignin": "Sign in to see your stats for this game.",
+  "@companionStatsSignin": {
+    "description": "Stats need a sign-in"
+  },
+  "companionStatsUnlinked": "Your account has no identity on this game's network yet. Link your console or sign in from it once, then come back.",
+  "@companionStatsUnlinked": {
+    "description": "Account has no identity on this game network"
+  },
+  "companionStatsEmpty": "Nothing recorded for you yet.",
+  "@companionStatsEmpty": {
+    "description": "No stats recorded"
+  },
+  "companionStatsUnavailable": "Your stats are not available right now. Try again in a moment.",
+  "@companionStatsUnavailable": {
+    "description": "Stats could not be loaded"
+  },
+  "companionListingsEmpty": "Nothing is listed right now.",
+  "@companionListingsEmpty": {
+    "description": "No listings"
+  },
+  "companionListingsUnavailable": "The listings are not available right now. Try again in a moment.",
+  "@companionListingsUnavailable": {
+    "description": "Listings could not be loaded"
+  },
+  "companionListingsOpen": "Open listings",
+  "@companionListingsOpen": {
+    "description": "Stat label: number of open listings"
+  },
+  "trophiesSub": "The PlayStation 3 trophies you have earned on OpenPak.",
+  "@trophiesSub": {
+    "description": "Subtitle of the trophies page"
+  },
+  "trophiesTotal": "Trophies",
+  "@trophiesTotal": {
+    "description": "Stat label"
+  },
+  "trophiesPoints": "Points",
+  "@trophiesPoints": {
+    "description": "Stat label"
+  },
+  "trophiesPlatinum": "Platinum",
+  "@trophiesPlatinum": {
+    "description": "Stat label"
+  },
+  "trophiesGold": "Gold",
+  "@trophiesGold": {
+    "description": "Stat label"
+  },
+  "trophiesSilver": "Silver",
+  "@trophiesSilver": {
+    "description": "Stat label"
+  },
+  "trophiesBronze": "Bronze",
+  "@trophiesBronze": {
+    "description": "Stat label"
+  },
+  "trophiesEmpty": "No trophies yet. They appear here after a PS3 game syncs them.",
+  "@trophiesEmpty": {
+    "description": "No trophies"
+  },
+  "trophiesUnlinked": "No PlayStation 3 account is linked to this account yet.",
+  "@trophiesUnlinked": {
+    "description": "No PS3 account linked"
+  },
+  "trophiesUnavailable": "Trophies are not available right now. Try again in a moment.",
+  "@trophiesUnavailable": {
+    "description": "Trophies could not be loaded"
+  },
+  "trophiesNote": "Games are shown by their trophy set id; names and icons come with the game and are not stored by the network.",
+  "@trophiesNote": {
+    "description": "Note under the trophies"
+  },
+  "activitySub": "What you have played on OpenPak, from the moment a game was online with the network.",
+  "@activitySub": {
+    "description": "Subtitle of play activity"
+  },
+  "activityTotal": "Time played",
+  "@activityTotal": {
+    "description": "Stat label: total time played"
+  },
+  "activityGames": "Games",
+  "@activityGames": {
+    "description": "Stat label: number of games"
+  },
+  "activitySessions": "Sessions",
+  "@activitySessions": {
+    "description": "Stat label: number of sessions"
+  },
+  "activityEmpty": "No play recorded yet. It appears here after you play a game online with OpenPak.",
+  "@activityEmpty": {
+    "description": "No play recorded"
+  },
+  "activityUnavailable": "Play activity is not available right now. Try again in a moment.",
+  "@activityUnavailable": {
+    "description": "Play activity could not be loaded"
+  },
+  "activityUnknown": "A game OpenPak does not list",
+  "@activityUnknown": {
+    "description": "Name of a played game the catalogue does not know"
+  },
+  "activityLast": "Last played",
+  "@activityLast": {
+    "description": "Prefix before the date a game was last played"
+  },
+  "activityNote": "Time counts while a game is online with OpenPak. Per-day usage of supervised consoles is on the parental controls page.",
+  "@activityNote": {
+    "description": "Note under play activity"
+  },
+  "rankingsSub": "Leaderboards for every game on OpenPak that keeps scores, times or ratings. Pick a game to see its boards.",
+  "@rankingsSub": {
+    "description": "Subtitle of the rankings hub"
+  },
+  "rankingsEmpty": "No game has recorded rankings yet. They appear here as soon as someone sets a score.",
+  "@rankingsEmpty": {
+    "description": "No game has rankings"
+  },
+  "sitesSub": "Companion sites for the games that have one. Sign in with your OpenPak account.",
+  "@sitesSub": {
+    "description": "Subtitle of the Open sites page"
+  },
+  "sitesGames": "Games",
+  "@sitesGames": {
+    "description": "Label before the list of games a site covers"
+  },
+  "sitesOpensplatLine": "Stage rotations and Splatfest.",
+  "@sitesOpensplatLine": {
+    "description": "What the opensplat site does"
+  },
+  "sitesOpensplatGames": "Splatoon",
+  "@sitesOpensplatGames": {
+    "description": "Games the opensplat site covers"
+  },
+  "sitesOpenkartLine": "Highlights, ghosts, rankings and tournaments.",
+  "@sitesOpenkartLine": {
+    "description": "What the openkart site does"
+  },
+  "sitesOpenkartGames": "Mario Kart 8, Mario Kart 8 Deluxe, Mario Kart 7, Mario Kart Wii",
+  "@sitesOpenkartGames": {
+    "description": "Games the openkart site covers"
+  },
+  "sitesOpenmakerLine": "Browse and share courses.",
+  "@sitesOpenmakerLine": {
+    "description": "What the openmaker site does"
+  },
+  "sitesOpenmakerGames": "Super Mario Maker, Super Mario Maker 2",
+  "@sitesOpenmakerGames": {
+    "description": "Games the openmaker site covers"
+  },
+  "sitesOpenverseLine": "Communities and posts for Wii U and 3DS games.",
+  "@sitesOpenverseLine": {
+    "description": "What the openverse site does"
+  },
+  "sitesOpenverseGames": "Wii U and 3DS",
+  "@sitesOpenverseGames": {
+    "description": "Games the openverse site covers"
+  },
+  "companionOverview": "What OpenPak shows for this game besides playing it.",
+  "@companionOverview": {
+    "description": "Overview tab intro"
+  },
+  "trophiesPsn": "PSN online ID: {id}",
+  "@trophiesPsn": {
+    "description": "PSN online id line",
+    "placeholders": {
+      "id": {
+        "type": "String",
+        "example": "Player1"
+      }
+    }
+  },
+  "sitesOpen": "Open {name}",
+  "@sitesOpen": {
+    "description": "Button: open an Open site",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "OpenKart"
+      }
+    }
+  },
+  "companionRankingsShowing": "Ranks {from} to {to} of {total}",
+  "@companionRankingsShowing": {
+    "description": "Window of a paged board",
+    "placeholders": {
+      "from": {
+        "type": "int",
+        "example": "1"
+      },
+      "to": {
+        "type": "int",
+        "example": "1"
+      },
+      "total": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "activityHm": "{hours} h {minutes} min",
+  "@activityHm": {
+    "description": "Play time in hours and minutes",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "3"
+      },
+      "minutes": {
+        "type": "int",
+        "example": "20"
+      }
+    }
+  },
+  "activityM": "{minutes} min",
+  "@activityM": {
+    "description": "Play time in minutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "45"
+      }
+    }
+  },
+  "activitySessionsN": "{count, plural, =1{1 session} other{{count} sessions}}",
+  "@activitySessionsN": {
+    "description": "Number of sessions of one game",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "rankingsBoardsN": "{count, plural, =1{1 board} other{{count} boards}}",
+  "@rankingsBoardsN": {
+    "description": "Number of boards of a game",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "titlesDetailMore": "In this game",
+  "@titlesDetailMore": {
+    "description": "Header of the list of sections on a game page"
+  },
+  "companionNone": "Nothing more is shown for this game yet.",
+  "@companionNone": {
+    "description": "Game page of a game without rankings, stats or trades"
+  },
+  "companionBoards": "Boards",
+  "@companionBoards": {
+    "description": "Label of the board picker"
   }
 }
