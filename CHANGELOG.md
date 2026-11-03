@@ -11,6 +11,10 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.25.4 — 2026-11-03
+
+- Re-release of 0.25.3, whose build stopped because the app's own version string was not bumped.
+
 ## v0.25.3 — 2026-11-03
 
 - The "Downloading the update…" title stays on one line on narrow phones (it wrapped on the ROG 3); dialog
