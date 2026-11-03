@@ -3624,5 +3624,13 @@
   "errorInvalidApplication": "The application was not accepted.",
   "@errorInvalidApplication": {
     "description": "Error: the node application was not accepted."
+  },
+  "accountThisDevice": "This device",
+  "@accountThisDevice": {
+    "description": "Badge on the session this app is signed in with."
+  },
+  "sitesVerseCommunity": "OpenVerse community",
+  "@sitesVerseCommunity": {
+    "description": "Button on a game page that opens the game's OpenVerse community."
   }
 }

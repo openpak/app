@@ -68,7 +68,7 @@ void main() {
     state = {'configured': true, 'linked': true, 'username': 'han#1'};
     await pump(tester);
     expect(find.text('han#1'), findsOneWidget);
-    await tester.tap(find.text('Unlink Discord'));
+    await tester.tap(find.text('Unlink'));
     await tester.pumpAndSettle();
     expect(calls, isNot(contains('DELETE /api/v1/me/discord')));
     await tester.tap(find.widgetWithText(FilledButton, 'Unlink Discord'));

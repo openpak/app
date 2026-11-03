@@ -216,8 +216,11 @@ class AvatarChoice {
 
 /// A signed-in device, as the core sees it. Revoking one signs that device out.
 class WebSession {
-  WebSession({required this.id, this.createdAt, this.expiresAt});
+  WebSession({required this.id, this.createdAt, this.expiresAt, this.current = false});
   final String id;
+
+  /// The session this app is signed in with (the website's "this device").
+  final bool current;
   final DateTime? createdAt;
   final DateTime? expiresAt;
 
@@ -225,6 +228,7 @@ class WebSession {
     id: j['id'] as String? ?? '',
     createdAt: DateTime.tryParse(j['created_at'] as String? ?? ''),
     expiresAt: DateTime.tryParse(j['expires_at'] as String? ?? ''),
+    current: j['current'] == true,
   );
 }
 
@@ -511,6 +515,7 @@ class CatalogItem {
     this.votes = 0,
     this.voted = false,
     this.titleId = '',
+    this.verseUrl = '',
   });
 
   /// Kept as a String regardless of whether the server emits a JSON number or
@@ -531,6 +536,9 @@ class CatalogItem {
   /// a friend's presence title id is turned into a name elsewhere in the app.
   final String titleId;
 
+  /// The game's OpenVerse community, as the website's title page links it; empty when it has none.
+  final String verseUrl;
+
   bool get isTitle => kind == 'title';
 
   /// A row after a vote toggle: the count and voted flag change, the rest
@@ -547,6 +555,7 @@ class CatalogItem {
     votes: votes,
     voted: voted,
     titleId: titleId,
+    verseUrl: verseUrl,
   );
 
   factory CatalogItem.fromJson(Map<String, dynamic> j) => CatalogItem(
@@ -561,6 +570,7 @@ class CatalogItem {
     votes: (j['votes'] as num?)?.toInt() ?? 0,
     voted: j['voted'] as bool? ?? false,
     titleId: j['title_id'] as String? ?? '',
+    verseUrl: j['verse_url'] as String? ?? '',
   );
 }
 

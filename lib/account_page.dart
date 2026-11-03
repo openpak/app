@@ -158,10 +158,13 @@ class _AccountPageState extends State<AccountPage> {
                         ListTile(
                           leading: const Icon(Icons.videogame_asset_outlined),
                           title: Text(platformNames[ns] ?? ns),
-                          trailing: tileAction(context, TextButton(
-                            onPressed: () => _unlink(ns),
-                            child: Text(l.accountUnlink, style: TextStyle(color: t.bad)),
-                          )),
+                          // Wii U and 3DS console accounts are listed but never unlinked here, as on the website.
+                          trailing: (ns == 'wiiu' || ns == '3ds')
+                              ? null
+                              : tileAction(context, TextButton(
+                                  onPressed: () => _unlink(ns),
+                                  child: Text(l.accountUnlink, style: TextStyle(color: t.bad)),
+                                )),
                         ),
                         const Divider(height: 1),
                       ],
@@ -246,9 +249,28 @@ class _AccountPageState extends State<AccountPage> {
                         ListTile(
                           leading: const Icon(Icons.devices_outlined),
                           title: Text(_when(l, sessions[i].createdAt)),
-                          subtitle: sessions[i].expiresAt == null
+                          subtitle: (sessions[i].expiresAt == null && !sessions[i].current)
                               ? null
-                              : Text(l.accountSessionExpires(shortDate(l, sessions[i].expiresAt!))),
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (sessions[i].expiresAt != null)
+                                      Text(l.accountSessionExpires(shortDate(l, sessions[i].expiresAt!))),
+                                    if (sessions[i].current)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: t.okWeak,
+                                            border: Border.all(color: t.okLine),
+                                            borderRadius: BorderRadius.circular(99),
+                                          ),
+                                          child: Text(l.accountThisDevice, style: TextStyle(color: t.ok, fontSize: 12, fontWeight: FontWeight.w700)),
+                                        ),
+                                      ),
+                                  ],
+                                ),
                           trailing: tileAction(context, TextButton(
                             onPressed: () => _revoke(sessions[i]),
                             child: Text(
@@ -585,20 +607,18 @@ class _ProfileCardState extends State<_ProfileCard> {
                             children: [
                               Text(
                                 me.displayName.isEmpty ? l.accountYou : me.displayName,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(fontFamily: uiFont, fontSize: 24, fontWeight: FontWeight.w800),
                               ),
-                              if (me.email.isNotEmpty)
-                                Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(me.email, overflow: TextOverflow.ellipsis, style: TextStyle(color: t.muted)),
-                                    ),
-                                    if (me.emailVerified) ...[
-                                      const SizedBox(width: 8),
-                                      StatePill(text: l.accountEmailConfirmed, state: RowState.ok),
-                                    ],
-                                  ],
-                                ),
+                              if (me.email.isNotEmpty) ...[
+                                Text(me.email, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: t.muted)),
+                                if (me.emailVerified)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 6),
+                                    child: StatePill(text: l.accountEmailConfirmed, state: RowState.ok),
+                                  ),
+                              ],
                             ],
                           ),
                         ),

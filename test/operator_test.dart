@@ -141,13 +141,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Frankfurt, DE').last);
     await tester.pumpAndSettle();
-    await tester.enterText(find.widgetWithText(TextField, 'City'), 'Frankfurt');
-    await tester.enterText(find.widgetWithText(TextField, 'Hosting provider'), 'Hetzner');
-    await tester.enterText(find.widgetWithText(TextField, 'Contact email (operations and security)'), 'op@example.org');
-    await tester.enterText(find.widgetWithText(TextField, 'CPU cores'), '8');
-    await tester.enterText(find.widgetWithText(TextField, 'RAM (GB)'), '16');
-    await tester.enterText(find.widgetWithText(TextField, 'Storage (GB)'), '200');
-    await tester.enterText(find.widgetWithText(TextField, 'Bandwidth (Mbps, symmetric)'), '1000');
+    await tester.enterText(_tf('City'), 'Frankfurt');
+    await tester.enterText(_tf('Hosting provider'), 'Hetzner');
+    await tester.enterText(_tf('Contact email (operations and security)'), 'op@example.org');
+    await tester.enterText(_tf('CPU cores'), '8');
+    await tester.enterText(_tf('RAM (GB)'), '16');
+    await tester.enterText(_tf('Storage (GB)'), '200');
+    await tester.enterText(_tf('Bandwidth (Mbps, symmetric)'), '1000');
     await tester.tap(find.text('Add a server')); // a second row, left empty
     await tester.pumpAndSettle();
     await tester.tap(find.text('TURN relay').first);
@@ -178,8 +178,8 @@ void main() {
     info = _info(locations: []);
     await pump(tester);
     expect(find.text('Send application'), findsNothing);
-    await tester.enterText(find.widgetWithText(TextField, 'Country (two letters)'), 'nz');
-    await tester.enterText(find.widgetWithText(TextField, 'Contact email (operations and security)'), 'op@example.org');
+    await tester.enterText(_tf('Country (two letters)'), 'nz');
+    await tester.enterText(_tf('Contact email (operations and security)'), 'op@example.org');
     await tester.tap(find.widgetWithText(FilledButton, 'Join the waitlist'));
     await tester.pumpAndSettle();
     expect(writes.single.$2, '/me/operator/waitlist');
@@ -211,3 +211,6 @@ void main() {
     expect(find.text('Region-Node betreiben'), findsNothing); // title is whatever the arb says; only overflow matters
   });
 }
+
+/// The text field under a label (labels sit above their fields).
+Finder _tf(String label) => find.descendant(of: find.byKey(ValueKey('field:$label')), matching: find.byType(TextField));

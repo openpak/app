@@ -11,6 +11,16 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.25.1 — 2026-11-03
+
+- Linked platforms: Wii U and 3DS console accounts are listed (not unlinkable, as on the website); the unlink action is a short "Unlink" / "Trennen" on every row, so nothing wraps or clips in any language.
+- Signed-in devices mark "This device"; the error-report setting no longer breaks mid-word in German.
+- Game pages: "OpenVerse community" button, by the website's rule (live and beta titles).
+- Rewards: the tab strip is one row that scrolls sideways.
+- Region node form: labels sit above their fields and wrap, never cut off.
+- Profile card: long names take at most two lines; the email has its own line.
+- Needs website v0.80.1.
+
 ## v0.25.0 — 2026-11-03
 
 - **Parity with openpak.org.** Everything personal lives in the Account area, grouped as cards (Play, Explore, Help and community), so the bottom bar stays at five.

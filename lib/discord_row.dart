@@ -64,7 +64,7 @@ class _DiscordRowState extends State<DiscordRow> {
             subtitle: Text(link.username.isEmpty ? l.discordLinkedHelp : link.username),
             trailing: tileAction(
               context,
-              TextButton(onPressed: _unlink, child: Text(l.discordUnlink, style: TextStyle(color: t.bad))),
+              TextButton(onPressed: _unlink, child: Text(l.accountUnlink, style: TextStyle(color: t.bad))),
             ),
           )
         else

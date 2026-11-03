@@ -357,6 +357,7 @@ void main() {
   group('settings', () {
     testWidgets('switches are saved together', (tester) async {
       await pump(tester);
+      await tester.ensureVisible(find.text('Settings').first);
       await tester.tap(find.text('Settings').first);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Pause earning points'));

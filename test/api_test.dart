@@ -11,6 +11,7 @@ http.Response json(Object body, {int status = 200}) =>
     });
 
 void main() {
+  parityFieldsTests();
   test('signing in keeps the bearer and sends it afterwards', () async {
     String? seenAuth;
     final api = OpenPakApi(
@@ -606,5 +607,14 @@ void main() {
     expect(d.pairingCode, 'ABC234');
     expect(d.paired, isFalse);
     expect(d.waiting, isTrue);
+  });
+}
+
+void parityFieldsTests() {
+  test('a session says whether it is this device; a title may carry its OpenVerse community', () {
+    expect(WebSession.fromJson({'id': 'a', 'current': true}).current, isTrue);
+    expect(WebSession.fromJson({'id': 'b'}).current, isFalse);
+    expect(CatalogItem.fromJson({'id': 1, 'name': 'X', 'verse_url': 'https://verse.openpak.org/communities/1'}).verseUrl, isNotEmpty);
+    expect(CatalogItem.fromJson({'id': 1, 'name': 'X'}).verseUrl, isEmpty);
   });
 }

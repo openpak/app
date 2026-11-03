@@ -794,5 +794,7 @@
   "discordLinkNote": "A vinculação termina no navegador, no site do OpenPak. Entre lá se for pedido e depois volte.",
   "detailsAbout": "Sobre você",
   "countryKr": "Coreia do Sul",
-  "errorInvalidApplication": "A candidatura não foi aceita."
+  "errorInvalidApplication": "A candidatura não foi aceita.",
+  "accountThisDevice": "Este dispositivo",
+  "sitesVerseCommunity": "Comunidade OpenVerse"
 }

@@ -121,7 +121,7 @@
   "accountOverview": "Übersicht",
   "accountRequests": "Anfragen",
   "accountNothingLinked": "Noch nichts verknüpft. Verknüpfe eine Konsole über ihre eigenen Einstellungen oder unten eine Wii oder einen DS.",
-  "accountUnlink": "Verknüpfung aufheben",
+  "accountUnlink": "Trennen",
   "accountUnlinkConfirm": "Verknüpfung mit {console} aufheben?",
   "accountUnlinkDetail": "Sie meldet sich nicht mehr als du an, bis sie wieder verknüpft ist.",
   "accountUnlinked": "Verknüpfung mit {console} aufgehoben.",
@@ -794,5 +794,7 @@
   "discordLinkNote": "Das Verknüpfen läuft im Browser auf der OpenPak-Website ab. Melde dich dort an, falls nötig, und komm dann zurück.",
   "detailsAbout": "Über dich",
   "countryKr": "Südkorea",
-  "errorInvalidApplication": "Die Bewerbung wurde nicht angenommen."
+  "errorInvalidApplication": "Die Bewerbung wurde nicht angenommen.",
+  "accountThisDevice": "Dieses Gerät",
+  "sitesVerseCommunity": "OpenVerse-Community"
 }

@@ -209,18 +209,24 @@ class _RewardsPageState extends State<RewardsPage> {
           Text(v.nextText, style: TextStyle(color: t.muted, fontSize: 13.5)),
         ],
         const SizedBox(height: 16),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final tab in _Tab.values)
-              RewardsChoice(
-                label: _tabLabel(l, tab),
-                selected: tab == _tab,
-                count: tab == _Tab.missions ? v.ready : null,
-                onTap: () => _go(tab),
-              ),
-          ],
+        // One row that scrolls sideways, like the website's chips.
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.none, // chips run to the screen edge, not to the page padding
+          child: Row(
+            children: [
+              for (final tab in _Tab.values)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: RewardsChoice(
+                    label: _tabLabel(l, tab),
+                    selected: tab == _tab,
+                    count: tab == _Tab.missions ? v.ready : null,
+                    onTap: () => _go(tab),
+                  ),
+                ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
         ...switch (_tab) {

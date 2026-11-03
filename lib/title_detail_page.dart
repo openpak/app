@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'api.dart';
+import 'open_url.dart';
 import 'companion_widgets.dart';
 import 'l10n.dart';
 import 'open_sites.dart';
@@ -128,6 +130,7 @@ class _TitleDetailPageState extends State<TitleDetailPage> {
                   child: _Overview(
                     api: widget.api,
                     site: site,
+                    verseUrl: item.verseUrl,
                     features: const [],
                     onTab: (_) {},
                   ),
@@ -145,6 +148,7 @@ class _TitleDetailPageState extends State<TitleDetailPage> {
                   slug: widget.companion!.slug,
                   header: header,
                   site: site,
+                  verseUrl: item.verseUrl,
                   features: snap.data!,
                 );
               },
@@ -159,12 +163,14 @@ class _Tabs extends StatefulWidget {
     required this.slug,
     required this.header,
     required this.site,
+    required this.verseUrl,
     required this.features,
   });
   final OpenPakApi api;
   final String slug;
   final Widget header;
   final OpenSite? site;
+  final String verseUrl;
   final List<String> features;
 
   @override
@@ -201,6 +207,7 @@ class _TabsState extends State<_Tabs> with SingleTickerProviderStateMixin {
     _ => _Overview(
       api: widget.api,
       site: widget.site,
+      verseUrl: widget.verseUrl,
       features: _tabs.skip(1).toList(),
       onTab: (f) => _ctl.animateTo(_tabs.indexOf(f)),
     ),
@@ -216,6 +223,7 @@ class _TabsState extends State<_Tabs> with SingleTickerProviderStateMixin {
             child: _Overview(
               api: widget.api,
               site: widget.site,
+              verseUrl: widget.verseUrl,
               features: const [],
               onTab: (_) {},
             ),
@@ -247,11 +255,13 @@ class _Overview extends StatelessWidget {
   const _Overview({
     required this.api,
     required this.site,
+    required this.verseUrl,
     required this.features,
     required this.onTab,
   });
   final OpenPakApi api;
   final OpenSite? site;
+  final String verseUrl;
   final List<String> features;
   final void Function(String) onTab;
 
@@ -294,7 +304,15 @@ class _Overview extends StatelessWidget {
             icon: const Icon(Icons.open_in_new),
             label: Text(l.sitesOpen(site!.name)),
           ),
-        if (features.isEmpty && site == null) EmptyNote(l.companionNone),
+        if (verseUrl.isNotEmpty) ...[
+          if (site != null) const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: () => openExternalUrl(Uri.parse(verseUrl)),
+            icon: const Icon(Icons.forum_outlined),
+            label: Text(l.sitesVerseCommunity),
+          ),
+        ],
+        if (features.isEmpty && site == null && verseUrl.isEmpty) EmptyNote(l.companionNone),
       ],
     );
   }

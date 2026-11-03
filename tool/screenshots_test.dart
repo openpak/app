@@ -228,10 +228,7 @@ Map<String, Object?> _rewards(Lang l) {
         'label': l.t('Badges', 'Abzeichen'),
         'wide': false,
         'items': [
-          _item('badge-launch-season', 'badge', l.t('Launch season', 'Startsaison'), l.t('Worn by early players.', 'Von frühen Spielern getragen.'), price: 120, more: {'limited': true}),
-          _item('badge-warm-up', 'badge', 'Warm Up', l.t('10 hours of online play.', '10 Stunden Online-Spiel.'), price: 60),
-          _item('badge-regular', 'badge', 'Regular', l.t('50 hours of online play.', '50 Stunden Online-Spiel.'), price: 500, more: {'need': 160, 'affordable': false}),
-          _item('badge-winter-2026', 'badge', l.t('Winter 2026', 'Winter 2026'), l.t('Only in winter.', 'Nur im Winter.'), price: 90, more: {'limited': true}),
+          _item('badge-launch-season', 'badge', l.t('Launch season', 'Startsaison'), l.t('Worn by early players.', 'Von frühen Spielern getragen.'), price: 100, more: {'limited': true}),
         ],
       },
       {
@@ -239,7 +236,7 @@ Map<String, Object?> _rewards(Lang l) {
         'label': l.t('Profile icons', 'Profilsymbole'),
         'wide': false,
         'items': [
-          _item('icon-pak', 'profile_icon', 'Pak', l.t('The mascot.', 'Das Maskottchen.'), price: 80),
+          _item('icon-pak', 'profile_icon', l.t('Pak Original', 'Pak Original'), l.t('The mascot.', 'Das Maskottchen.'), price: 150),
           _item('icon-ember-fox', 'profile_icon', l.t('Ember Fox', 'Glutfuchs'), l.t('A warm fox.', 'Ein warmer Fuchs.'), price: 150),
         ],
       },
@@ -248,15 +245,15 @@ Map<String, Object?> _rewards(Lang l) {
         'label': l.t('Themes', 'Designs'),
         'wide': true,
         'items': [
-          _item('theme-harbor', 'theme', 'Harbor', l.t('Deep blue and brass.', 'Tiefblau und Messing.'), price: 200, more: {'need': 0}),
-          _item('theme-ember', 'theme', 'Ember', l.t('Warm orange on dark teal.', 'Warmes Orange auf dunklem Petrol.'), price: 240),
+          _item('theme-harbor', 'theme', 'Harbor', l.t('Deep blue and brass.', 'Tiefblau und Messing.'), price: 400, more: {'need': 60, 'affordable': false}),
+          _item('theme-ember', 'theme', 'Ember', l.t('Warm orange on dark teal.', 'Warmes Orange auf dunklem Petrol.'), price: 450, more: {'need': 110, 'affordable': false}),
           _item('theme-moss', 'theme', 'Moss', l.t('Calm greens.', 'Ruhige Grüntöne.'), price: 400, more: {'need': 60, 'affordable': false}),
         ],
       },
     ],
     'upcoming': [
-      _item('badge-new-year-2027', 'badge', l.t('New Year 2027', 'Neujahr 2027'), '', more: {'soon': true, 'when': l.t('Coming 1 Dec', 'Ab 1. Dez.')}),
-      _item('theme-sakura', 'theme', 'Sakura', '', more: {'soon': true, 'when': l.t('Coming 1 Dec', 'Ab 1. Dez.')}),
+      _item('badge-winter-2026', 'badge', 'Winter 2026', '', price: 100, more: {'limited': true, 'soon': true, 'when': l.t('Coming 1 Dec', 'Ab 1. Dez.')}),
+      _item('badge-new-year-2027', 'badge', l.t('New Year 2027', 'Neujahr 2027'), '', price: 150, more: {'limited': true, 'soon': true, 'when': l.t('Coming 28 Dec', 'Ab 28. Dez.')}),
     ],
     'mine': [
       {
@@ -364,6 +361,8 @@ class Fake {
           'avatar_url': '/avatar/a1.png',
           'linked_platforms': [
             {'namespace': 'switch'},
+            {'namespace': 'wiiu'},
+            {'namespace': '3ds'},
             {'namespace': 'wfc'},
           ],
           'email': 'leia@example.org',
@@ -375,7 +374,8 @@ class Fake {
       case '/me/sessions':
         return _json({
           'sessions': [
-            {'id': 's1', 'user_agent': 'Firefox on Linux', 'created_at': '2026-11-01T10:00:00Z', 'current': true},
+            {'id': 's1', 'user_agent': 'Firefox on Linux', 'created_at': '2026-11-01T10:00:00Z', 'expires_at': '2026-12-01T10:00:00Z', 'current': true},
+            {'id': 's2', 'created_at': '2026-10-20T08:00:00Z', 'expires_at': '2026-11-19T08:00:00Z'},
           ],
         });
       case '/me/friends':
@@ -637,6 +637,12 @@ void main() {
     await tester.drag(page, const Offset(0, 260)); // show the whole Linked card, not only its last row
     await _settle(tester);
   });
+  _screen('account-sessions', (api, l) => AccountPage(api: api, onSignedOut: () async {}), full: false, act: (tester, l, fake) async {
+    final page = find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down).first;
+    await tester.scrollUntilVisible(find.text(l.accountThisDevice), 200, scrollable: page);
+    await tester.drag(page, const Offset(0, -120));
+    await _settle(tester);
+  });
   _screen('account-details', (api, l) => AccountDetailsPage(api: api, account: Account(id: 'a1', displayName: l.t('Leia Organa', 'Leia Organa-Bundesverdienstkreuz'), country: 'DE', birthday: '1990-05-04', handle: 'leia')));
 
   // ---- rewards
@@ -650,16 +656,19 @@ void main() {
     await tab(tester, l.rewardsTabShop);
     await _tap(tester, find.text(l.localeName == 'de' ? 'Startsaison' : 'Launch season'));
   });
-  _screen('rewards-shop-buy-dialog-short', (api, l) => RewardsPage(api: api), full: false, act: (tester, l, fake) async {
+  _screen('rewards-shop-soon', (api, l) => RewardsPage(api: api), full: false, act: (tester, l, fake) async {
     await tab(tester, l.rewardsTabShop);
-    await _tap(tester, find.text('Regular'));
+    final page = find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down).first;
+    await tester.scrollUntilVisible(find.textContaining(l.localeName == 'de' ? 'Ab 28. Dez.' : 'Coming 28 Dec'), 300, scrollable: page);
+    await tester.drag(page, const Offset(0, -200));
+    await _settle(tester);
   });
   _screen('rewards-myitems', (api, l) => RewardsPage(api: api), act: (tester, l, fake) => tab(tester, l.rewardsTabCollection));
   _screen('rewards-settings', (api, l) => RewardsPage(api: api), act: (tester, l, fake) => tab(tester, l.rewardsTabSettings));
   _screen('rewards-themed', (api, l) => RewardsPage(api: api), theme: _ember, controller: true);
   _screen('rewards-preview-bar', (api, l) => RewardsPage(api: api), controller: true, full: false,
       prepare: (c, fake) async {
-        final it = RewardsItem.fromJson(_item('theme-ember', 'theme', 'Ember', '', price: 240));
+        final it = RewardsItem.fromJson(_item('theme-ember', 'theme', 'Ember', '', price: 450));
         await c.startPreview(it);
       },
       act: (tester, l, fake) => tab(tester, l.rewardsTabShop));
@@ -676,7 +685,7 @@ void main() {
   _screen('rankings-board', (api, l) => RankingsPage(api: api), act: (tester, l, fake) => _tap(tester, find.text('Mario Kart Wii')));
   _screen('title-detail', (api, l) => TitleDetailPage(
     api: api,
-    item: CatalogItem(id: '1', kind: 'title', name: 'Mario Kart Wii', console: 'Wii', status: 'live', category: 'Racing', backend: 'wfc', notes: l.t('Online races, rankings and friend rooms.', 'Online-Rennen, Ranglisten und Freundesräume.')),
+    item: CatalogItem(id: '1', kind: 'title', name: 'Mario Kart Wii', console: 'Wii', status: 'live', category: 'Racing', backend: 'wfc', verseUrl: 'https://verse.openpak.org/communities/1', notes: l.t('Online races, rankings and friend rooms.', 'Online-Rennen, Ranglisten und Freundesräume.')),
     companion: CompanionTitle(slug: 'mkw', name: 'Mario Kart Wii', console: 'Wii', features: const ['rankings', 'listings', 'stats']),
   ));
   _screen('title-detail-rankings', (api, l) => TitleDetailPage(

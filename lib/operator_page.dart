@@ -246,14 +246,14 @@ class _ApplicationCardState extends State<_ApplicationCard> {
               Padding(padding: const EdgeInsets.only(top: 8), child: Text(l.operatorApprovedNext)),
             if (a.status == 'info') ...[
               const SizedBox(height: 12),
-              TextField(
+              _labeled(l.operatorReplyLabel, TextField(
                 controller: _reply,
                 maxLength: 2000,
                 minLines: 3,
                 maxLines: 8,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: l.operatorReplyLabel, alignLabelWithHint: true),
-              ),
+                decoration: const InputDecoration(alignLabelWithHint: true),
+              )),
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton(onPressed: _busy ? null : _send, child: Text(l.operatorReplySend)),
@@ -397,10 +397,10 @@ class _ApplyFormState extends State<_ApplyForm> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (_errors.isNotEmpty) _Errors(_errors),
-            DropdownButtonFormField<String>(
+            _labeled(l.operatorLocation, DropdownButtonFormField<String>(
               isExpanded: true,
               initialValue: _location,
-              decoration: InputDecoration(labelText: l.operatorLocation, helperText: l.operatorLocationHint, helperMaxLines: 3),
+              decoration: InputDecoration(helperText: l.operatorLocationHint, helperMaxLines: 3),
               items: [
                 for (final loc in info.locations)
                   DropdownMenuItem(
@@ -412,17 +412,17 @@ class _ApplyFormState extends State<_ApplyForm> {
                   ),
               ],
               onChanged: (v) => setState(() => _location = v),
-            ),
+            )),
             const SizedBox(height: 12),
-            TextField(controller: _city, maxLength: 64, decoration: InputDecoration(labelText: l.operatorCity)),
-            TextField(controller: _provider, maxLength: 100, decoration: InputDecoration(labelText: l.operatorProvider)),
+            _labeled(l.operatorCity, TextField(controller: _city, maxLength: 64, decoration: const InputDecoration())),
+            _labeled(l.operatorProvider, TextField(controller: _provider, maxLength: 100, decoration: const InputDecoration())),
             const SizedBox(height: 8),
-            TextField(
+            _labeled(l.operatorEmail, TextField(
               controller: _email,
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
-              decoration: InputDecoration(labelText: l.operatorEmail),
-            ),
+              decoration: const InputDecoration(),
+            )),
             const SizedBox(height: 20),
             Text(l.operatorServers, style: const TextStyle(fontFamily: uiFont, fontWeight: FontWeight.w800, fontSize: 16)),
             Text(l.operatorServersHint, style: TextStyle(color: t.muted, fontSize: 13)),
@@ -450,13 +450,13 @@ class _ApplyFormState extends State<_ApplyForm> {
                 ),
               ),
             const SizedBox(height: 12),
-            TextField(
+            _labeled(l.operatorNotes, TextField(
               controller: _notes,
               maxLength: 2000,
               minLines: 3,
               maxLines: 8,
-              decoration: InputDecoration(labelText: l.operatorNotes, alignLabelWithHint: true),
-            ),
+              decoration: const InputDecoration(alignLabelWithHint: true),
+            )),
             Row(
               children: [
                 Checkbox(value: _terms, onChanged: (v) => setState(() => _terms = v ?? false)),
@@ -515,12 +515,12 @@ class _ServerCard extends StatelessWidget {
     final l = context.l10n;
     Widget num(TextEditingController c, String label) => Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: TextField(
+      child: _labeled(label, TextField(
         controller: c,
         keyboardType: TextInputType.number,
         inputFormatters: digits,
-        decoration: InputDecoration(labelText: label),
-      ),
+        decoration: const InputDecoration(),
+      )),
     );
     return Container(
       padding: const EdgeInsets.all(12),
@@ -636,21 +636,21 @@ class _WaitlistFormState extends State<_WaitlistForm> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (_errors.isNotEmpty) _Errors(_errors),
-            TextField(
+            _labeled(l.operatorCountry, TextField(
               controller: _country,
               maxLength: 2,
               textCapitalization: TextCapitalization.characters,
               autocorrect: false,
-              decoration: InputDecoration(labelText: l.operatorCountry),
-            ),
-            TextField(controller: _city, maxLength: 64, decoration: InputDecoration(labelText: l.operatorCity)),
+              decoration: const InputDecoration(),
+            )),
+            _labeled(l.operatorCity, TextField(controller: _city, maxLength: 64, decoration: const InputDecoration())),
             const SizedBox(height: 8),
-            TextField(
+            _labeled(l.operatorEmail, TextField(
               controller: _email,
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
-              decoration: InputDecoration(labelText: l.operatorEmail),
-            ),
+              decoration: const InputDecoration(),
+            )),
             const SizedBox(height: 12),
             FilledButton(onPressed: _busy ? null : _join, child: Text(l.operatorWaitlistJoin)),
           ],
@@ -659,3 +659,17 @@ class _WaitlistFormState extends State<_WaitlistForm> {
     );
   }
 }
+
+/// A field with its label above it, wrapping as long as it must: a floating label is one line and is cut off.
+Widget _labeled(String label, Widget field) => Builder(
+  builder: (context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(top: 6, bottom: 6),
+        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+      ),
+      KeyedSubtree(key: ValueKey('field:$label'), child: field),
+    ],
+  ),
+);
