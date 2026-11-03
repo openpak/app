@@ -799,5 +799,18 @@
   "sitesVerseCommunity": "Community OpenVerse",
   "rewardsGlanceReady": "{n, plural, =1{1 premio pronto da riscattare} other{{n} premi pronti da riscattare}}",
   "rewardsGlanceNext": "Prossimo: {name}",
-  "rewardsGlanceBalance": "{n} Pak Points"
+  "rewardsGlanceBalance": "{n} Pak Points",
+  "consoleTitle": "Accesso su Wii U / 3DS",
+  "consoleSync": "Sulla console collega un ID Nintendo Network esistente: scrivi l'ID {id} e la tua password OpenPak.",
+  "consoleUnsynced": "Sulla console collega un ID Nintendo Network esistente: scrivi l'ID {id} e la tua password OpenPak. Prima esci e rientra una volta in OpenPak, così la console conosce la tua password.",
+  "consoleCustom": "Scrivi l'ID {id} e la password della console separata che hai impostato. Se accedi con una password accettata da una Wii U, la tua password OpenPak torna a essere quella della console.",
+  "consoleIncompatible": "La tua password OpenPak non si può scrivere su una Wii U. Imposta una password della console separata, poi scrivi sulla console l'ID {id} e quella password.",
+  "consoleSet": "Imposta una password della console separata",
+  "consoleSetShort": "Imposta",
+  "consoleRules": "Da {min} a {max} caratteri: lettere, cifre e simboli della tastiera, senza spazi né lettere accentate, e non deve contenere il tuo ID ({id}).",
+  "consoleNewPassword": "Password della console",
+  "consoleRepeatPassword": "Ripeti la password della console",
+  "consoleMismatch": "Le due password della console sono diverse.",
+  "consoleSaved": "Password della console impostata.",
+  "consoleRulesBroken": "Questa password della console viola le regole: da 6 a 16 caratteri, senza spazi né accenti, e senza il tuo ID."
 }

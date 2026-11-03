@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'account_details_page.dart';
 import 'account_hub.dart';
 import 'api.dart';
+import 'console_password_row.dart';
 import 'crash_reports.dart';
 import 'discord_row.dart';
 import 'l10n.dart';
@@ -181,6 +182,8 @@ class _AccountPageState extends State<AccountPage> {
                           title: Text(l.accountLinkWfc),
                           onTap: _linkWfc,
                         ),
+                      if (me.linkedPlatforms.contains('wiiu'))
+                        ConsolePasswordRow(api: widget.api, twoFactor: me.twoFactorEnabled),
                       DiscordRow(api: widget.api),
                     ],
                   ),

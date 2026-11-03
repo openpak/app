@@ -799,5 +799,18 @@
   "sitesVerseCommunity": "Comunidade OpenVerse",
   "rewardsGlanceReady": "{n, plural, =1{1 recompensa pronta para resgatar} other{{n} recompensas prontas para resgatar}}",
   "rewardsGlanceNext": "Próximo: {name}",
-  "rewardsGlanceBalance": "{n} Pak Points"
+  "rewardsGlanceBalance": "{n} Pak Points",
+  "consoleTitle": "Entrada no Wii U / 3DS",
+  "consoleSync": "No console, vincule uma ID da Nintendo Network existente: digite a ID {id} e sua senha do OpenPak.",
+  "consoleUnsynced": "No console, vincule uma ID da Nintendo Network existente: digite a ID {id} e sua senha do OpenPak. Antes, saia e entre uma vez no OpenPak, para o console conhecer sua senha.",
+  "consoleCustom": "Digite a ID {id} e a senha de console separada que você definiu. Entrar com uma senha que o Wii U aceita faz da sua senha do OpenPak a senha do console de novo.",
+  "consoleIncompatible": "Sua senha do OpenPak não pode ser digitada em um Wii U. Defina uma senha de console separada e digite no console a ID {id} e essa senha.",
+  "consoleSet": "Definir uma senha de console separada",
+  "consoleSetShort": "Definir",
+  "consoleRules": "De {min} a {max} caracteres: letras, dígitos e símbolos do teclado, sem espaços nem letras acentuadas, e não pode conter sua ID ({id}).",
+  "consoleNewPassword": "Senha do console",
+  "consoleRepeatPassword": "Repita a senha do console",
+  "consoleMismatch": "As duas senhas do console são diferentes.",
+  "consoleSaved": "Senha do console definida.",
+  "consoleRulesBroken": "Essa senha do console quebra as regras: de 6 a 16 caracteres, sem espaços nem acentos, e sem conter sua ID."
 }

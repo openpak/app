@@ -104,6 +104,21 @@ class DiscordLink {
   final String username;
 }
 
+/// Where the Wii U / 3DS console password comes from. [mode] is `sync` (the OpenPak password is
+/// the console password), `custom` (a separate one), `incompatible` (the OpenPak password cannot
+/// be typed on a Wii U and no separate one is set) or empty (not seen since this existed).
+class ConsolePassword {
+  const ConsolePassword({required this.nnid, required this.mode, this.min = 6, this.max = 16});
+  factory ConsolePassword.fromJson(Map<String, dynamic> j) => ConsolePassword(
+    nnid: j['nnid'] as String? ?? '',
+    mode: j['mode'] as String? ?? '',
+    min: (j['min'] as num?)?.toInt() ?? 6,
+    max: (j['max'] as num?)?.toInt() ?? 16,
+  );
+  final String nnid, mode;
+  final int min, max;
+}
+
 class OperatorLocation {
   const OperatorLocation({required this.code, required this.country, required this.city});
   final String code, country, city;
@@ -286,6 +301,25 @@ extension OpenPakAccountApi on OpenPakApi {
   /// GET /me/discord
   Future<DiscordLink> discord() async =>
       DiscordLink.fromJson(await _decode(await _http.get(_uri('/me/discord'), headers: _headers())));
+
+  /// GET /me/wiiu/console-password — the Network ID to type on a Wii U or 3DS; null while the
+  /// account has none yet or the server cannot say.
+  Future<ConsolePassword?> consolePassword() async {
+    final r = await _http.get(_uri('/me/wiiu/console-password'), headers: _headers());
+    if (r.statusCode == 404 || r.statusCode == 503) return null;
+    return ConsolePassword.fromJson(await _decode(r));
+  }
+
+  /// POST /me/wiiu/console-password — a separate console password, for an OpenPak password a Wii U
+  /// cannot take. Asks for the OpenPak password again, and a code with two-factor authentication.
+  Future<void> setConsolePassword(String current, String console, {String? code}) => _post(
+    '/me/wiiu/console-password',
+    {
+      'current_password': current,
+      'console_password': console,
+      if (code != null && code.isNotEmpty) 'code': code,
+    },
+  );
 
   /// DELETE /me/discord
   Future<void> unlinkDiscord() async =>

@@ -11,6 +11,13 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.26.0 — 2026-11-03
+
+- Account → Linked platforms has a Wii U / 3DS sign-in row: it names the Network ID to type on the console and says the
+  OpenPak password is the console password (signing in to the app or website keeps it in step). Only when the OpenPak
+  password cannot be typed on a Wii U does it offer a separate console password (asks for the OpenPak password, and a
+  code with two-factor authentication). Uses `GET`/`POST /api/v1/me/wiiu/console-password`.
+
 ## v0.25.4 — 2026-11-03
 
 - Re-release of 0.25.3, whose build stopped because the app's own version string was not bumped.

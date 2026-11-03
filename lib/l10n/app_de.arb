@@ -799,5 +799,18 @@
   "sitesVerseCommunity": "OpenVerse-Community",
   "rewardsGlanceReady": "{n, plural, =1{1 Belohnung zum Einlösen bereit} other{{n} Belohnungen zum Einlösen bereit}}",
   "rewardsGlanceNext": "Als Nächstes: {name}",
-  "rewardsGlanceBalance": "{n} Pak Points"
+  "rewardsGlanceBalance": "{n} Pak Points",
+  "consoleTitle": "Anmeldung auf Wii U / 3DS",
+  "consoleSync": "Verknüpfe auf der Konsole eine bestehende Network ID: gib die ID {id} und dein OpenPak-Passwort ein.",
+  "consoleUnsynced": "Verknüpfe auf der Konsole eine bestehende Network ID: gib die ID {id} und dein OpenPak-Passwort ein. Melde dich vorher einmal bei OpenPak ab und wieder an, damit die Konsole dein Passwort kennt.",
+  "consoleCustom": "Gib die ID {id} und das eigene Konsolenpasswort ein, das du gesetzt hast. Meldest du dich mit einem Passwort an, das eine Wii U annimmt, wird dein OpenPak-Passwort wieder zum Konsolenpasswort.",
+  "consoleIncompatible": "Dein OpenPak-Passwort lässt sich auf einer Wii U nicht eingeben. Setze ein eigenes Konsolenpasswort und gib dann auf der Konsole die ID {id} und dieses Passwort ein.",
+  "consoleSet": "Eigenes Konsolenpasswort setzen",
+  "consoleSetShort": "Setzen",
+  "consoleRules": "{min} bis {max} Zeichen: Buchstaben, Ziffern und Tastatursymbole, keine Leerzeichen oder Umlaute, und es darf deine ID ({id}) nicht enthalten.",
+  "consoleNewPassword": "Konsolenpasswort",
+  "consoleRepeatPassword": "Konsolenpasswort wiederholen",
+  "consoleMismatch": "Die beiden Konsolenpasswörter sind verschieden.",
+  "consoleSaved": "Konsolenpasswort gesetzt.",
+  "consoleRulesBroken": "Dieses Konsolenpasswort verstößt gegen die Regeln: 6 bis 16 Zeichen, keine Leerzeichen oder Umlaute, und es darf deine ID nicht enthalten."
 }

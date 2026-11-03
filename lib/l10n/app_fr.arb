@@ -799,5 +799,18 @@
   "sitesVerseCommunity": "Communauté OpenVerse",
   "rewardsGlanceReady": "{n, plural, =1{1 récompense à récupérer} other{{n} récompenses à récupérer}}",
   "rewardsGlanceNext": "Ensuite : {name}",
-  "rewardsGlanceBalance": "{n} Pak Points"
+  "rewardsGlanceBalance": "{n} Pak Points",
+  "consoleTitle": "Connexion sur Wii U / 3DS",
+  "consoleSync": "Sur la console, associez un identifiant Nintendo Network existant : saisissez l'identifiant {id} et votre mot de passe OpenPak.",
+  "consoleUnsynced": "Sur la console, associez un identifiant Nintendo Network existant : saisissez l'identifiant {id} et votre mot de passe OpenPak. Déconnectez-vous puis reconnectez-vous une fois à OpenPak avant, pour que la console connaisse votre mot de passe.",
+  "consoleCustom": "Saisissez l'identifiant {id} et le mot de passe de console distinct que vous avez défini. Vous connecter avec un mot de passe qu'une Wii U accepte refait de votre mot de passe OpenPak celui de la console.",
+  "consoleIncompatible": "Votre mot de passe OpenPak ne peut pas être saisi sur une Wii U. Définissez un mot de passe de console distinct, puis saisissez sur la console l'identifiant {id} et ce mot de passe.",
+  "consoleSet": "Définir un mot de passe de console distinct",
+  "consoleSetShort": "Définir",
+  "consoleRules": "{min} à {max} caractères : lettres, chiffres et symboles du clavier, sans espaces ni lettres accentuées, et il ne doit pas contenir votre identifiant ({id}).",
+  "consoleNewPassword": "Mot de passe de console",
+  "consoleRepeatPassword": "Répétez le mot de passe de console",
+  "consoleMismatch": "Les deux mots de passe de console diffèrent.",
+  "consoleSaved": "Mot de passe de console défini.",
+  "consoleRulesBroken": "Ce mot de passe de console enfreint les règles : 6 à 16 caractères, sans espaces ni accents, et sans votre identifiant."
 }

@@ -3659,5 +3659,31 @@
         "type": "int"
       }
     }
-  }
+  },
+  "consoleTitle": "Wii U / 3DS sign-in",
+  "@consoleTitle": {"description": "Row title in Linked platforms."},
+  "consoleSync": "On the console, link an existing Network ID: type the ID {id} and your OpenPak password.",
+  "@consoleSync": {"description": "Explains how to sign in on the Wii U.", "placeholders": {"id": {"type": "String"}}},
+  "consoleUnsynced": "On the console, link an existing Network ID: type the ID {id} and your OpenPak password. Sign out and back in to OpenPak once first, so the console learns your password.",
+  "@consoleUnsynced": {"description": "Same, for an account that has not signed in since this existed.", "placeholders": {"id": {"type": "String"}}},
+  "consoleCustom": "Type the ID {id} and the separate console password you set. Signing in with a password a Wii U can take makes your OpenPak password the console password again.",
+  "@consoleCustom": {"description": "Same, with a separate console password.", "placeholders": {"id": {"type": "String"}}},
+  "consoleIncompatible": "Your OpenPak password cannot be typed on a Wii U. Set a separate console password, then type the ID {id} and that password on the console.",
+  "@consoleIncompatible": {"description": "Shown when the OpenPak password is too long, has accents or contains the ID.", "placeholders": {"id": {"type": "String"}}},
+  "consoleSet": "Set a separate console password",
+  "@consoleSet": {"description": "Dialog title and button."},
+  "consoleSetShort": "Set",
+  "@consoleSetShort": {"description": "Short button on the row."},
+  "consoleRules": "{min} to {max} characters: letters, digits and keyboard symbols, no spaces or accents, and it must not contain your ID ({id}).",
+  "@consoleRules": {"description": "Rules for a console password.", "placeholders": {"id": {"type": "String"}, "min": {"type": "int"}, "max": {"type": "int"}}},
+  "consoleNewPassword": "Console password",
+  "@consoleNewPassword": {"description": "Field label."},
+  "consoleRepeatPassword": "Repeat the console password",
+  "@consoleRepeatPassword": {"description": "Field label."},
+  "consoleMismatch": "The two console passwords differ.",
+  "@consoleMismatch": {"description": "Toast."},
+  "consoleSaved": "Console password set.",
+  "@consoleSaved": {"description": "Toast."},
+  "consoleRulesBroken": "That console password breaks the rules: 6 to 16 characters, no spaces or accents, and not containing your ID.",
+  "@consoleRulesBroken": {"description": "Toast."}
 }
