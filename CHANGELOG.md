@@ -11,6 +11,11 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.25.3 — 2026-11-03
+
+- The "Downloading the update…" title stays on one line on narrow phones (it wrapped on the ROG 3); dialog
+  titles across the app use a smaller 18 sp heading instead of Material's 24 sp.
+
 ## v0.25.2 — 2026-11-03
 
 - **Profile pictures everywhere.** Friends, requests, blocked, invitation senders, chat conversations and voice-room members show the account's picture (the website API now sends `avatar_url` on all of them).

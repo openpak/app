@@ -295,6 +295,9 @@ ThemeData _base(Brightness b, Color accent, Color paper, Color ink, Tokens t) {
       showCheckmark: false,
     ),
     dialogTheme: DialogThemeData(
+      // The Material default (headlineSmall, 24 sp at w800 here) wraps short titles such as
+      // "Downloading the update…" onto two lines on a phone.
+      titleTextStyle: TextStyle(fontFamily: uiFont, color: ink, fontSize: 18, fontWeight: FontWeight.w800, height: 1.25),
       backgroundColor: t.raised,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(

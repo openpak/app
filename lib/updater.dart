@@ -338,7 +338,12 @@ Future<void> _update(BuildContext context, ReleaseInfo release) async {
       builder: (context) => PopScope(
         canPop: false,
         child: AlertDialog(
-          title: Text(l.updateDownloading),
+          // One line in every locale on a narrow phone: shrink rather than wrap.
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(l.updateDownloading, maxLines: 1),
+          ),
           content: ValueListenableBuilder<double?>(
             valueListenable: progress,
             builder: (_, value, _) => LinearProgressIndicator(value: value),
