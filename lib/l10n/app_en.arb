@@ -3027,6 +3027,24 @@
   "@rankingsSub": {
     "description": "Subtitle of the rankings hub"
   },
+  "rankingsNoScores": "No scores yet — be the first",
+  "@rankingsNoScores": {
+    "description": "A game with rankings that nobody has scored in yet"
+  },
+  "rankingsMore": "and {count} more",
+  "@rankingsMore": {
+    "description": "After a short list of board names: how many more boards there are",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "companionRankingsNoScoresBoards": "Boards in this game. Play online and set a score to fill them.",
+  "@companionRankingsNoScoresBoards": {
+    "description": "Above the board names of a game nobody has scored in yet"
+  },
   "rankingsEmpty": "No game has recorded rankings yet. They appear here as soon as someone sets a score.",
   "@rankingsEmpty": {
     "description": "No game has rankings"

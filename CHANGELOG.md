@@ -11,6 +11,9 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.27.0 — 2026-11-04
+- Rankings: the hub lists every game that has rankings, by console, with scored games first. A game nobody has scored in says "No scores yet — be the first" and names its boards; its Rankings tab shows the same empty state. Reads `has_scores`, `board_names` (`/rankings`) and `no_scores` (`/companion/titles/{slug}/rankings`); an older server still works.
+
 ## v0.26.0 — 2026-11-03
 
 - Account → Linked platforms has a Wii U / 3DS sign-in row: it names the Network ID to type on the console and says the

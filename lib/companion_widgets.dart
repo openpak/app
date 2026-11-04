@@ -220,79 +220,108 @@ class _RankingBoardViewState extends State<RankingBoardView> {
           return ListView(
             padding: pad,
             children: [
-              if (r.boards.length > 1)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        for (final b in r.boards)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              selected: b.id == r.board,
-                              label: Text(b.label),
-                              onSelected: (_) => _go(board: b.id),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              if (r.label.isNotEmpty)
+              if (r.noScores) ...[
                 Padding(
                   padding: const EdgeInsets.only(left: 4, bottom: 8),
                   child: Text(
-                    r.label,
+                    l.rankingsNoScores,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-              if (r.entries.isEmpty)
-                EmptyNote(l.companionRankingsEmpty)
-              else
-                Panel(
-                  child: _Rows(rows: r.entries, api: widget.api),
-                ),
-              if (r.hasPrev || r.hasNext)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Row(
+                if (r.boards.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 10),
+                    child: Text(
+                      l.companionRankingsNoScoresBoards,
+                      style: TextStyle(color: t.ink2, height: 1.4),
+                    ),
+                  ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
-                      OutlinedButton(
-                        onPressed: r.hasPrev
-                            ? () => _go(
-                                offset: (r.offset - r.limit).clamp(0, r.total),
-                              )
-                            : null,
-                        child: Text(l.companionRankingsPrev),
-                      ),
-                      Expanded(
-                        child: Text(
-                          l.companionRankingsShowing(
-                            r.offset + 1,
-                            r.offset + r.entries.length,
-                            r.total,
-                          ),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: t.muted, fontSize: 12.5),
-                        ),
-                      ),
-                      OutlinedButton(
-                        onPressed: r.hasNext
-                            ? () => _go(offset: r.offset + r.limit)
-                            : null,
-                        child: Text(l.companionRankingsNext),
-                      ),
+                      for (final b in r.boards) Chip(label: Text(b.label)),
                     ],
                   ),
-                ),
-              if (r.around.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                SectionLabel(l.companionRankingsAround),
-                Panel(
-                  child: _Rows(rows: r.around, api: widget.api),
-                ),
+                ],
+              ] else ...[
+                if (r.boards.length > 1)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          for (final b in r.boards)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                selected: b.id == r.board,
+                                label: Text(b.label),
+                                onSelected: (_) => _go(board: b.id),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (r.label.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text(
+                      r.label,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                if (r.entries.isEmpty)
+                  EmptyNote(l.companionRankingsEmpty)
+                else
+                  Panel(
+                    child: _Rows(rows: r.entries, api: widget.api),
+                  ),
+                if (r.hasPrev || r.hasNext)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Row(
+                      children: [
+                        OutlinedButton(
+                          onPressed: r.hasPrev
+                              ? () => _go(
+                                  offset: (r.offset - r.limit).clamp(
+                                    0,
+                                    r.total,
+                                  ),
+                                )
+                              : null,
+                          child: Text(l.companionRankingsPrev),
+                        ),
+                        Expanded(
+                          child: Text(
+                            l.companionRankingsShowing(
+                              r.offset + 1,
+                              r.offset + r.entries.length,
+                              r.total,
+                            ),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: t.muted, fontSize: 12.5),
+                          ),
+                        ),
+                        OutlinedButton(
+                          onPressed: r.hasNext
+                              ? () => _go(offset: r.offset + r.limit)
+                              : null,
+                          child: Text(l.companionRankingsNext),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (r.around.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  SectionLabel(l.companionRankingsAround),
+                  Panel(
+                    child: _Rows(rows: r.around, api: widget.api),
+                  ),
+                ],
               ],
             ],
           );

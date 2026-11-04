@@ -299,6 +299,52 @@ void main() {
       expect(groupByConsole(g, 'gam').keys, ['3DS']);
     });
 
+    test(
+      'rankings hub lists games nobody has scored in, after the scored ones',
+      () {
+        final g = [
+          RankedGame.fromJson({
+            'slug': 'a',
+            'name': 'Alpha',
+            'console': 'Switch',
+            'boards': 2,
+            'has_scores': false,
+            'board_names': ['Time trial', 'Board 2'],
+          }),
+          RankedGame.fromJson({
+            'slug': 'z',
+            'name': 'Zeta',
+            'console': 'Switch',
+            'boards': 1,
+            'has_scores': true,
+          }),
+          // An older server sends no flag: the game has scores.
+          RankedGame.fromJson({
+            'slug': 'o',
+            'name': 'Old',
+            'console': 'Switch',
+          }),
+        ];
+        expect(g[0].hasScores, isFalse);
+        expect(g[0].boardNames, ['Time trial', 'Board 2']);
+        expect(g[2].hasScores, isTrue);
+        expect(groupByConsole(g)['Switch']!.map((x) => x.name), [
+          'Old',
+          'Zeta',
+          'Alpha',
+        ]);
+        expect(
+          RankingPage.fromJson({
+            'no_scores': true,
+            'boards': [
+              {'id': '0', 'label': 'Time trial', 'no_scores': true},
+            ],
+          }).noScores,
+          isTrue,
+        );
+      },
+    );
+
     testWidgets(
       'activity card: shares of the most played, unknown title named',
       (tester) async {

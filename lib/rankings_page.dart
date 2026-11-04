@@ -18,7 +18,10 @@ Map<String, List<RankedGame>> groupByConsole(
   final sorted = [...games]
     ..sort((a, b) {
       final c = a.console.compareTo(b.console);
-      return c != 0 ? c : a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      if (c != 0) return c;
+      // Games with scores first, then by name.
+      if (a.hasScores != b.hasScores) return a.hasScores ? -1 : 1;
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
   for (final g in sorted) {
     if (q.isNotEmpty && !g.name.toLowerCase().contains(q)) continue;
@@ -101,9 +104,7 @@ class _RankingsPageState extends State<RankingsPage> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              subtitle: Text(
-                                l.rankingsBoardsN(e.value[i].boards),
-                              ),
+                              subtitle: Text(_subtitle(l, e.value[i])),
                               trailing: const Icon(Icons.chevron_right),
                               onTap: () => Navigator.of(context).push(
                                 MaterialPageRoute(
@@ -127,6 +128,18 @@ class _RankingsPageState extends State<RankingsPage> {
       ),
     );
   }
+}
+
+/// "3 boards", or for a game nobody has scored in: "No scores yet — be the
+/// first" and the names of its boards.
+String _subtitle(AppLocalizations l, RankedGame g) {
+  if (g.hasScores) return l.rankingsBoardsN(g.boards);
+  final names = g.boardNames.take(4).join(', ');
+  final more = g.boardNames.length - 4;
+  return [
+    l.rankingsNoScores,
+    if (names.isNotEmpty) '$names${more > 0 ? ' ${l.rankingsMore(more)}' : ''}',
+  ].join('\n');
 }
 
 /// One game's boards, opened from the hub.

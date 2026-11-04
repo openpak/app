@@ -110,17 +110,29 @@ class RankedGame {
     required this.name,
     this.console = '',
     this.boards = 0,
+    this.hasScores = true,
+    this.boardNames = const [],
   });
   factory RankedGame.fromJson(Map<String, dynamic> j) => RankedGame(
     slug: j['slug'] as String? ?? '',
     name: j['name'] as String? ?? '',
     console: j['console'] as String? ?? '',
     boards: _int(j['boards']),
+    // An older server lists only games with scores, so a missing flag means scored.
+    hasScores: j['has_scores'] as bool? ?? true,
+    boardNames: [
+      for (final n in (j['board_names'] as List<dynamic>? ?? const []))
+        if (n is String) n,
+    ],
   );
   final String slug;
   final String name;
   final String console;
   final int boards;
+
+  /// False while nobody has a score on any board of the game.
+  final bool hasScores;
+  final List<String> boardNames;
 }
 
 /// One selectable board: a course, a mode, a season.
@@ -130,17 +142,20 @@ class RankBoard {
     required this.label,
     this.unit = '',
     this.season = '',
+    this.noScores = false,
   });
   factory RankBoard.fromJson(Map<String, dynamic> j) => RankBoard(
     id: j['id'] as String? ?? '',
     label: j['label'] as String? ?? '',
     unit: j['unit'] as String? ?? '',
     season: j['season'] as String? ?? '',
+    noScores: j['no_scores'] == true,
   );
   final String id;
   final String label;
   final String unit;
   final String season;
+  final bool noScores;
 }
 
 /// One row of a board. [display] is how the game shows the value.
@@ -190,6 +205,7 @@ class RankingPage {
     this.total = 0,
     this.offset = 0,
     this.limit = 0,
+    this.noScores = false,
   });
   factory RankingPage.fromJson(Map<String, dynamic> j) => RankingPage(
     boards: _list(j['boards'], RankBoard.fromJson),
@@ -200,6 +216,7 @@ class RankingPage {
     total: _int(j['total']),
     offset: _int(j['offset']),
     limit: _int(j['limit']),
+    noScores: j['no_scores'] == true,
   );
   final List<RankBoard> boards;
   final String board;
@@ -209,6 +226,9 @@ class RankingPage {
   final int total;
   final int offset;
   final int limit;
+
+  /// No board of the game has a score yet.
+  final bool noScores;
 
   bool get hasPrev => offset > 0;
   bool get hasNext => limit > 0 && offset + limit < total;
