@@ -1,7 +1,7 @@
 name: openpak
 description: OpenPak companion app — your account, friends and invitations.
 publish_to: none
-version: 0.29.0+49
+version: 0.30.0+50
 
 environment:
   sdk: ^3.9.0
@@ -39,7 +39,7 @@ dependencies:
   # SHA-256 of the downloaded update APK, checked against the release's digest.
   crypto: ^3.0.6
   # A ticket takes any file up to 10 MB, like the website: the system picker, any type.
-  file_picker: ^11.0.3
+  file_picker: ^10.3.10
 
 dev_dependencies:
   flutter_test:

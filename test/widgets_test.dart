@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:openpak/l10n.dart';
 import 'package:openpak/theme.dart';
 import 'package:openpak/widgets.dart';
 
@@ -42,5 +43,16 @@ void main() {
     // No overflow error is the assertion; a row that overflows paints a yellow
     // stripe on a real phone.
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('promptForm shows a hint inside a field', (tester) async {
+    await tester.pumpWidget(localizedApp(home: Builder(builder: (context) => TextButton(
+      onPressed: () => promptForm(context, title: 'Link', labels: [context.l10n.accountLinkWfcField], hints: const ['XXXX-XXXX'], action: 'Go'),
+      child: const Text('open'),
+    ))));
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    expect(find.text('Friend code or the code your Wii shows'), findsOneWidget);
+    expect(find.text('XXXX-XXXX'), findsOneWidget);
   });
 }

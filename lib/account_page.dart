@@ -472,7 +472,8 @@ class _AccountPageState extends State<AccountPage> {
     final v = await promptForm(
       context,
       title: l.accountLinkWfc,
-      labels: [l.commonFriendCode],
+      labels: [l.accountLinkWfcField],
+      hints: const ['XXXX-XXXX'],
       action: l.accountLink,
       help: l.accountLinkWfcHelp,
     );

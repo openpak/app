@@ -390,6 +390,7 @@ Future<List<String>?> promptForm(
   required String action,
   List<String> initial = const [],
   String? help,
+  List<String> hints = const [],
 }) {
   final controllers = [
     for (var i = 0; i < labels.length; i++)
@@ -411,7 +412,10 @@ Future<List<String>?> promptForm(
                 obscureText: labels[i].startsWith('*'),
                 autocorrect: false,
                 keyboardType: labels[i].startsWith('@') ? TextInputType.emailAddress : null,
-                decoration: InputDecoration(labelText: labels[i].replaceFirst(RegExp('^[*@]'), '')),
+                decoration: InputDecoration(
+                  labelText: labels[i].replaceFirst(RegExp('^[*@]'), ''),
+                  hintText: i < hints.length ? hints[i] : null,
+                ),
               ),
             if (help != null) ...[
               const SizedBox(height: 12),

@@ -608,7 +608,11 @@
   "@accountLinkWfc": {
     "description": "Row and dialog title for linking a Wii or DS by friend code. Wii and DS are product names."
   },
-  "accountLinkWfcHelp": "Type the friend code any Wii or DS game on that console shows you. The console has no login of its own, so this is how it joins your account.",
+  "accountLinkWfcField": "Friend code or the code your Wii shows",
+  "@accountLinkWfcField": {
+    "description": "Label of the field in the Link a Wii or DS dialog: a friend code, or the 8-character code Mario Kart Wii shows."
+  },
+  "accountLinkWfcHelp": "Type the friend code any Wii or DS game on that console shows you, or the 8-character code Mario Kart Wii shows in its Wi-Fi menu message (XXXX-XXXX). The console has no login of its own, so this is how it joins your account.",
   "@accountLinkWfcHelp": {
     "description": "Help text in the Link a Wii or DS dialog."
   },

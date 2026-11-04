@@ -40,7 +40,7 @@ RowState _statusState(String s) => switch (s) {
 
 /// Opens the system file picker for one file of any type (what the website's
 /// ticket form takes). Swapped in tests.
-Future<PlatformFile?> Function() ticketFilePicker = () async => (await FilePicker.pickFiles())?.files.firstOrNull;
+Future<PlatformFile?> Function() ticketFilePicker = () async => (await FilePicker.platform.pickFiles())?.files.firstOrNull;
 
 /// Picks one file for a ticket (the system picker, so no storage permission);
 /// null when nothing was chosen or it is over the 10 MB limit, which is
