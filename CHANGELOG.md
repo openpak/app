@@ -11,6 +11,11 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.29.0 — 2026-11-04
+
+- Console marks: refreshed from the website's set (`assets/consoles`). Near-neutral wordmarks in the dark files are lifted to 7:1 and coloured fills to 4.5:1 against the dark tile, and the light files darken the Wii U blue, Wii greys and Xbox 360 greens, so no mark is dim now that none sits on a white chip. The marks were already drawn on the theme tile and picked by `Theme.of(context).brightness`.
+- PS4 and PS5 marks added (`consoleAsset`).
+
 ## v0.28.0 — 2026-11-04
 - Help tickets (new request and replies) take any file up to 10 MB, like the website, through the system file picker (`file_picker`) instead of the gallery picker. Pictures keep a thumbnail preview; other files show an icon, name and size. A file over 10 MB is refused on the device with "That file is larger than 10 MB. Choose a smaller one." before any upload. The upload goes to the same ticket endpoints (the server keeps any type). The button now reads "Attach a file" in all six languages. Card prds#94.
 
