@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'api.dart';
@@ -38,18 +38,46 @@ RowState _statusState(String s) => switch (s) {
   _ => RowState.warn,
 };
 
-/// Picks one picture from the gallery for a ticket (the system picker, so no
-/// storage permission); null when nothing was chosen or it is too big.
-Future<TicketUpload?> _pickScreenshot(BuildContext context) async {
-  final file = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 2048, maxHeight: 2048, imageQuality: 85);
+/// Opens the system file picker for one file of any type (what the website's
+/// ticket form takes). Swapped in tests.
+Future<PlatformFile?> Function() ticketFilePicker = () async => (await FilePicker.pickFiles())?.files.firstOrNull;
+
+/// Picks one file for a ticket (the system picker, so no storage permission);
+/// null when nothing was chosen or it is over the 10 MB limit, which is
+/// checked here, before any upload, with a message.
+Future<TicketUpload?> _pickFile(BuildContext context) async {
+  final file = await ticketFilePicker();
   if (file == null) return null;
-  final bytes = await file.readAsBytes();
-  if (bytes.length > ticketAttachmentLimit) {
+  void tooLarge() {
     if (context.mounted) showToast(context, context.l10n.supportTooLarge);
+  }
+
+  if (file.size > ticketAttachmentLimit) {
+    tooLarge();
+    return null;
+  }
+  final Uint8List bytes;
+  if (file.bytes != null) {
+    bytes = file.bytes!;
+  } else if (file.path != null) {
+    bytes = await XFile(file.path!).readAsBytes();
+  } else {
+    return null;
+  }
+  if (bytes.length > ticketAttachmentLimit) {
+    tooLarge();
     return null;
   }
   return (bytes: bytes, name: file.name);
 }
+
+const _imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+
+bool _isImageName(String name) => name.contains('.') && _imageExtensions.contains(name.split('.').last.toLowerCase());
+
+String _sizeLabel(int bytes) => bytes >= 1024 * 1024
+    ? '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB'
+    : '${(bytes / 1024).ceil()} KB';
 
 /// The website's Help page: your requests, a form for a new one, and the
 /// assistant when this account may use it. Answers arrive here (and by push).
@@ -233,7 +261,7 @@ class _SupportPageState extends State<SupportPage> {
                           _AttachmentPicker(
                             file: _file,
                             onPick: () async {
-                              final f = await _pickScreenshot(context);
+                              final f = await _pickFile(context);
                               if (f != null) setState(() => _file = f);
                             },
                             onClear: () => setState(() => _file = null),
@@ -285,11 +313,34 @@ class _AttachmentPicker extends StatelessWidget {
         ),
       );
     }
+    final f = file!;
     return Row(
       children: [
-        const Icon(Icons.image_outlined, size: 18),
-        const SizedBox(width: 8),
-        Expanded(child: Text(file!.name, overflow: TextOverflow.ellipsis)),
+        if (_isImageName(f.name))
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: Image.memory(
+              f.bytes,
+              key: const Key('attachment-preview'),
+              width: 48,
+              height: 48,
+              fit: BoxFit.cover,
+              cacheWidth: 96,
+              errorBuilder: (_, _, _) => const SizedBox(width: 48, height: 48, child: Icon(Icons.image_outlined)),
+            ),
+          )
+        else
+          const Icon(Icons.insert_drive_file_outlined, size: 24),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(f.name, overflow: TextOverflow.ellipsis),
+              Text(_sizeLabel(f.bytes.length), style: TextStyle(color: tokensOf(context).muted, fontSize: 12)),
+            ],
+          ),
+        ),
         IconButton(tooltip: l.supportAttachRemove, onPressed: onClear, icon: const Icon(Icons.close)),
       ],
     );
@@ -354,8 +405,7 @@ class _TicketPageState extends State<TicketPage> {
     }
   }
 
-  static const _images = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
-
+  
   Future<void> _openAttachment(TicketAttachment a) async {
     final l = context.l10n;
     final Uint8List bytes;
@@ -371,7 +421,7 @@ class _TicketPageState extends State<TicketPage> {
       fileNameOverrides: [a.name],
     ));
     final ext = a.name.contains('.') ? a.name.split('.').last.toLowerCase() : '';
-    if (!_images.contains(ext)) return share();
+    if (!_imageExtensions.contains(ext)) return share();
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -457,7 +507,7 @@ class _TicketPageState extends State<TicketPage> {
                           _AttachmentPicker(
                             file: _file,
                             onPick: () async {
-                              final f = await _pickScreenshot(context);
+                              final f = await _pickFile(context);
                               if (f != null) setState(() => _file = f);
                             },
                             onClear: () => setState(() => _file = null),

@@ -11,6 +11,9 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.28.0 — 2026-11-04
+- Help tickets (new request and replies) take any file up to 10 MB, like the website, through the system file picker (`file_picker`) instead of the gallery picker. Pictures keep a thumbnail preview; other files show an icon, name and size. A file over 10 MB is refused on the device with "That file is larger than 10 MB. Choose a smaller one." before any upload. The upload goes to the same ticket endpoints (the server keeps any type). The button now reads "Attach a file" in all six languages. Card prds#94.
+
 ## v0.27.0 — 2026-11-04
 - Rankings: the hub lists every game that has rankings, by console, with scored games first. A game nobody has scored in says "No scores yet — be the first" and names its boards; its Rankings tab shows the same empty state. Reads `has_scores`, `board_names` (`/rankings`) and `no_scores` (`/companion/titles/{slug}/rankings`); an older server still works.
 

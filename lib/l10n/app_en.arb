@@ -3219,7 +3219,7 @@
   "@supportAttachmentLabel": {
     "description": "Field label: optional attachment."
   },
-  "supportAttachmentHint": "One file up to 10 MB: a screenshot, a log, a crash report.",
+  "supportAttachmentHint": "One file of any type up to 10 MB: a screenshot, a log, a crash report.",
   "@supportAttachmentHint": {
     "description": "Hint under the attachment: size limit and what to attach."
   },
@@ -3295,7 +3295,7 @@
   "@supportInvalid": {
     "description": "Error: the help request form is incomplete."
   },
-  "supportTooLarge": "The attachment is larger than 10 MB.",
+  "supportTooLarge": "That file is larger than 10 MB. Choose a smaller one.",
   "@supportTooLarge": {
     "description": "Error: the attachment is over 10 MB."
   },
@@ -3575,7 +3575,7 @@
   "@supportUnavailable": {
     "description": "Shown when help requests are switched off on the server."
   },
-  "supportAttach": "Attach a screenshot",
+  "supportAttach": "Attach a file",
   "@supportAttach": {
     "description": "Button: attach a screenshot to a help message."
   },

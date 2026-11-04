@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -113,13 +114,67 @@ void main() {
     expect(find.text('Cannot sign in'), findsOneWidget);
     expect(find.text('Answered'), findsOneWidget);
     expect(find.text('New request'), findsOneWidget);
-    expect(find.text('Attach a screenshot'), findsOneWidget);
+    expect(find.text('Attach a file'), findsOneWidget);
+  });
+
+
+  // A 1x1 PNG, so Image.memory has something real to decode.
+  final png = base64Decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+
+  Future<void> choose(WidgetTester tester, PlatformFile file) async {
+    final before = ticketFilePicker;
+    ticketFilePicker = () async => file;
+    addTearDown(() => ticketFilePicker = before);
+    await tester.tap(find.text('Attach a file'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('any file type can be attached: a log shows its name and size, no image preview', (tester) async {
+    await pump(tester, SupportPage(api: api()));
+    await choose(tester, PlatformFile(name: 'crash.log', size: 2048, bytes: Uint8List(2048)));
+    expect(find.text('crash.log'), findsOneWidget);
+    expect(find.text('2 KB'), findsOneWidget);
+    expect(find.byKey(const Key('attachment-preview')), findsNothing);
+    expect(find.byIcon(Icons.insert_drive_file_outlined), findsOneWidget);
+  });
+
+  testWidgets('an image attachment keeps its preview', (tester) async {
+    await pump(tester, SupportPage(api: api()));
+    await choose(tester, PlatformFile(name: 'shot.png', size: png.length, bytes: png));
+    expect(find.text('shot.png'), findsOneWidget);
+    expect(find.byKey(const Key('attachment-preview')), findsOneWidget);
+  });
+
+  testWidgets('a file over 10 MB is refused with a message and nothing is attached', (tester) async {
+    await pump(tester, SupportPage(api: api()));
+    await choose(tester, PlatformFile(name: 'huge.zip', size: ticketAttachmentLimit + 1));
+    expect(find.text('That file is larger than 10 MB. Choose a smaller one.'), findsOneWidget);
+    expect(find.text('huge.zip'), findsNothing);
+    expect(find.text('Attach a file'), findsOneWidget);
+  });
+
+  testWidgets('exactly 10 MB is accepted, and the attached file is removable', (tester) async {
+    await pump(tester, SupportPage(api: api()));
+    await choose(tester, PlatformFile(name: 'edge.bin', size: ticketAttachmentLimit, bytes: Uint8List(ticketAttachmentLimit)));
+    expect(find.text('edge.bin'), findsOneWidget);
+    await tester.tap(find.byTooltip('Remove attachment'));
+    await tester.pumpAndSettle();
+    expect(find.text('Attach a file'), findsOneWidget);
+  });
+
+  testWidgets('a chosen file goes out with the ticket as multipart', (tester) async {
+    await pump(tester, SupportPage(api: api(), subject: 'Hi', category: 'app', message: 'It fails'));
+    await choose(tester, PlatformFile(name: 'crash.log', size: 3, bytes: Uint8List.fromList([1, 2, 3])));
+    await tester.ensureVisible(find.text('Send'));
+    await tester.tap(find.text('Send'));
+    await tester.pumpAndSettle();
+    expect(calls, contains('POST /me/tickets multipart/form-data'));
   });
 
   testWidgets('no attachment button when the deployment keeps no files', (tester) async {
     files = false;
     await pump(tester, SupportPage(api: api()));
-    expect(find.text('Attach a screenshot'), findsNothing);
+    expect(find.text('Attach a file'), findsNothing);
   });
 
   testWidgets('503 tickets_unavailable is a calm message, not an error', (tester) async {

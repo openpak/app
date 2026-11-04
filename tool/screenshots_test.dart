@@ -11,8 +11,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -733,5 +735,28 @@ void main() {
     await tester.drag(page, const Offset(0, -3000));
     await _settle(tester);
   });
+  // The attachment picker (any file up to 10 MB): a log, a picture with its preview, and a file that is too big.
+  Future<void> Function(WidgetTester, AppLocalizations, Fake) attach(PlatformFile Function() file) => (tester, l, fake) async {
+    ticketFilePicker = () async => file();
+    final page = find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down).first;
+    await tester.drag(page, const Offset(0, -3000));
+    await _settle(tester);
+    await _tap(tester, find.text(l.supportAttach));
+    await _settle(tester);
+    await tester.drag(page, const Offset(0, -3000));
+    await _settle(tester);
+  };
+  SupportPage newRequest(OpenPakApi api, Lang l) => SupportPage(
+    api: api,
+    subject: l.t('Kart crashes at the start', 'Kart stürzt beim Spielstart ab'),
+    category: 'switch',
+    message: l.t('The game closes right after the logo.', 'Das Spiel schließt sich direkt nach dem Logo.'),
+  );
+  _screen('support-attach-file', newRequest, full: false,
+      act: attach(() => PlatformFile(name: 'harbor-crash-2026-11-04.log', size: 482 * 1024, bytes: Uint8List(482 * 1024))));
+  _screen('support-attach-image', newRequest, full: false,
+      act: attach(() => PlatformFile(name: 'screenshot.png', size: 1, bytes: File('assets/pakka.png').readAsBytesSync())));
+  _screen('support-attach-toolarge', newRequest, full: false,
+      act: attach(() => PlatformFile(name: 'recording.mp4', size: 48 * 1024 * 1024)));
   _screen('operator', (api, l) => OperatorPage(api: api));
 }
