@@ -505,11 +505,15 @@ class _RewardsPageState extends State<RewardsPage> {
                   footer: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      EquipButton(
-                        equipped: it.equipped,
-                        disabled: _frozen || _busy,
-                        onPressed: () => _equip(it.kind, it.id, it.name, clear: it.equipped),
-                      ),
+                      // A game cosmetic is worn in its game, not here: say which game instead of offering Equip.
+                      if (it.kind == 'game_cosmetic')
+                        Text(it.where, style: Theme.of(context).textTheme.bodySmall)
+                      else
+                        EquipButton(
+                          equipped: it.equipped,
+                          disabled: _frozen || _busy,
+                          onPressed: () => _equip(it.kind, it.id, it.name, clear: it.equipped),
+                        ),
                       if (it.kind == 'theme') ...[const SizedBox(height: 6), _previewButton(it)],
                     ],
                   ),
