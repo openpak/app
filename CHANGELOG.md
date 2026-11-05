@@ -11,6 +11,10 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.31.0 — 2026-11-05
+
+- Rewards: game cosmetics ("Game items", card #141) show the game's own title art and the game and console instead of an Equip button (the game equips them). The website serves the art; nothing is listed until an item is deliverable.
+
 ## v0.30.0 — 2026-11-04
 - Fix: the v0.28.0 and v0.29.0 Android builds failed (file_picker 11 skips the Kotlin plugin under AGP 9 with `android.builtInKotlin=false`, so its plugin class was missing); `file_picker` is pinned to ^10.3.10. Neither was released, so this carries its Help-ticket attachments: any file up to 10 MB (card prds#94).
 - Link a Wii or DS: the field now reads "Friend code or the code your Wii shows" (all locales) with the hint `XXXX-XXXX`; the help text names the 8-character code Mario Kart Wii shows in its Wi-Fi menu message. The code goes in the same `friend_code` field of `POST /me/links/wfc`, which the server (website v0.91.0) tells apart from a friend code (card prds#98).
