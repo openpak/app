@@ -608,11 +608,15 @@
   "@accountLinkWfc": {
     "description": "Row and dialog title for linking a Wii or DS by friend code. Wii and DS are product names."
   },
-  "accountLinkWfcField": "Friend code or the code your Wii shows",
+  "accountLinkWfcField": "The code your Wii or DS shows",
   "@accountLinkWfcField": {
     "description": "Label of the field in the Link a Wii or DS dialog: a friend code, or the 8-character code Mario Kart Wii shows."
   },
-  "accountLinkWfcHelp": "Type the friend code any Wii or DS game on that console shows you, or the 8-character code Mario Kart Wii shows in its Wi-Fi menu message (XXXX-XXXX). The console has no login of its own, so this is how it joins your account.",
+  "accountLinkWfcName": "Name in that game (only for a 5-digit code)",
+  "@accountLinkWfcName": {
+    "description": "Optional second field of the Wii/DS link dialog: the console's in-game name, needed with a 5-digit code from another network."
+  },
+  "accountLinkWfcHelp": "A Wii or DS that is not linked cannot play online. Connect once in any game: it is refused and shows a 5-digit error code (24000-29999); Mario Kart Wii shows an 8-character code (XXXX-XXXX) instead. Enter it here, then connect again on the console. With a 5-digit code from a different network than the console's, also enter the name you play as in that game.",
   "@accountLinkWfcHelp": {
     "description": "Help text in the Link a Wii or DS dialog."
   },

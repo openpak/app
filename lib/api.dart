@@ -95,6 +95,7 @@ class Account {
     this.birthday = '',
     this.avatarUrl,
     this.linkedPlatforms = const [],
+    this.links = const [],
     this.email = '',
     this.emailVerified = true,
     this.twoFactorEnabled = false,
@@ -117,6 +118,10 @@ class Account {
   /// fallback rather than a broken image.
   final String? avatarUrl;
   final List<String> linkedPlatforms;
+
+  /// One row per linked console: a Wii or DS account may hold several (namespace `wfc`, each
+  /// with its own [linkId] and `unit` "wii" or "ds").
+  final List<({String namespace, String linkId, String unit})> links;
 
   /// False until the address is confirmed. A server that does not say is
   /// taken at its word elsewhere, so absent reads as confirmed rather than
@@ -149,6 +154,15 @@ class Account {
     linkedPlatforms: ((j['linked_platforms'] as List?) ?? const [])
         .map((e) => (e as Map<String, dynamic>)['namespace'] as String? ?? '')
         .where((e) => e.isNotEmpty)
+        .toList(growable: false),
+    links: ((j['linked_platforms'] as List?) ?? const [])
+        .map((e) => e as Map<String, dynamic>)
+        .where((e) => (e['namespace'] as String? ?? '').isNotEmpty)
+        .map((e) => (
+              namespace: e['namespace'] as String,
+              linkId: e['link_id'] as String? ?? '',
+              unit: e['unit'] as String? ?? '',
+            ))
         .toList(growable: false),
     email: j['email'] as String? ?? '',
     emailVerified: j['email_verified'] != false,
@@ -1372,15 +1386,19 @@ class OpenPakApi {
     {'current_password': current, 'new_password': next},
   );
 
-  /// POST /me/links/wfc — a Wii or DS, by a friend code read off a game.
-  Future<void> linkWfc(String friendCode) =>
-      _post('/me/links/wfc', {'friend_code': friendCode});
+  /// POST /me/links/wfc — a Wii or DS, by the code it showed when it was refused online (the
+  /// 8-character code in Mario Kart Wii, the 6-digit error code number elsewhere).
+  /// A 5-digit number also needs [name] (the console's in-game name) unless this device is on
+  /// the console's network.
+  Future<void> linkWfc(String code, {String name = ''}) =>
+      _post('/me/links/wfc', {'code': code, if (name.trim().isNotEmpty) 'name': name.trim()});
 
-  /// DELETE /me/links/{namespace}
-  Future<void> unlink(String namespace) async => _decode(await _http.delete(
-    _uri('/me/links/${Uri.encodeComponent(namespace)}'),
-    headers: _headers(),
-  ));
+  /// DELETE /me/links/{namespace}; [linkId] picks one Wii or DS when several are linked.
+  Future<void> unlink(String namespace, {String linkId = ''}) async {
+    final uri = _uri('/me/links/${Uri.encodeComponent(namespace)}');
+    final target = linkId.isEmpty ? uri : uri.replace(queryParameters: {...uri.queryParameters, 'link_id': linkId});
+    await _decode(await _http.delete(target, headers: _headers()));
+  }
 
   /// POST /me/avatar, multipart — a PNG or JPEG of up to 4 MiB.
   Future<void> uploadAvatar(Uint8List bytes, String filename) async {

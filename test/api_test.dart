@@ -152,6 +152,33 @@ void main() {
     expect(me.linkedPlatforms, ['switch', 'wfc']);
   });
 
+  test('several Wii/DS consoles each carry their link id and unit; unlink names one', () async {
+    Uri? deleted;
+    final api = OpenPakApi(
+      baseUrl: 'https://openpak.test',
+      token: 't',
+      client: MockClient((req) async {
+        if (req.method == 'DELETE') {
+          deleted = req.url;
+          return json({'unlinked': true});
+        }
+        return json({
+          'account_id': 'a',
+          'display_name': 'Leia',
+          'linked_platforms': [
+            {'namespace': 'wfc', 'link_id': 'w1', 'unit': 'wii'},
+            {'namespace': 'wfc', 'link_id': 'w2', 'unit': 'ds'},
+          ],
+        });
+      }),
+    );
+    final me = await api.me();
+    expect(me.links.map((l) => '${l.namespace}/${l.linkId}/${l.unit}'), ['wfc/w1/wii', 'wfc/w2/ds']);
+    await api.unlink('wfc', linkId: 'w2');
+    expect(deleted?.path, '/api/v1/me/links/wfc');
+    expect(deleted?.queryParameters['link_id'], 'w2');
+  });
+
   test('declining something already gone is false, not an error', () async {
     final api = OpenPakApi(
       baseUrl: 'https://openpak.test',

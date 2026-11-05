@@ -162,22 +162,22 @@ class _AccountPageState extends State<AccountPage> {
                             style: TextStyle(color: t.muted),
                           ),
                         ),
-                      for (final ns in me.linkedPlatforms) ...[
+                      for (final link in me.links) ...[
                         ListTile(
                           leading: const Icon(Icons.videogame_asset_outlined),
-                          title: Text(platformNames[ns] ?? ns),
+                          title: Text(_linkName(link.namespace, link.unit)),
                           // Wii U and 3DS console accounts are listed but never unlinked here, as on the website.
-                          trailing: (ns == 'wiiu' || ns == '3ds')
+                          trailing: (link.namespace == 'wiiu' || link.namespace == '3ds')
                               ? null
                               : tileAction(context, TextButton(
-                                  onPressed: () => _unlink(ns),
+                                  onPressed: () => _unlink(link.namespace, linkId: link.linkId, unit: link.unit),
                                   child: Text(l.accountUnlink, style: TextStyle(color: t.bad)),
                                 )),
                         ),
                         const Divider(height: 1),
                       ],
-                      if (!me.linkedPlatforms.contains('wfc'))
-                        ListTile(
+                      // Several Wii and DS consoles may be linked, so this stays offered.
+                      ListTile(
                           leading: const Icon(Icons.add_link),
                           title: Text(l.accountLinkWfc),
                           onTap: _linkWfc,
@@ -458,13 +458,20 @@ class _AccountPageState extends State<AccountPage> {
     await widget.onSignedOut();
   }
 
-  Future<void> _unlink(String ns) async {
+  /// A Wii or DS row names its console; every other row its platform.
+  String _linkName(String ns, String unit) {
+    if (ns == 'wfc' && unit == 'wii') return 'Wii';
+    if (ns == 'wfc' && unit == 'ds') return 'Nintendo DS';
+    return platformNames[ns] ?? ns;
+  }
+
+  Future<void> _unlink(String ns, {String linkId = '', String unit = ''}) async {
     final l = context.l10n;
-    final name = platformNames[ns] ?? ns;
+    final name = _linkName(ns, unit);
     if (!await confirm(context, l.accountUnlinkConfirm(name), detail: l.accountUnlinkDetail)) {
       return;
     }
-    await _act(() => widget.api.unlink(ns), l.accountUnlinked(name));
+    await _act(() => widget.api.unlink(ns, linkId: linkId), l.accountUnlinked(name));
   }
 
   Future<void> _linkWfc() async {
@@ -472,13 +479,13 @@ class _AccountPageState extends State<AccountPage> {
     final v = await promptForm(
       context,
       title: l.accountLinkWfc,
-      labels: [l.accountLinkWfcField],
-      hints: const ['XXXX-XXXX'],
+      labels: [l.accountLinkWfcField, l.accountLinkWfcName],
+      hints: const ['XXXX-XXXX / 24829', ''],
       action: l.accountLink,
       help: l.accountLinkWfcHelp,
     );
     if (v == null || v[0].isEmpty) return;
-    await _act(() => widget.api.linkWfc(v[0]), l.accountWfcLinked);
+    await _act(() => widget.api.linkWfc(v[0], name: v[1]), l.accountWfcLinked);
   }
 
   /// Every other device is signed out by the change; this one stays.

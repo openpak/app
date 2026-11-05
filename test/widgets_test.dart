@@ -52,7 +52,7 @@ void main() {
     ))));
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
-    expect(find.text('Friend code or the code your Wii shows'), findsOneWidget);
+    expect(find.text('The code your Wii or DS shows'), findsOneWidget);
     expect(find.text('XXXX-XXXX'), findsOneWidget);
   });
 }

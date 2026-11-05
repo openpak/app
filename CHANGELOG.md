@@ -11,6 +11,11 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
+## v0.32.0 — 2026-11-05
+
+- Wii/DS link-first (prds#139): "Link a Wii or DS" takes the code the console shows when it is refused online (the 5-digit error code 24000-29999, or Mario Kart Wii's 8-character code) plus an optional in-game name, needed with a 5-digit code when the phone is not on the console's network. Friend codes are no longer accepted.
+- Several Wii and DS consoles can be linked; each is its own row ("Wii", "Nintendo DS") with its own unlink, and "Link a Wii or DS" stays offered.
+
 ## v0.31.0 — 2026-11-05
 
 - Rewards: game cosmetics ("Game items", card #141) show the game's own title art and the game and console instead of an Equip button (the game equips them). The website serves the art; nothing is listed until an item is deliverable.
