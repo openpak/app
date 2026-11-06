@@ -52,7 +52,7 @@ class _RewardsPageState extends State<RewardsPage> {
         _loading = false;
         _showcase = v.showcasePublic;
         _paused = v.paused;
-        if (_kind.isNotEmpty && !v.shop.any((g) => g.kind == _kind)) _kind = '';
+        if (_kind.isNotEmpty && !v.shop.any((g) => g.key == _kind)) _kind = '';
       });
     } catch (e) {
       if (!mounted) return;
@@ -381,7 +381,20 @@ class _RewardsPageState extends State<RewardsPage> {
     );
   }
 
-  Widget _head(String text, {int? count}) => SectionLabel(text, trailing: count == null ? null : '$count');
+  Widget _head(String text, {int? count, String? icon}) {
+    final label = SectionLabel(text, trailing: count == null ? null : '$count');
+    if (icon == null || icon.isEmpty) return label;
+    // A game's shelf starts with the game's own icon.
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: ClipRRect(borderRadius: BorderRadius.circular(8), child: RewardsImage(api: api, path: icon, width: 32)),
+        ),
+        Expanded(child: label),
+      ],
+    );
+  }
 
   Widget _empty(String text) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -419,7 +432,7 @@ class _RewardsPageState extends State<RewardsPage> {
 
   List<Widget> _shop(AppLocalizations l, RewardsView v) {
     final t = tokensOf(context);
-    final groups = [for (final g in v.shop) if (_kind.isEmpty || g.kind == _kind) g];
+    final groups = [for (final g in v.shop) if (_kind.isEmpty || g.key == _kind) g];
     final hasItems = v.shop.any((g) => g.items.isNotEmpty);
     return [
       Text(l.rewardsShopSub, style: TextStyle(color: t.muted)),
@@ -434,7 +447,7 @@ class _RewardsPageState extends State<RewardsPage> {
               runSpacing: 8,
               children: [
                 RewardsChoice(label: l.rewardsFilterAll, selected: _kind.isEmpty, onTap: () => setState(() => _kind = '')),
-                for (final g in v.shop) RewardsChoice(label: g.label, selected: _kind == g.kind, onTap: () => setState(() => _kind = g.kind)),
+                for (final g in v.shop) RewardsChoice(label: g.label, selected: _kind == g.key, onTap: () => setState(() => _kind = g.key)),
               ],
             ),
           ),
@@ -442,7 +455,7 @@ class _RewardsPageState extends State<RewardsPage> {
       if (!hasItems && v.upcoming.isEmpty) _empty(l.rewardsEmptyShop),
       for (final g in groups)
         if (g.items.isNotEmpty) ...[
-          _head(g.label, count: g.items.length),
+          _head(g.label, count: g.items.length, icon: g.gameImg),
           CardGrid(
             wide: g.wide,
             children: [
@@ -490,7 +503,7 @@ class _RewardsPageState extends State<RewardsPage> {
         ),
       ],
       for (final g in v.mine) ...[
-        _head(g.label, count: g.tiles.length + g.items.length),
+        _head(g.label, count: g.tiles.length + g.items.length, icon: g.gameImg),
         ..._tileList(g.tiles, TileMode.mine),
         if (g.items.isNotEmpty)
           CardGrid(
