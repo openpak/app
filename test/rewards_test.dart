@@ -282,6 +282,36 @@ void main() {
       expect(find.text('Coming soon'), findsNothing);
     });
 
+    testWidgets('game items come as one shelf per game, each with its name', (tester) async {
+      fake.view['shop'] = <Object?>[
+        ...(fake.view['shop']! as List<Object?>),
+        {
+          'kind': 'game_cosmetic',
+          'label': "Don't Starve Together",
+          'game': 'dst',
+          'game_img': '/titles/icon/010090100E334000',
+          'wide': false,
+          'items': [item('dst-pack-a', 'game_cosmetic', price: 200)],
+        },
+        {
+          'kind': 'game_cosmetic',
+          'label': 'Stumble Guys',
+          'game': 'stumble-guys',
+          'game_img': '/titles/icon/0100A9E01AE9A000',
+          'wide': false,
+          'items': [item('sg-skin-b', 'game_cosmetic', price: 100)],
+        },
+      ];
+      await pump(tester);
+      await openShop(tester);
+      expect(find.text("Don't Starve Together"), findsWidgets);
+      expect(find.text('Stumble Guys'), findsWidgets);
+      await tester.tap(find.text('Stumble Guys').first);
+      await tester.pumpAndSettle();
+      expect(find.text('Item sg-skin-b'), findsOneWidget);
+      expect(find.text('Item dst-pack-a'), findsNothing);
+    });
+
     testWidgets('buying confirms, sends an idempotency key and reports', (tester) async {
       await pump(tester);
       await openShop(tester);

@@ -148,9 +148,23 @@ class RewardsItem {
 
 /// A shelf of one kind: items, and for My items also earned ladder tiles.
 class RewardsGroup {
-  RewardsGroup({required this.kind, required this.label, required this.wide, required this.tiles, required this.items});
+  RewardsGroup({
+    required this.kind,
+    required this.label,
+    required this.wide,
+    required this.tiles,
+    required this.items,
+    this.game = '',
+    this.gameImg = '',
+  });
   final String kind, label;
+
+  /// Game items come as one shelf per game: its id and icon (both empty for every other kind).
+  final String game, gameImg;
   final bool wide;
+
+  /// What the Shop's filter chips pick: the kind, or the one game for a game's shelf.
+  String get key => game.isEmpty ? kind : '$kind:$game';
   final List<RewardsTile> tiles;
   final List<RewardsItem> items;
 
@@ -158,6 +172,8 @@ class RewardsGroup {
     kind: _rs(j['kind']),
     label: _rs(j['label']),
     wide: _rb(j['wide']),
+    game: _rs(j['game']),
+    gameImg: _rs(j['game_img']),
     tiles: [for (final t in _rl(j['tiles'])) RewardsTile.fromJson(t)],
     items: [for (final i in _rl(j['items'])) RewardsItem.fromJson(i)],
   );
