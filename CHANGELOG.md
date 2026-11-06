@@ -11,7 +11,7 @@
 Generated from git history on 2026-09-15. `git log` stays the source
 of truth; this file is the readable summary.
 
-## Unreleased
+## v0.33.0 — 2026-11-06
 - Rewards: game items are one shelf per game with the game's icon and name; the Shop filter has a chip per game.
 
 ## v0.32.0 — 2026-11-05
